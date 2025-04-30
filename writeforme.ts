@@ -10,7 +10,6 @@ import { BLOG_CONTENT_DIR, BLOG_IMAGE_DIR, PROMPTS_DIR } from './setup/paths.con
 import { COMPANY_TYPE, COMPANY_NAME, COMPANY_TARGET, COMPANY_COMPETITORS, COMPANY_MAIN_FEATURES } from './setup/company.config';
 
 dotenv.config();
-console.log('ENV:', process.env.OPENAI_API_KEY, process.env.PERPLEXITY_API_KEY);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = pathDirname(__filename);
@@ -68,7 +67,7 @@ type BlogMetadata = {
   // add any other fields you expect
 };
 
-const mainPromptPath = path.join(PROMPTS_DIR, 'main.txt');
+const mainPromptPath = path.join(__dirname, 'setup', 'main.txt');
 let mainPrompt = '';
 try {
   mainPrompt = fs.readFileSync(mainPromptPath, 'utf8');
@@ -200,6 +199,16 @@ export async function callOpenAIImageAPI(prompt: string): Promise<string> {
 }
 
 async function main() {
+  // Only create directories if using default paths
+  const defaultBlogDir = path.join(__dirname, 'blog');
+  const defaultBlogImagesDir = path.join(__dirname, 'blog-images');
+  if (BLOG_CONTENT_DIR === defaultBlogDir) {
+    fs.mkdirSync(BLOG_CONTENT_DIR, { recursive: true });
+  }
+  if (BLOG_IMAGE_DIR === defaultBlogImagesDir) {
+    fs.mkdirSync(BLOG_IMAGE_DIR, { recursive: true });
+  }
+
   // 1. Get blog title & description (placeholder for now)
   const title = process.argv[2] || 'Sample Blog Title';
   const description = process.argv[3] || 'Sample blog description.';
@@ -215,7 +224,7 @@ async function main() {
 
   if (!skipPerplexity) {
     // 2. Load and fill Perplexity prompt template
-    const perplexityPromptPath = path.join(PROMPTS_DIR, 'system', 'perplexity.txt');
+    const perplexityPromptPath = path.join(PROMPTS_DIR, 'perplexity.txt');
     const formattedToday = formatDate(new Date());
     const perplexityPrompt = fillPromptTemplate(perplexityPromptPath, {
       KEYWORD: title,
@@ -260,7 +269,7 @@ async function main() {
   }
 
   // 5. Load and fill OpenAI article prompt template
-  const openaiArticlePromptPath = path.join(PROMPTS_DIR, 'system', 'openai-article.txt');
+  const openaiArticlePromptPath = path.join(PROMPTS_DIR, 'openai-article.txt');
   const openaiArticlePrompt = fillPromptTemplate(openaiArticlePromptPath, {
     KEYWORD: title,
     DESCRIPTION: description,
@@ -292,7 +301,7 @@ async function main() {
   }
 
   // 7. Load and fill OpenAI metadata prompt template
-  const openaiMetadataPromptPath = path.join(PROMPTS_DIR, 'system', 'openai-metadata.txt');
+  const openaiMetadataPromptPath = path.join(PROMPTS_DIR, 'openai-metadata.txt');
   const formattedShortDate = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
   const openaiMetadataPrompt = fillPromptTemplate(openaiMetadataPromptPath, {
     KEYWORD: title.toUpperCase(),
@@ -330,7 +339,7 @@ async function main() {
     console.error('😢 No metadata available, cannot create MDX file.');
     return;
   }
-  const mdxFrontmatter = `---\ntitle: "${metadata.title}"\ndescription: "${metadata.description}"\npubDate: "${today}"\nimage: "/blog/${slug}-${today}.webp"\nauthor: "Tito"\n---\n`;
+  const mdxFrontmatter = `---\ntitle: "${metadata.title}"\ndescription: "${metadata.description}"\npubDate: "${today}"\nimage: "/blog-images/${slug}-${today}.webp"\nauthor: "Tito"\n---\n`;
   const mdxContent = mdxFrontmatter + '\n' + articleMarkdown;
   const mdxFilePath = path.join(BLOG_CONTENT_DIR, `${slug}-${today}.mdx`);
 

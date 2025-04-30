@@ -22,7 +22,7 @@ try {
   process.exit(1);
 }
 
-// Utility: Find the latest .mdx file in src/content/blog
+// Utility: Find the latest .mdx file in blog
 function getLatestBlogFile(): string | null {
   const blogDir = BLOG_CONTENT_DIR;
   const files = fs.readdirSync(blogDir)
@@ -66,7 +66,7 @@ async function main() {
   const spinner = ora('Finding latest blog post...').start();
   const blogFile = getLatestBlogFile();
   if (!blogFile) {
-    spinner.fail('No blog posts found in src/content/blog/.');
+    spinner.fail('No blog posts found in blog/.');
     process.exit(1);
   }
   spinner.succeed(`Found latest blog: ${path.basename(blogFile)}`);

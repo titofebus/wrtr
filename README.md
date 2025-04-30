@@ -37,12 +37,12 @@ Welcome to the **Wrtr** tools! This suite automates blog post creation, AI-power
 
 ## ✨ Usage
 
-You can run scripts from the project root (with `pnpm exec tsx wrtr/...`) or from inside the `wrtr/` folder using the provided scripts:
+You can run scripts from the project root (with `pnpm exec tsx ...`) or from inside the `wrtr/` folder using the provided scripts:
 
 ### 1. 📝 Write a Blog Post Automatically
 
 ```sh
-pnpm exec tsx wrtr/writeforme.ts "Your Blog Title" "A short description of your blog post." [keywords] [--skip-perplexity]
+pnpm exec tsx writeforme.ts "Your Blog Title" "A short description of your blog post." [keywords] [--skip-perplexity]
 ```
 - **Arguments:**
   1. Blog Title (optional)
@@ -54,26 +54,26 @@ pnpm exec tsx wrtr/writeforme.ts "Your Blog Title" "A short description of your 
   - Researches your topic (Perplexity, unless skipped)
   - Generates a markdown blog post (OpenAI)
   - Extracts metadata (title, description, image prompt)
-  - Saves `.mdx` in `src/content/blog/`
-  - Generates a hero image and saves as `.webp` in `public/blog/`
+  - Saves `.mdx` in `blog/`
+  - Generates a hero image and saves as `.webp` in `blog-images/`
 
 ### 2. 🖼️ Generate Custom Images
 
 ```sh
-pnpm exec tsx wrtr/generateimages.ts "A dreamy wedding venue at sunset" "A vintage camera on a table" "A bouquet of wildflowers"
+pnpm exec tsx generateimages.ts "A dreamy wedding venue at sunset" "A vintage camera on a table" "A bouquet of wildflowers"
 ```
 - Each argument is a separate image description.
-- Images are saved as `.webp` in `public/images/`.
+- Images are saved as `.webp` in `images/`.
 - Prompts are styled using `setup/system/openai-image.txt`.
 
 ### 3. 🔄 Replace the Hero Image of the Latest Blog Post
 
 ```sh
-pnpm exec tsx wrtr/replaceimage.ts "A new description for the hero image" [path/to/image.webp]
+pnpm exec tsx replaceimage.ts "A new description for the hero image" [path/to/image.webp]
 ```
-- Finds the most recently modified `.mdx` in `src/content/blog/` (unless you specify an image path)
+- Finds the most recently modified `.mdx` in `blog/` (unless you specify an image path)
 - Generates a new hero image using your description
-- Overwrites the old image in `public/blog/` (or at the path you specify)
+- Overwrites the old image in `blog-images/` (or at the path you specify)
 
 ---
 
@@ -82,8 +82,8 @@ pnpm exec tsx wrtr/replaceimage.ts "A new description for the hero image" [path/
 1. **Research:** Calls Perplexity API to get a research summary and citations for your topic (unless skipped).
 2. **Article Generation:** Uses OpenAI to generate a long-form markdown article based on the research.
 3. **Metadata Extraction:** Extracts title, description, and image prompt from the article.
-4. **MDX File Creation:** Saves the article as an `.mdx` file in `src/content/blog/` with proper frontmatter.
-5. **Image Generation:** Generates a webp illustration and saves it in `public/blog/`.
+4. **MDX File Creation:** Saves the article as an `.mdx` file in `blog/` with proper frontmatter.
+5. **Image Generation:** Generates a webp illustration and saves it in `blog-images/`.
 
 ---
 

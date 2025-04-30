@@ -88,7 +88,7 @@ async function generateAndSaveImage(description: string) {
       .webp()
       .toBuffer();
     fs.writeFileSync(imagePath, new Uint8Array(cropped));
-    saveSpinner.succeed(`Image saved: /public/images/${filename}`);
+    saveSpinner.succeed(`Image saved: /images/${filename}`);
   } catch (err: any) {
     saveSpinner.fail(`Failed to process or save image: ${filename}`);
     console.error(err.message);
