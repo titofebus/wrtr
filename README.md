@@ -1,4 +1,4 @@
-# ✍️ Wrtr Automation Suite
+# ✍️ Wrtr Blog Automation Suite
 
 Welcome to the **Wrtr** tools! This suite automates blog post creation, AI-powered image generation, and hero image replacement for your Astro blog. Everything is modular, robust, and easy to use. 🚀
 
