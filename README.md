@@ -121,6 +121,6 @@ pnpm exec tsx replaceimage.ts "A new description for the hero image" [path/to/im
 
 ## 📝 Notes
 
-- This script is designed for use with an Astro + MDX blog setup.
+- This script is designed for use with an MDX blog setup.
 - All code follows clean code and modularity best practices.
 - If you want to customize prompts or output, check the `wrtr/setup/system/` directory.
