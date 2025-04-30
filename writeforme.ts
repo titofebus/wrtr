@@ -61,6 +61,13 @@ function formatDate(date: Date): string {
   });
 }
 
+type BlogMetadata = {
+  title: string;
+  description: string;
+  image: string;
+  // add any other fields you expect
+};
+
 const mainPromptPath = path.join(PROMPTS_DIR, 'main.txt');
 let mainPrompt = '';
 try {
@@ -305,7 +312,7 @@ async function main() {
     console.error('😢 OpenAI metadata extraction failed:', err);
     return;
   }
-  let metadata = null;
+  let metadata: BlogMetadata | null = null;
   try {
     if (openaiMetadataData.choices && openaiMetadataData.choices[0]?.message?.content) {
       // Try to parse JSON from the response
