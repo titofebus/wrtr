@@ -274,8 +274,8 @@ async function main() {
     KEYWORD: title,
     DESCRIPTION: description,
     KEYWORDS: keywordsString,
-    'Perplexity Data': researchSummary,
-    'Perplexity Citations': citations.join('\n'),
+    'PERPLEXITY DATA': researchSummary,
+    'PERPLEXITY CITATIONS': citations.join('\n'),
   });
 
   const articleSpinner = ora({ text: 'Generating article with OpenAI...', spinner: moonSpinner }).start();
@@ -359,7 +359,7 @@ async function main() {
   }
   const openaiImagePromptPath = path.join(PROMPTS_DIR, 'openai-image.txt');
   const openaiImagePrompt = fillPromptTemplate(openaiImagePromptPath, {
-    prompt: metadata.image,
+    PROMPT: metadata.image,
   });
 
   const imageSpinner = ora({ text: 'Generating hero image with OpenAI...', spinner: moonSpinner }).start();

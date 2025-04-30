@@ -11,8 +11,8 @@ The goal is to be on top of the SEO search on google for this keyword or search 
 Make sure that "{{KEYWORD}}" is everywhere on the blog.
 
 The following is a research summary and citations for this keyword:
-- Research Summary: {{Perplexity Data}}
-- Citations: {{Perplexity Citations}}
+- Research Summary: {{PERPLEXITY DATA}}
+- Citations: {{PERPLEXITY CITATIONS}}
 
 When writing about competitors be nice since they are products users love.
 
