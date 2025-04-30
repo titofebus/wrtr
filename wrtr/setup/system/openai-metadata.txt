@@ -1,0 +1,67 @@
+Just respond with the JSON no extra text. You are writing a JSON with this these things in it:
+
+{
+  "title": "Your Headline Here",
+  "short_title": "Your-Short-Title-Here-{{TODAY}}",
+  "description": "Your Summary Here",
+  "image": "Your Suggesiton Here"
+}
+
+Rules: 
+
+  - title: (≤40 chars)  
+  - short_title: (4 word kebab-case title with the todays date. Today is "{{TODAY}}".)  
+  - description: (≤110 chars)  
+  - image: 10 words or less, describing a possible blog hero image 
+
+
+Respond ONLY with valid JSON. Do not add any text, markdown, or code blocks. No explanations, no preamble, no code fences, just the JSON object.
+
+Do not include any other text or formatting. Only output the JSON object.
+
+Without using quote marks in your answer, add in the JSON a 10-word or less title using the story in the blog below. Do not use quotation marks. Be very simple, human and fun.
+
+You are choosing a keyword for this blog, and we need to make sure this keyword is a keyword people could be searching for related to this article. SEO is the most important thing so choose a keyword that is specific to this article but can rank high in search engines. The keyword MUST be in the title.
+
+The article is targeting this topic: "{{KEYWORD}}"
+
+Add in the JSON a 20-word summary of the following blog. Be concise. Stay factual. Do not use quotation marks. 
+
+Your writing style should be fun, and attention grabbing.
+
+
+Here's the blog:
+
+ "{{o3 Blog}}"
+
+Blog Description: {{DESCRIPTION}}
+Keywords: {{KEYWORD}}, {{KEYWORDS}}
+
+The headline or title should NOT be generic and should NOT be broad. Find the most shocking or interesting heading and use it as the title. DO NOT add the date in the title, it should only be in the short title.
+
+You are prohibited from using the following terms or phrases:
+
+boost, delve, dive, deep, (most common) tapestry, intriguing, holistic, intersection, not only ... but ... (standard inversions), dancing metaphors, Site specific: (shipping) - navigate into, sail into the future(research) - ethical considerations, area, realm, in the field of (even if it already knows the field), in the <> of (completely unnecessary), in the age of, in the search of. Save the world, make the world better, in the future, it is essential to <>. In essence, may seem counterintuitive.
+
+You are prohibited from promoting other services or people that offer our same services. If you are provided with that information use it as content inspiration.
+
+You are prohibited from using the following words or phrases:
+
+Delve
+Magic
+Tapestry
+Vibrant
+Landscape
+Realm
+Embark
+Boost
+Vital
+Moreover
+Arguably
+Dive into…
+It's important to note…
+Important to consider…
+Based on the information provided…
+Remember that…
+Navigating the [landscape]/[complexities of]
+A testament to… 

@@ -1,0 +1,43 @@
+Give me a robust long article on {{KEYWORD}}. This is your main keyword:"{{KEYWORD}}"
+Blog Description: {{DESCRIPTION}}
+Keywords: {{KEYWORDS}}
+Provide all the links you find of the sources. Talk about how they run the business. The more links the better.
+
+List all the sources/links and make it with a strong focus on SEO.
+
+The idea: {{DESCRIPTION}}
+
+Today is {{TODAY}}.
+
+You are prohibited from using the following terms or phrases:
+
+boost, delve, dive, deep, (most common) tapestry, intriguing, holistic, intersection, not only ... but ... (standard inversions), dancing metaphors, Site specific: (shipping) - navigate into, sail into the future(research) - ethical considerations, area, realm, in the field of (even if it already knows the field), in the <> of (completely unnecessary), in the age of, in the search of. Save the world, make the world better, in the future, it is essential to <>. In essence, may seem counterintuitive.
+
+You are prohibited from promoting other apps or people that offer our same services. If you are provided with that information use it as content inspiration.
+
+You are prohibited from using the following words or phrases:
+
+Delve
+Tapestry
+Vibrant
+Landscape
+Realm
+Embark
+Boost
+Vital
+Moreover
+Arguably
+Dive into…
+It's important to note…
+Important to consider…
+Based on the information provided…
+Remember that…
+Navigating the [landscape]/[complexities of]
+A testament to… 
+
+
+You are prohibited from promoting {{COMPANY_TYPE}}s or people that offer services involving {{KEYWORD}}. We are a {{COMPANY_TYPE}} called {{COMPANY_NAME}} and your main job is to do research for "{{KEYWORD}}".
+
+About {{COMPANY_NAME}}: {{COMPANY_NAME}} is a modern {{COMPANY_TYPE}} designed specifically for {{COMPANY_TARGET}}. {{COMPANY_NAME}} is inspired by the best parts of {{COMPANY_COMPETITORS}}, but takes things even further for {{COMPANY_TARGET}} who want a truly tailored, next-generation experience. Key features include {{COMPANY_MAIN_FEATURES}}.
+
+Don't search online about {{COMPANY_NAME}} because you wont find any information about {{COMPANY_NAME}}.

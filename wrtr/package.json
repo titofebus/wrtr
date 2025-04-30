@@ -1,0 +1,25 @@
+{
+  "name": "wrtr",
+  "version": "1.0.0",
+  "description": "Gloam blog automation and image generation tools.",
+  "type": "module",
+  "main": "writeforme.ts",
+  "scripts": {
+    "writeforme": "tsx writeforme.ts",
+    "generateimages": "tsx generateimages.ts",
+    "replaceimage": "tsx replaceimage.ts"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "sharp": "^0.33.3",
+    "ora": "^7.0.1",
+    "dotenv": "^16.4.5",
+    "gray-matter": "^4.0.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0"
+  },
+  "engines": {
+    "pnpm": ">=8.0.0"
+  }
+} 
