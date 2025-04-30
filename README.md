@@ -1,6 +1,6 @@
 # ✍️ Wrtr Blog Automation Suite
 
-Welcome to the **Wrtr** tools! This suite automates blog post creation Using OpenAI, research using Perplexity, AI-powered image generation using OpenAI, and hero image replacement for any mistakes. All writen in Typescript. Everything is modular, robust, and easy to use. 🚀
+Welcome to the **Wrtr** tools! This suite automates blog post creation using OpenAI, research using Perplexity, AI-powered image generation using OpenAI, and hero image replacement for any mistakes. All written in Typescript. Everything is modular, robust, and easy to use. 🚀
 
 ---
 
@@ -9,10 +9,9 @@ Welcome to the **Wrtr** tools! This suite automates blog post creation Using Ope
 - **writeforme.ts** – Fully automates blog post creation (research, writing, metadata, hero image)
 - **generateimages.ts** – Generate custom AI images for any description
 - **replaceimage.ts** – Instantly replace the hero image of your latest blog post
-- **setup/paths.config.ts** – Centralized config for all file and directory paths
-- **setup/main.txt** – The main prompt template for AI calls (**edit this to change prompt style or instructions**)
-- **setup/company.config.ts** – All company-specific info (name, features, competitors, etc. — **edit this to update company details**)
-- **setup/system/** – All other prompt templates (advanced, rarely edited)
+- **setup/wrtr.config.md** – Centralized config for all company info, file and directory paths, and blog frontmatter (edit this to update settings!)
+- **setup/main-prompt.txt** – The main prompt template for AI calls (**edit this to change prompt style or instructions**)
+- **setup/system-prompts/** – All other prompt templates (advanced, rarely edited) and the config loader
 
 ---
 
@@ -30,8 +29,10 @@ Welcome to the **Wrtr** tools! This suite automates blog post creation Using Ope
    ```
    Both are required for full automation. (You can skip Perplexity with a flag.)
 
-3. **Check path config:**
-   All output/input locations are set in [`setup/paths.config.ts`](./setup/paths.config.ts). If you move folders, update this file only!
+3. **Check & update config:**
+   - All project, company, and blog settings are now in [`setup/wrtr.config.md`](./setup/wrtr.config.md) as a friendly markdown file with YAML frontmatter.
+   - **To update company info, blog paths, or frontmatter defaults, just edit this file!**
+   - No need to touch any TypeScript files for config anymore.
 
 ---
 
@@ -64,7 +65,7 @@ pnpm exec tsx generateimages.ts "A dreamy wedding venue at sunset" "A vintage ca
 ```
 - Each argument is a separate image description.
 - Images are saved as `.webp` in `images/`.
-- Prompts are styled using `setup/system/openai-image.txt`.
+- Prompts are styled using `setup/system-prompts/openai-image.txt`.
 
 ### 3. 🔄 Replace the Hero Image of the Latest Blog Post
 
@@ -87,13 +88,21 @@ pnpm exec tsx replaceimage.ts "A new description for the hero image" [path/to/im
 
 ---
 
+## 🛠️ Configuration (NEW!)
+
+- **All config is now in [`setup/wrtr.config.md`](./setup/wrtr.config.md)** as YAML frontmatter in a markdown file.
+- This includes company info, blog/image directory paths, and default blog frontmatter fields.
+- **To update anything, just edit this file!**
+- The loader at [`setup/system-prompts/config-loader.ts`](./setup/system-prompts/config-loader.ts) reads this config and makes it available to all scripts.
+- No more TypeScript config files to maintain for company or path info!
+
+---
+
 ## 🎨 Customization & Advanced
 
-- **Prompt templates:** Edit [`setup/main.txt`](./setup/main.txt) for the main prompt style or instructions for the AI.
-- **Company info:** Edit [`setup/company.config.ts`](./setup/company.config.ts) to update your company name, features, competitors, etc.
-- **Image style:** Edit [`setup/system/openai-image.txt`](./setup/system/openai-image.txt) to change the look, mood, or art direction of your generated images.
-- **Advanced prompt templates** (for metadata, research, images) live in [`setup/system/`](./setup/system/) and rarely need editing.
-- **All file and directory paths** are managed in [`setup/paths.config.ts`](./setup/paths.config.ts). Update this file if you move folders!
+- **Prompt templates:** Edit [`setup/main-prompt.txt`](./setup/main-prompt.txt) for the main prompt style or instructions for the AI.
+- **Image style:** Edit [`setup/system-prompts/openai-image.txt`](./setup/system-prompts/openai-image.txt) to change the look, mood, or art direction of your generated images.
+- **Advanced prompt templates** (for metadata, research, images) live in [`setup/system-prompts/`](./setup/system-prompts/) and rarely need editing.
 
 ---
 
@@ -123,4 +132,4 @@ pnpm exec tsx replaceimage.ts "A new description for the hero image" [path/to/im
 
 - This script is designed for use with an MDX blog setup.
 - All code follows clean code and modularity best practices.
-- If you want to customize prompts or output, check the `wrtr/setup/system/` directory.
+- If you want to customize prompts or output, check the `wrtr/setup/system-prompts/` directory.

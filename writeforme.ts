@@ -6,8 +6,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname as pathDirname } from 'path';
 import ora from 'ora';
-import { BLOG_CONTENT_DIR, BLOG_IMAGE_DIR, PROMPTS_DIR } from './setup/paths.config';
-import { COMPANY_TYPE, COMPANY_NAME, COMPANY_TARGET, COMPANY_COMPETITORS, COMPANY_MAIN_FEATURES } from './setup/company.config';
+import { BLOG_CONTENT_DIR, BLOG_IMAGE_DIR, PROMPTS_DIR, COMPANY_TYPE, COMPANY_NAME, COMPANY_TARGET, COMPANY_COMPETITORS, COMPANY_MAIN_FEATURES, defaultBlogFrontmatter, BlogFrontmatter } from './setup/system-prompts/config-loader';
 
 dotenv.config();
 
@@ -67,7 +66,7 @@ type BlogMetadata = {
   // add any other fields you expect
 };
 
-const mainPromptPath = path.join(__dirname, 'setup', 'main.txt');
+const mainPromptPath = path.join(__dirname, 'setup', 'main-prompt.txt');
 let mainPrompt = '';
 try {
   mainPrompt = fs.readFileSync(mainPromptPath, 'utf8');
@@ -78,7 +77,7 @@ try {
 
 const moonSpinner = {
   interval: 120,
-  frames: ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘']
+  frames: ['[    ]','[=   ]','[==  ]','[=== ]','[ ===]','[  ==]','[   =]','[    ]']
 };
 
 export async function callPerplexityAPI(prompt: string): Promise<any> {
@@ -303,13 +302,27 @@ async function main() {
   // 7. Load and fill OpenAI metadata prompt template
   const openaiMetadataPromptPath = path.join(PROMPTS_DIR, 'openai-metadata.txt');
   const formattedShortDate = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-  const openaiMetadataPrompt = fillPromptTemplate(openaiMetadataPromptPath, {
+
+  // Dynamically build JSON structure and variables from BlogFrontmatter config
+  const frontmatterFields = Object.keys(defaultBlogFrontmatter);
+  const jsonStructure = `{
+${frontmatterFields.map(field => `  "${field}": "{{${field.toUpperCase()}}}"`).join(',\n')}
+}`;
+
+  // Build variables object dynamically
+  const variables: Record<string, string> = {
     KEYWORD: title.toUpperCase(),
     DESCRIPTION: description.toUpperCase(),
     KEYWORDS: keywordsString.toUpperCase(),
     'formatDate(now; \'MM-DD-YYYY\')': formattedShortDate,
     'o3 Blog': articleMarkdown,
+    JSON_STRUCTURE: jsonStructure,
+  };
+  frontmatterFields.forEach(field => {
+    variables[field.toUpperCase()] = (defaultBlogFrontmatter as any)[field];
   });
+
+  const openaiMetadataPrompt = fillPromptTemplate(openaiMetadataPromptPath, variables);
 
   const metadataSpinner = ora({ text: 'Extracting metadata with OpenAI...', spinner: moonSpinner }).start();
   let openaiMetadataData;
@@ -325,7 +338,13 @@ async function main() {
   try {
     if (openaiMetadataData.choices && openaiMetadataData.choices[0]?.message?.content) {
       // Try to parse JSON from the response
-      metadata = JSON.parse(openaiMetadataData.choices[0].message.content.replace(/```json|```/g, '').trim());
+      const raw = openaiMetadataData.choices[0].message.content.replace(/```json|```/g, '').trim();
+      try {
+        metadata = JSON.parse(raw);
+      } catch (err) {
+        console.error('RAW METADATA RESPONSE:', raw);
+        throw err;
+      }
     } else {
       throw new Error('No metadata content found in OpenAI response.');
     }
@@ -339,11 +358,28 @@ async function main() {
     console.error('😢 No metadata available, cannot create MDX file.');
     return;
   }
-  const mdxFrontmatter = `---\ntitle: "${metadata.title}"\ndescription: "${metadata.description}"\npubDate: "${today}"\nimage: "/blog-images/${slug}-${today}.webp"\nauthor: "Tito"\n---\n`;
+  // Use the BlogFrontmatter config for frontmatter fields
+  const frontmatter: BlogFrontmatter = {
+    title: metadata.title || defaultBlogFrontmatter.title,
+    description: metadata.description || defaultBlogFrontmatter.description,
+    pubDate: today,
+    image: `/blog-images/${slug}-${today}.webp`,
+    author: defaultBlogFrontmatter.author,
+  };
+  const mdxFrontmatter = `---\ntitle: "${frontmatter.title}"\ndescription: "${frontmatter.description}"\npubDate: "${frontmatter.pubDate}"\nimage: "${frontmatter.image}"\nauthor: "${frontmatter.author}"\n---\n`;
   const mdxContent = mdxFrontmatter + '\n' + articleMarkdown;
   const mdxFilePath = path.join(BLOG_CONTENT_DIR, `${slug}-${today}.mdx`);
 
   const fileSpinner = ora({ text: 'Saving MDX file...', spinner: moonSpinner }).start();
+  // Ensure the blog directory exists before writing
+  const isDefaultBlogDir = BLOG_CONTENT_DIR.endsWith(path.join('wrtr', 'blog'));
+  if (isDefaultBlogDir) {
+    fs.mkdirSync(path.dirname(mdxFilePath), { recursive: true });
+  } else if (!fs.existsSync(path.dirname(mdxFilePath))) {
+    fileSpinner.fail(`Custom blog directory does not exist: ${path.dirname(mdxFilePath)}. Please create it manually.`);
+    throw new Error(`Custom blog directory does not exist: ${path.dirname(mdxFilePath)}`);
+  }
+
   try {
     fs.writeFileSync(mdxFilePath, mdxContent, 'utf8');
     fileSpinner.succeed(`🎉 MDX file created: ${mdxFilePath}`);
@@ -377,9 +413,15 @@ async function main() {
   const imageBuffer = Buffer.from(b64Image, 'base64');
   const imageFilePath = path.join(BLOG_IMAGE_DIR, `${slug}-${today}.webp`);
   const saveImageSpinner = ora({ text: 'Saving hero image...', spinner: moonSpinner }).start();
-  try {
-    // Ensure the output directory exists
+  // Ensure the image directory exists before writing
+  const isDefaultImageDir = BLOG_IMAGE_DIR.endsWith(path.join('wrtr', 'blog-images'));
+  if (isDefaultImageDir) {
     fs.mkdirSync(path.dirname(imageFilePath), { recursive: true });
+  } else if (!fs.existsSync(path.dirname(imageFilePath))) {
+    saveImageSpinner.fail(`Custom image directory does not exist: ${path.dirname(imageFilePath)}. Please create it manually.`);
+    throw new Error(`Custom image directory does not exist: ${path.dirname(imageFilePath)}`);
+  }
+  try {
     // Crop to landscape aspect ratio (1536x1024)
     const cropped = await sharp(imageBuffer)
       .resize({ width: 1536, height: 1024, fit: 'cover' })

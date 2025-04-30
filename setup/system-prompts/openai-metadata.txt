@@ -1,19 +1,13 @@
-Just respond with the JSON no extra text. You are writing a JSON with this these things in it:
-
-{
-  "title": "Your Headline Here",
-  "short_title": "Your-Short-Title-Here-{{TODAY}}",
-  "description": "Your Summary Here",
-  "image": "Your Suggesiton Here"
-}
+Extract blog metadata as JSON. Only respond with the JSON object, no markdown, no explanation, no extra text. Use this structure:
+{{JSON_STRUCTURE}}
 
 Rules: 
 
   - title: (≤40 chars)  
-  - short_title: (4 word kebab-case title with the todays date. Today is "{{TODAY}}".)  
   - description: (≤110 chars)  
   - image: 10 words or less, describing a possible blog hero image 
-
+  - pubDate: Always use today's date
+  - author: {{COMPANY_AUTHOR}}
 
 Respond ONLY with valid JSON. Do not add any text, markdown, or code blocks. No explanations, no preamble, no code fences, just the JSON object.
 
@@ -29,7 +23,6 @@ Add in the JSON a 20-word summary of the following blog. Be concise. Stay factua
 
 Your writing style should be fun, and attention grabbing.
 
-
 Here's the blog:
 
  "{{o3 Blog}}"
@@ -37,7 +30,7 @@ Here's the blog:
 Blog Description: {{DESCRIPTION}}
 Keywords: {{KEYWORD}}, {{KEYWORDS}}
 
-The headline or title should NOT be generic and should NOT be broad. Find the most shocking or interesting heading and use it as the title. DO NOT add the date in the title, it should only be in the short title.
+The headline or title should NOT be generic and should NOT be broad. Find the most shocking or interesting heading and use it as the title. DO NOT add the date in the title.
 
 You are prohibited from using the following terms or phrases:
 

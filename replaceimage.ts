@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import dotenv from 'dotenv';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
-import { BLOG_CONTENT_DIR, BLOG_IMAGE_DIR, PROMPTS_DIR } from './setup/paths.config';
+import { BLOG_CONTENT_DIR, BLOG_IMAGE_DIR, PROMPTS_DIR } from './setup/system-prompts/config-loader';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
