@@ -106,6 +106,15 @@ pnpm exec tsx replaceimage.ts "A new description for the hero image" [path/to/im
 - If you see errors about missing dependencies, run `pnpm install` again.
 - For debugging, check the console output for detailed logs and error messages.
 - If you ever see a `dquote>` or `quote>` prompt, it means your shell thinks a quote is unclosed. Using single quotes for arguments helps avoid this issue.
+- **If you ever see a `dquote>` or `quote>` prompt:**
+  - This means your shell thinks a quote is unclosed (for example, you started a string with a double or single quote but didn't close it).
+  - This can happen if you copy-paste commands and miss a quote, or if your arguments contain special characters.
+  - **How to fix:**
+    - Press `Ctrl+C` to cancel the current command prompt.
+    - Double-check your command for any missing or mismatched quotes.
+    - Prefer using single quotes (`'`) around arguments, especially if your text contains spaces or special characters.
+    - Example: `pnpm exec tsx writeforme.ts 'How to take great photos' 'A guide for beginners.'`
+  - This is a shell/terminal thing, not a bug in the script! :)
 - Use `--skip-perplexity` for a faster run or if you don't need research/citations.
 
 ---
