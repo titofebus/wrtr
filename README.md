@@ -126,7 +126,6 @@ To help you get started safely, this repo includes example config and prompt fil
 - Make sure your API keys are valid and have enough quota.
 - If you see errors about missing dependencies, run `pnpm install` again.
 - For debugging, check the console output for detailed logs and error messages.
-- If you ever see a `dquote>` or `quote>` prompt, it means your shell thinks a quote is unclosed. Using single quotes for arguments helps avoid this issue.
 - **If you ever see a `dquote>` or `quote>` prompt:**
   - This means your shell thinks a quote is unclosed (for example, you started a string with a double or single quote but didn't close it).
   - This can happen if you copy-paste commands and miss a quote, or if your arguments contain special characters.
