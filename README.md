@@ -88,13 +88,12 @@ pnpm exec tsx replaceimage.ts "A new description for the hero image" [path/to/im
 
 ---
 
-## 🛠️ Configuration (NEW!)
+## 🛠️ Configuration
 
-- **All config is now in [`setup/wrtr.config.md`](./setup/wrtr.config.md)** as YAML frontmatter in a markdown file.
+- **All config is in [`setup/wrtr.config.md`](./setup/wrtr.config.md)** as YAML frontmatter in a markdown file.
 - This includes company info, blog/image directory paths, and default blog frontmatter fields.
 - **To update anything, just edit this file!**
 - The loader at [`setup/system-prompts/config-loader.ts`](./setup/system-prompts/config-loader.ts) reads this config and makes it available to all scripts.
-- No more TypeScript config files to maintain for company or path info!
 
 ---
 
