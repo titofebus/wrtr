@@ -4,10 +4,14 @@ Extract blog metadata as JSON. Only respond with the JSON object, no markdown, n
 
 IMPORTANT: Respond ONLY with valid JSON. All values must be wrapped in double quotes. Do not use single quotes or omit quotes for any value. Do not add any text, markdown, or code blocks. No explanations, no preamble, no code fences, just the JSON object.
 
+The JSON must always include an 'image' field. The 'image' field should be a short, descriptive phrase (10 words or less) describing a possible blog hero image. Never leave this field blank.
+
 Example:
+
 {
   "title": "Test Title",
-  "descriptions": "This is a test"
+  "description": "This is a test",
+  "image": "A red fox"
 }
 
 Respond ONLY with valid JSON. Do not add any text, markdown, or code blocks. No explanations, no preamble, no code fences, just the JSON object.
