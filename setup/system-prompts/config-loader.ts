@@ -49,6 +49,7 @@ export const WEBP_QUALITY = typeof config.blog.webp_quality === 'number' ? confi
 export const WEBP_SIZE = typeof config.blog.webp_size === 'string' ? config.blog.webp_size : '1536x1024';
 const [WEBP_WIDTH, WEBP_HEIGHT] = WEBP_SIZE.split('x').map(Number);
 export { WEBP_WIDTH, WEBP_HEIGHT };
+export const IMAGE_PROMPT_TEMPLATE = config.blog.image_prompt_template;
 
 // Blog frontmatter
 type BlogFrontmatter = {

@@ -18,7 +18,8 @@ import {
   DEFAULT_BLOG_FRONTMATTER,
   WEBP_QUALITY,
   WEBP_WIDTH,
-  WEBP_HEIGHT
+  WEBP_HEIGHT,
+  IMAGE_PROMPT_TEMPLATE
 } from './setup/system-prompts/config-loader';
 import type { BlogFrontmatter } from './setup/system-prompts/config-loader';
 
@@ -211,16 +212,40 @@ export async function callOpenAIImageAPI(prompt: string): Promise<string> {
   throw new Error('No image data returned from OpenAI image API');
 }
 
-async function main() {
-  // Only create directories if using default paths
+async function ensureBlogDirs() {
+  // Default fallback directories inside wrtr/
   const defaultBlogDir = path.join(__dirname, 'blog');
   const defaultBlogImagesDir = path.join(__dirname, 'blog-images');
-  if (BLOG_CONTENT_DIR === defaultBlogDir) {
-    fs.mkdirSync(BLOG_CONTENT_DIR, { recursive: true });
+  let contentDir = BLOG_CONTENT_DIR;
+  let imageDir = BLOG_IMAGE_DIR;
+  let usedDefault = false;
+
+  if (!fs.existsSync(BLOG_CONTENT_DIR)) {
+    ora().warn(`Blog content directory does not exist: ${BLOG_CONTENT_DIR}. Will use default: ${defaultBlogDir}`);
+    contentDir = defaultBlogDir;
+    usedDefault = true;
   }
-  if (BLOG_IMAGE_DIR === defaultBlogImagesDir) {
-    fs.mkdirSync(BLOG_IMAGE_DIR, { recursive: true });
+  if (!fs.existsSync(BLOG_IMAGE_DIR)) {
+    ora().warn(`Blog image directory does not exist: ${BLOG_IMAGE_DIR}. Will use default: ${defaultBlogImagesDir}`);
+    imageDir = defaultBlogImagesDir;
+    usedDefault = true;
   }
+  if (usedDefault) {
+    if (!fs.existsSync(contentDir)) {
+      fs.mkdirSync(contentDir, { recursive: true });
+      ora().info(`Created default blog content directory: ${contentDir}`);
+    }
+    if (!fs.existsSync(imageDir)) {
+      fs.mkdirSync(imageDir, { recursive: true });
+      ora().info(`Created default blog image directory: ${imageDir}`);
+    }
+    ora().succeed('Default blog folders created and will be used for this run! 🎉');
+  }
+  return { contentDir, imageDir };
+}
+
+async function main() {
+  const { contentDir, imageDir } = await ensureBlogDirs();
 
   // 1. Get blog title & description (placeholder for now)
   const title = process.argv[2] || 'Sample Blog Title';
@@ -384,11 +409,11 @@ ${frontmatterFields.map(field => `  "${field}": "{{${field.toUpperCase()}}}"`).j
   };
   const mdxFrontmatter = `---\ntitle: "${frontmatter.title}"\ndescription: "${frontmatter.description}"\npubDate: "${frontmatter.pubDate}"\nimage: "${frontmatter.image}"\nauthor: "${frontmatter.author}"\n---\n`;
   const mdxContent = mdxFrontmatter + '\n' + articleMarkdown;
-  const mdxFilePath = path.join(BLOG_CONTENT_DIR, `${slug}-${today}.mdx`);
+  const mdxFilePath = path.join(contentDir, `${slug}-${today}.mdx`);
 
   const fileSpinner = ora({ text: 'Saving MDX file...', spinner: moonSpinner }).start();
   // Ensure the blog directory exists before writing
-  const isDefaultBlogDir = BLOG_CONTENT_DIR.endsWith(path.join('wrtr', 'blog'));
+  const isDefaultBlogDir = contentDir.endsWith(path.join('wrtr', 'blog'));
   if (isDefaultBlogDir) {
     fs.mkdirSync(path.dirname(mdxFilePath), { recursive: true });
   } else if (!fs.existsSync(path.dirname(mdxFilePath))) {
@@ -409,10 +434,7 @@ ${frontmatterFields.map(field => `  "${field}": "{{${field.toUpperCase()}}}"`).j
     console.error('😢 No image suggestion in metadata, cannot generate image.');
     return;
   }
-  const openaiImagePromptPath = path.join(PROMPTS_DIR, 'openai-image.txt');
-  const openaiImagePrompt = fillPromptTemplate(openaiImagePromptPath, {
-    PROMPT: metadata.image,
-  });
+  const openaiImagePrompt = IMAGE_PROMPT_TEMPLATE.replace(/{{PROMPT}}/gi, metadata.image);
 
   const imageSpinner = ora({ text: 'Generating hero image with OpenAI...', spinner: moonSpinner }).start();
   let b64Image = '';
@@ -427,10 +449,10 @@ ${frontmatterFields.map(field => `  "${field}": "{{${field.toUpperCase()}}}"`).j
 
   // 12. Process and save image (crop to landscape aspect ratio, convert to webp)
   const imageBuffer = Buffer.from(b64Image, 'base64');
-  const imageFilePath = path.join(BLOG_IMAGE_DIR, `${slug}-${today}.webp`);
+  const imageFilePath = path.join(imageDir, `${slug}-${today}.webp`);
   const saveImageSpinner = ora({ text: 'Saving hero image...', spinner: moonSpinner }).start();
   // Ensure the image directory exists before writing
-  const isDefaultImageDir = BLOG_IMAGE_DIR.endsWith(path.join('wrtr', 'blog-images'));
+  const isDefaultImageDir = imageDir.endsWith(path.join('wrtr', 'blog-images'));
   if (isDefaultImageDir) {
     fs.mkdirSync(path.dirname(imageFilePath), { recursive: true });
   } else if (!fs.existsSync(path.dirname(imageFilePath))) {

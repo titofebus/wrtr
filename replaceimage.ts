@@ -6,21 +6,12 @@ import sharp from 'sharp';
 import dotenv from 'dotenv';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
-import { BLOG_CONTENT_DIR, BLOG_IMAGE_DIR, PROMPTS_DIR, WEBP_QUALITY, WEBP_WIDTH, WEBP_HEIGHT } from './setup/system-prompts/config-loader';
+import { BLOG_CONTENT_DIR, BLOG_IMAGE_DIR, WEBP_QUALITY, WEBP_WIDTH, WEBP_HEIGHT, IMAGE_PROMPT_TEMPLATE } from './setup/system-prompts/config-loader';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
-
-const promptTemplatePath = path.join(PROMPTS_DIR, 'openai-image.txt');
-let promptTemplate = '';
-try {
-  promptTemplate = fs.readFileSync(promptTemplatePath, 'utf8');
-} catch (err) {
-  ora().fail('Could not read OpenAI image prompt template.');
-  process.exit(1);
-}
 
 // Utility: Find the latest .mdx file in blog
 function getLatestBlogFile(): string | null {
@@ -57,9 +48,9 @@ async function callOpenAIImageAPI(prompt: string): Promise<string> {
   throw new Error('No image data returned from OpenAI image API');
 }
 
-// Utility: Use the same image prompt style as main blog script
+// Use the prompt template from config
 function buildImagePrompt(description: string): string {
-  return promptTemplate.replace(/{{prompt}}/g, description);
+  return IMAGE_PROMPT_TEMPLATE.replace(/{{PROMPT}}/gi, description);
 }
 
 async function main() {

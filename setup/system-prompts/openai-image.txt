@@ -1,3 +1,0 @@
-Create an illustration inspired by Hokusai's silhouette style, blending a dreamlike, minimalistic, and uplifting atmosphere. Use a soft, muted palette limited to just three colors: light brown, muted brown, and one additional complementary neutral. The artwork should have a subtle grainy texture throughout, blurred elements to is, with gentle fades and hand-drawn, sketch-like strokes that feel organic and imperfect.
-
-The scene should depict the peaceful silhouette of '{{PROMPT}}'. it should feel natural and serene, as if they're lost in a positive flow of creativity. Faces should not be recongnizable only silhouettes. The overall mood should feel light, calm, and slightly nostalgic — like a distant memory or a quiet moment captured in time. 
