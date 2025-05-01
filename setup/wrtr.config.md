@@ -53,3 +53,4 @@ Welcome! This is your one-stop config file for the WRTR project. Edit the values
 - You can add more features or competitors as needed.
 - The `pubDate` field will be set to today's date automatically by the scripts.
 - Frontmatter fields should match the required/optional fields in writer-rules.mdc.
+- Make sure to have '{{PROMPT}}' in your 'image_prompt_template' so that OpenAI can suggest a image.
