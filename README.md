@@ -132,3 +132,18 @@ pnpm exec tsx replaceimage.ts "A new description for the hero image" [path/to/im
 - This script is designed for use with an MDX blog setup.
 - All code follows clean code and modularity best practices.
 - If you want to customize prompts or output, check the `wrtr/setup/system-prompts/` directory.
+
+---
+
+## 📝 Example Config & Prompt Files
+
+To help you get started safely, this repo includes example config and prompt files:
+
+- `setup/wrtr.config.example.md`
+- `setup/main-prompt.example.txt`
+
+**How to use:**
+1. Copy or rename `setup/wrtr.config.example.md` to `setup/wrtr.config.md` and fill in your company/blog details.
+2. Copy or rename `setup/main-prompt.example.txt` to `setup/main-prompt.txt` and customize your main prompt style.
+
+> **Note:** The real config and prompt files are ignored by git, so your sensitive info stays private! 🎉
