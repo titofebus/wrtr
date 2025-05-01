@@ -55,3 +55,15 @@ All important settings for wrtr live in the `setup/wrtr.config.md` file! Here's 
 **To change any of these, just edit the config file and rerun your scripts!**
 
 ---
+
+## Troubleshoot
+
+- **If you ever see a `dquote>` or `quote>` prompt:**
+  - This means your shell thinks a quote is unclosed (for example, you started a string with a double or single quote but didn't close it).
+  - This can happen if you copy-paste commands and miss a quote, or if your arguments contain special characters.
+  - **How to fix:**
+    - Press `Ctrl+C` to cancel the current command prompt.
+    - Double-check your command for any missing or mismatched quotes.
+    - Prefer using single quotes (`'`) around arguments, especially if your text contains spaces or special characters.
+    - Example: `pnpm exec tsx writeforme.ts 'How to take great photos' 'A guide for beginners.'`
+  - This is a shell/terminal thing, not a bug in the script! :)
