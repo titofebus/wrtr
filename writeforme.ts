@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname as pathDirname } from 'path';
 import ora from 'ora';
-import { BLOG_CONTENT_DIR, BLOG_IMAGE_DIR, PROMPTS_DIR, COMPANY_TYPE, COMPANY_NAME, COMPANY_TARGET, COMPANY_COMPETITORS, COMPANY_MAIN_FEATURES, defaultBlogFrontmatter, BlogFrontmatter } from './setup/system-prompts/config-loader';
+import { BLOG_CONTENT_DIR, BLOG_IMAGE_DIR, PROMPTS_DIR, COMPANY_TYPE, COMPANY_NAME, COMPANY_TARGET, COMPANY_COMPETITORS, COMPANY_MAIN_FEATURES, defaultBlogFrontmatter, BlogFrontmatter, WEBP_QUALITY, WEBP_WIDTH, WEBP_HEIGHT } from './setup/system-prompts/config-loader';
 
 dotenv.config();
 
@@ -424,8 +424,8 @@ ${frontmatterFields.map(field => `  "${field}": "{{${field.toUpperCase()}}}"`).j
   try {
     // Crop to landscape aspect ratio (1536x1024)
     const cropped = await sharp(imageBuffer)
-      .resize({ width: 1536, height: 1024, fit: 'cover' })
-      .webp()
+      .resize({ width: WEBP_WIDTH, height: WEBP_HEIGHT, fit: 'cover' })
+      .webp({ quality: WEBP_QUALITY })
       .toBuffer();
     // Buffer is compatible with fs.writeFileSync, but cast to Uint8Array for strict TS
     fs.writeFileSync(imageFilePath, new Uint8Array(cropped));

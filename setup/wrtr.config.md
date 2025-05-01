@@ -29,6 +29,8 @@ blog:
   image_dir: wrtr/blog-images      # Where hero images for blog posts are saved
   general_image_dir: wrtr/images   # Where general/generated images are saved
   prompts_dir: setup/system-prompts        # Where prompt templates are stored
+  webp_quality: 80                # Compression quality for webp images (0-100, higher is better quality, default 80)
+  webp_size: 1536x1024            # Size for webp images in WIDTHxHEIGHT format (default 1536x1024)
   default_frontmatter:             # Default frontmatter for new blog posts
     title: ""                      # Blog post title (leave blank for script to fill)
     description: ""                # Blog post description (leave blank for script to fill)

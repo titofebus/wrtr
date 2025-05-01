@@ -5,7 +5,7 @@ import sharp from 'sharp';
 import dotenv from 'dotenv';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
-import { GENERAL_IMAGE_DIR, PROMPTS_DIR } from './setup/system-prompts/config-loader';
+import { GENERAL_IMAGE_DIR, PROMPTS_DIR, WEBP_QUALITY, WEBP_WIDTH, WEBP_HEIGHT } from './setup/system-prompts/config-loader';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,8 +91,8 @@ async function generateAndSaveImage(description: string) {
   try {
     const imageBuffer = Buffer.from(b64Image, 'base64');
     const cropped = await sharp(imageBuffer)
-      .resize({ width: 1536, height: 1024, fit: 'cover' })
-      .webp()
+      .resize({ width: WEBP_WIDTH, height: WEBP_HEIGHT, fit: 'cover' })
+      .webp({ quality: WEBP_QUALITY })
       .toBuffer();
     fs.writeFileSync(imagePath, new Uint8Array(cropped));
     saveSpinner.succeed(`Image saved: /images/${filename}`);

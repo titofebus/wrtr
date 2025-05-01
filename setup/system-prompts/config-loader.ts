@@ -25,6 +25,10 @@ export const BLOG_CONTENT_DIR = path.join(projectRoot, config.blog.content_dir);
 export const BLOG_IMAGE_DIR = path.join(projectRoot, config.blog.image_dir);
 export const GENERAL_IMAGE_DIR = path.join(projectRoot, config.blog.general_image_dir);
 export const PROMPTS_DIR = path.join(projectRoot, config.blog.prompts_dir);
+export const WEBP_QUALITY = typeof config.blog.webp_quality === 'number' ? config.blog.webp_quality : 80;
+export const WEBP_SIZE = typeof config.blog.webp_size === 'string' ? config.blog.webp_size : '1536x1024';
+const [WEBP_WIDTH, WEBP_HEIGHT] = WEBP_SIZE.split('x').map(Number);
+export { WEBP_WIDTH, WEBP_HEIGHT };
 
 // Blog frontmatter
 type BlogFrontmatter = {
