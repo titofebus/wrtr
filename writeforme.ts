@@ -6,7 +6,21 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname as pathDirname } from 'path';
 import ora from 'ora';
-import { BLOG_CONTENT_DIR, BLOG_IMAGE_DIR, PROMPTS_DIR, COMPANY_TYPE, COMPANY_NAME, COMPANY_TARGET, COMPANY_COMPETITORS, COMPANY_MAIN_FEATURES, defaultBlogFrontmatter, BlogFrontmatter, WEBP_QUALITY, WEBP_WIDTH, WEBP_HEIGHT } from './setup/system-prompts/config-loader';
+import {
+  BLOG_CONTENT_DIR,
+  BLOG_IMAGE_DIR,
+  PROMPTS_DIR,
+  COMPANY_TYPE,
+  COMPANY_NAME,
+  COMPANY_TARGET,
+  COMPANY_COMPETITORS,
+  COMPANY_MAIN_FEATURES,
+  DEFAULT_BLOG_FRONTMATTER,
+  WEBP_QUALITY,
+  WEBP_WIDTH,
+  WEBP_HEIGHT
+} from './setup/system-prompts/config-loader';
+import type { BlogFrontmatter } from './setup/system-prompts/config-loader';
 
 dotenv.config();
 
@@ -234,6 +248,7 @@ async function main() {
       COMPANY_NAME,
       COMPANY_TARGET,
       COMPANY_COMPETITORS: COMPANY_COMPETITORS.join(', '),
+      COMPANY_MAIN_FEATURES: COMPANY_MAIN_FEATURES.join(', '),
     });
 
     const perplexitySpinner = ora({ text: 'Calling Perplexity API for research...', spinner: moonSpinner }).start();
@@ -304,7 +319,7 @@ async function main() {
   const formattedShortDate = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
 
   // Dynamically build JSON structure and variables from BlogFrontmatter config
-  const frontmatterFields = Object.keys(defaultBlogFrontmatter);
+  const frontmatterFields = Object.keys(DEFAULT_BLOG_FRONTMATTER);
   const jsonStructure = `{
 ${frontmatterFields.map(field => `  "${field}": "{{${field.toUpperCase()}}}"`).join(',\n')}
 }`;
@@ -319,7 +334,7 @@ ${frontmatterFields.map(field => `  "${field}": "{{${field.toUpperCase()}}}"`).j
     JSON_STRUCTURE: jsonStructure,
   };
   frontmatterFields.forEach(field => {
-    variables[field.toUpperCase()] = (defaultBlogFrontmatter as any)[field];
+    variables[field.toUpperCase()] = (DEFAULT_BLOG_FRONTMATTER as any)[field];
   });
 
   const openaiMetadataPrompt = fillPromptTemplate(openaiMetadataPromptPath, variables);
@@ -360,11 +375,11 @@ ${frontmatterFields.map(field => `  "${field}": "{{${field.toUpperCase()}}}"`).j
   }
   // Use the BlogFrontmatter config for frontmatter fields
   const frontmatter: BlogFrontmatter = {
-    title: metadata.title || defaultBlogFrontmatter.title,
-    description: metadata.description || defaultBlogFrontmatter.description,
+    title: metadata.title || DEFAULT_BLOG_FRONTMATTER.title,
+    description: metadata.description || DEFAULT_BLOG_FRONTMATTER.description,
     pubDate: today,
     image: `/blog-images/${slug}-${today}.webp`,
-    author: defaultBlogFrontmatter.author,
+    author: DEFAULT_BLOG_FRONTMATTER.author,
   };
   const mdxFrontmatter = `---\ntitle: "${frontmatter.title}"\ndescription: "${frontmatter.description}"\npubDate: "${frontmatter.pubDate}"\nimage: "${frontmatter.image}"\nauthor: "${frontmatter.author}"\n---\n`;
   const mdxContent = mdxFrontmatter + '\n' + articleMarkdown;

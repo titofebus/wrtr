@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const projectRoot = path.resolve(__dirname, '../..');
+const projectRoot = path.resolve(__dirname, '../../..');
 const configPath = path.join(__dirname, '../wrtr.config.md');
 
 const file = fs.readFileSync(configPath, 'utf8');
@@ -39,7 +39,7 @@ type BlogFrontmatter = {
   author: string;
 };
 
-export const defaultBlogFrontmatter: BlogFrontmatter = {
+export const DEFAULT_BLOG_FRONTMATTER: BlogFrontmatter = {
   ...config.blog.default_frontmatter,
   pubDate: new Date().toISOString().split('T')[0], // Always today's date
   author: config.company.author,
