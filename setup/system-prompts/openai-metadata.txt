@@ -14,6 +14,10 @@ Example:
   "image": "A red fox"
 }
 
+But it has to have all fields:
+
+{{JSON_STRUCTURE}}
+
 Respond ONLY with valid JSON. Do not add any text, markdown, or code blocks. No explanations, no preamble, no code fences, just the JSON object.
 
 Do not include any other text or formatting. Only output the JSON object.
