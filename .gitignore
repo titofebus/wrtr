@@ -27,4 +27,7 @@ pnpm-debug.log*
 .vscode/
 
 # Other
-*.local 
+*.local
+
+setup/wrtr.config.md
+setup/main-prompt.txt 
