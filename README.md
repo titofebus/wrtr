@@ -55,8 +55,8 @@ pnpm exec tsx writeforme.ts "Your Blog Title" "A short description of your blog 
   - Researches your topic (Perplexity, unless skipped)
   - Generates a markdown blog post (OpenAI)
   - Extracts metadata (title, description, image prompt)
-  - Saves `.mdx` in `blog/`
-  - Generates a hero image and saves as `.webp` in `blog-images/`
+  - Saves `.mdx` in `blog/` or where ever it's set up.
+  - Generates a hero image and saves as `.webp` in `blog-images/` or where ever it's set up.
 
 ### 2. 🖼️ Generate Custom Images
 
@@ -64,8 +64,8 @@ pnpm exec tsx writeforme.ts "Your Blog Title" "A short description of your blog 
 pnpm exec tsx generateimages.ts "A dreamy wedding venue at sunset" "A vintage camera on a table" "A bouquet of wildflowers"
 ```
 - Each argument is a separate image description.
-- Images are saved as `.webp` in `images/`.
-- Prompts are styled using `setup/system-prompts/openai-image.txt`.
+- Images are saved as `.webp` in `images/` or where ever it's set up.
+- Prompts are styled using `setup/wrtr.config.md`.
 
 ### 3. 🔄 Replace the Hero Image of the Latest Blog Post
 
@@ -83,8 +83,8 @@ pnpm exec tsx replaceimage.ts "A new description for the hero image" [path/to/im
 1. **Research:** Calls Perplexity API to get a research summary and citations for your topic (unless skipped).
 2. **Article Generation:** Uses OpenAI to generate a long-form markdown article based on the research.
 3. **Metadata Extraction:** Extracts title, description, and image prompt from the article.
-4. **MDX File Creation:** Saves the article as an `.mdx` file in `blog/` with proper frontmatter.
-5. **Image Generation:** Generates a webp illustration and saves it in `blog-images/`.
+4. **MDX File Creation:** Saves the article as an `.mdx` file in `blog/` or where ever it's set up with proper frontmatter.
+5. **Image Generation:** Generates a webp illustration and saves it in `blog-images/` or where ever it's set up.
 
 ---
 
@@ -100,7 +100,7 @@ pnpm exec tsx replaceimage.ts "A new description for the hero image" [path/to/im
 ## 🎨 Customization & Advanced
 
 - **Prompt templates:** Edit [`setup/main-prompt.txt`](./setup/main-prompt.txt) for the main prompt style or instructions for the AI.
-- **Image style:** Edit [`setup/system-prompts/openai-image.txt`](./setup/system-prompts/openai-image.txt) to change the look, mood, or art direction of your generated images.
+- **Image style:** Edit [`setup/wrtr.config.md`](./setup/wrtr.config.md) to change the look, mood, or art direction of your generated images.
 - **Advanced prompt templates** (for metadata, research, images) live in [`setup/system-prompts/`](./setup/system-prompts/) and rarely need editing.
 
 ---
