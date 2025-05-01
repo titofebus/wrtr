@@ -23,7 +23,7 @@ Here's how you can use all the wrtr tools right inside your terminal for a smoot
   ```sh
   pnpm exec tsx generateimages.ts "A dreamy wedding venue at sunset" "A vintage camera on a table"
   ```
-- Each argument is a separate image description. Images are saved as `.webp` in your images directory.
+- Each argument is a separate image description. In this example it would create 2 images. Images are saved as `.webp` in your images directory.
 
 ## 3. Replace the Hero Image of the Latest Blog Post
 
@@ -35,7 +35,7 @@ Here's how you can use all the wrtr tools right inside your terminal for a smoot
 
 ---
 
-## ⚙️ Project Configuration: `setup/wrtr.config.md`
+## Project Configuration: `setup/wrtr.config.md`
 
 All important settings for wrtr live in the `setup/wrtr.config.md` file! Here's what you can customize:
 
