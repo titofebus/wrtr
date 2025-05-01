@@ -290,6 +290,7 @@ async function main() {
     KEYWORDS: keywordsString,
     'PERPLEXITY DATA': researchSummary,
     'PERPLEXITY CITATIONS': citations.join('\n'),
+    COMPANY_MAIN_FEATURES: COMPANY_MAIN_FEATURES.join(', '),
   });
 
   const articleSpinner = ora({ text: 'Generating article with OpenAI...', spinner: moonSpinner }).start();
