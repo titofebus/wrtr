@@ -14,7 +14,7 @@ The following is a research summary and citations for this keyword:
 - Research Summary: {{PERPLEXITY DATA}}
 - Citations: {{PERPLEXITY CITATIONS}}
 
-+Key features of our company: {{COMPANY_MAIN_FEATURES}}
+Key features of our company: {{COMPANY_MAIN_FEATURES}}
 
 When writing about competitors be nice since they are products users love.
 
