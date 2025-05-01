@@ -3,13 +3,13 @@ description: How to use wrtr to make blog posts with a main image.
 globs: 
 alwaysApply: false
 ---
-# 🖱️ How to Use wrtr with Cursor
+# 🖱️ How to Use wrtr with an IDE or LLM
 
-Welcome to the wrtr project! Here's how you can use all the wrtr tools right inside Cursor for a smooth, fun, and productive workflow:
+Here's how you can use all the wrtr tools right inside your terminal for a smooth, fun, and productive workflow:
 
 ## 1. Write a Blog Post Automatically
 
-- Open the built-in Cursor terminal.
+- Open the built-in terminal.
 - Run:
   ```sh
   pnpm exec tsx writeforme.ts "Your Blog Title" "A short description of your blog post." [keywords] [--skip-perplexity]
@@ -19,7 +19,7 @@ Welcome to the wrtr project! Here's how you can use all the wrtr tools right ins
 
 ## 2. Generate Custom Images
 
-- In the Cursor terminal, run:
+- In the terminal, run:
   ```sh
   pnpm exec tsx generateimages.ts "A dreamy wedding venue at sunset" "A vintage camera on a table"
   ```
@@ -27,7 +27,7 @@ Welcome to the wrtr project! Here's how you can use all the wrtr tools right ins
 
 ## 3. Replace the Hero Image of the Latest Blog Post
 
-- In the Cursor terminal, run:
+- In the terminal, run:
   ```sh
   pnpm exec tsx replaceimage.ts "A new description for the hero image" [path/to/image.webp]
   ```
