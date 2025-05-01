@@ -74,7 +74,14 @@ async function generateAndSaveImage(description: string) {
 
   // Optimize and save the image
   const imagesDir = GENERAL_IMAGE_DIR;
-  fs.mkdirSync(imagesDir, { recursive: true });
+  // Only create the directory if using the default path, otherwise fail if it doesn't exist
+  const isDefaultImageDir = imagesDir.endsWith(path.join('wrtr', 'images'));
+  if (isDefaultImageDir) {
+    fs.mkdirSync(imagesDir, { recursive: true });
+  } else if (!fs.existsSync(imagesDir)) {
+    ora().fail(`Custom image directory does not exist: ${imagesDir}. Please create it manually.`);
+    throw new Error(`Custom image directory does not exist: ${imagesDir}`);
+  }
   const timestamp = Date.now();
   // Use only the first three words of the description for the filename
   const firstThreeWords = description.split(/\s+/).slice(0, 3).join(' ');

@@ -66,8 +66,8 @@ async function main() {
   const spinner = ora('Finding latest blog post...').start();
   const blogFile = getLatestBlogFile();
   if (!blogFile) {
-    spinner.fail('No blog posts found in blog/.');
-    process.exit(1);
+    spinner.fail('😢 No blog posts found! There are no .mdx files in your blog directory. Please create a blog post first.');
+    process.exit(0);
   }
   spinner.succeed(`Found latest blog: ${path.basename(blogFile)}`);
 
