@@ -1,13 +1,14 @@
 Extract blog metadata as JSON. Only respond with the JSON object, no markdown, no explanation, no extra text. Use this structure:
+
 {{JSON_STRUCTURE}}
 
-Rules: 
+IMPORTANT: Respond ONLY with valid JSON. All values must be wrapped in double quotes. Do not use single quotes or omit quotes for any value. Do not add any text, markdown, or code blocks. No explanations, no preamble, no code fences, just the JSON object.
 
-  - title: (≤40 chars)  
-  - description: (≤110 chars)  
-  - image: 10 words or less, describing a possible blog hero image 
-  - pubDate: Always use today's date
-  - author: {{COMPANY_AUTHOR}}
+Example:
+{
+  "title": "Test Title",
+  "descriptions": "This is a test"
+}
 
 Respond ONLY with valid JSON. Do not add any text, markdown, or code blocks. No explanations, no preamble, no code fences, just the JSON object.
 
