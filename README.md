@@ -1,6 +1,6 @@
 # ✍️ Wrtr Blog Automation Suite
 
-Welcome to the **Wrtr** tools! This suite automates blog post creation using OpenAI, research using Perplexity, AI-powered image generation using OpenAI, and hero image replacement for any mistakes. All written in Typescript. Everything is modular, robust, and easy to use. 🚀
+Welcome to the **Wrtr** tools! This suite automates markdown blog post creation using OpenAI, research using Perplexity, AI-powered image generation using OpenAI, and hero image replacement for any mistakes. All written in Typescript. Everything is modular, robust, and easy to use. 🚀
 
 ---
 
