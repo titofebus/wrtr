@@ -270,7 +270,7 @@ def _as_dict(cfg, key):
     return v if isinstance(v, dict) else {}
 
 
-def build_brief(cfg, target, kind=None):
+def build_brief(cfg, target, kind=None, collection="journal"):
     mined = keyword_miner.mine(target)
     geo_terms = cfg.get("geo_terms", [])
     questions = [k for k in mined
@@ -298,7 +298,19 @@ def build_brief(cfg, target, kind=None):
     type_map = site_config.need_dict(cfg, "type_category_map")
     kind = kind or next(iter(type_map), "guide")
     category = type_map.get(kind) or next(iter(categories), "uncategorized")
+    # Collection resolution: resources_* keys when --collection resources and
+    # the site defines them; otherwise the main collection keys.
+    dir_key, route_key = "content_dir", "content_route"
     kind_name = cfg.get("content_kind", "Journal")
+    collection_note = ""
+    if collection == "resources":
+        if cfg.get("resources_dir"):
+            dir_key, route_key = "resources_dir", "resources_route"
+            kind_name = cfg.get("resources_kind", "Resources")
+        else:
+            collection_note = (
+                "> Note: `--collection resources` requested but this site has "
+                "no `resources_*` keys — falling back to the main collection.")
     suffix_map = site_config.need_dict(cfg, "type_slug_suffix")
     slug = slugify(target + suffix_map.get(kind, ""))
     voice_rules = cfg.get("voice_rules", [])
@@ -317,6 +329,8 @@ def build_brief(cfg, target, kind=None):
     L = [f"# {kind_name} brief: {target} ({cfg['name']})", "",
          f"Type: {kind} | Category: `{category}` | Suggested slug: `{slug}`",
          f"Date: {datetime.date.today()}", ""]
+    if collection_note:
+        L += [collection_note, ""]
     angle = _as_dict(cfg, "type_angles").get(kind)
     if angle:
         L.append(f"Angle: {angle}")
@@ -453,12 +467,12 @@ def build_brief(cfg, target, kind=None):
         L += ["", "## What NOT to write"]
         L += [f"- {d}" for d in donts]
     site_url = cfg.get("site_url", "").rstrip("/")
-    route = cfg.get("content_route", "/").strip("/")
+    route = cfg.get(route_key, "/").strip("/")
     entry_url = (f"{site_url}/{route}/{slug}/" if route
                  else f"{site_url}/{slug}/") if site_url else "<published-url>"
     site_slug = cfg.get("slug", "<slug>")
     repo = cfg.get("repo", "<repo>")
-    content_dir = cfg.get("content_dir", "src/content/<collection>")
+    content_dir = cfg.get(dir_key, "src/content/<collection>")
     draft_path = f"{repo}/{content_dir}/{slug}.md"
     gate_cmd = cfg.get("repo_gate",
                        "the repo's content gate (see its docs)")
@@ -486,6 +500,9 @@ def main():
                     help="one of the site's type_category_map keys "
                          "(default: the first key)")
     ap.add_argument("--site", default=None, help="site slug from sites/ (default: example)")
+    ap.add_argument("--collection", default="journal",
+                    choices=["journal", "resources"],
+                    help="target content collection (default: journal)")
     args = ap.parse_args()
     if not args.target:
         print(__doc__)
@@ -498,7 +515,7 @@ def main():
     kind = args.kind or (next(iter(type_map), "guide") if type_map else "guide")
     if args.kind and args.kind not in valid_kinds:
         ap.error(f"--type must be one of: {', '.join(valid_kinds)}")
-    print(build_brief(cfg, args.target, kind))
+    print(build_brief(cfg, args.target, kind, args.collection))
 
 
 if __name__ == "__main__":

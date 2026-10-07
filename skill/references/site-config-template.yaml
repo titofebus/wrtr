@@ -130,6 +130,12 @@ geo_terms: ["<city>", "<region>", "<state>"]
 # Where hero images live (brief tells the writer to pick a real file from here)
 image_library: "public/images/"
 
+# Optional secondary content collection (e.g. an SEO hub separate from the
+# main journal/blog). When set, briefs can target it with --collection.
+# resources_dir: src/content/resources
+# resources_route: /resources/
+# resources_kind: Resources
+
 # Target lengths per brief type (keys must match type_category_map)
 length_targets:
   guide: "1,500–2,000 words"

@@ -22,6 +22,7 @@ import site_config
 import weekly_scan as scan
 import content_brief as brief
 import draft_score
+import assign_images
 
 
 class TestVenueIntent(unittest.TestCase):
@@ -96,6 +97,42 @@ class TestNormUrl(unittest.TestCase):
 class TestSlugify(unittest.TestCase):
     def test_punctuation(self):
         self.assertEqual(brief.slugify("Lake Nona: Top Venues!"), "lake-nona-top-venues")
+
+    def test_collection_resources(self):
+        cfg = {
+            "name": "Test Brand",
+            "slug": "test",
+            "repo": "/tmp/x",
+            "site_url": "https://test.example/",
+            "content_dir": "src/content/journal",
+            "content_route": "/journal/",
+            "content_kind": "Journal",
+            "resources_dir": "src/content/resources",
+            "resources_route": "/resources/",
+            "resources_kind": "Resources",
+            "type_category_map": {"guide": "tips"},
+            "categories": {"tips": "Tips"},
+        }
+        out = brief.build_brief(cfg, "lake nona venues", "guide", "resources")
+        self.assertIn("# Resources brief:", out)
+        self.assertIn("src/content/resources/lake-nona-venues.md", out)
+        self.assertIn("https://test.example/resources/lake-nona-venues/", out)
+
+    def test_collection_fallback(self):
+        cfg = {
+            "name": "Test Brand",
+            "slug": "test",
+            "repo": "/tmp/x",
+            "site_url": "https://test.example/",
+            "content_dir": "src/content/journal",
+            "content_route": "/journal/",
+            "content_kind": "Journal",
+            "type_category_map": {"guide": "tips"},
+            "categories": {"tips": "Tips"},
+        }
+        out = brief.build_brief(cfg, "lake nona venues", "guide", "resources")
+        self.assertIn("falling back to the main collection", out)
+        self.assertIn("src/content/journal/lake-nona-venues.md", out)
 
     def test_length_cap(self):
         self.assertLessEqual(len(brief.slugify("x" * 200)), 70)
@@ -671,6 +708,38 @@ class TestDraftScore(unittest.TestCase):
             capture_output=True, text=True)
         self.assertEqual(r.returncode, 2)
         self.assertIn("--keyword must not be empty", r.stderr)
+
+
+class TestAssignImages(unittest.TestCase):
+    def test_photo_number_reference_counts_as_used(self):
+        repo = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(repo, "src", "data"))
+            os.makedirs(os.path.join(repo, "src", "content", "journal"))
+            with open(os.path.join(repo, "src", "data",
+                                   "website-photo-files.json"), "w") as f:
+                json.dump({"47": "orlando-wedding-photography-test.webp"}, f)
+            with open(os.path.join(repo, "src", "data", "photos.ts"), "w") as f:
+                f.write("hero: highFidelityWebsitePhoto(47),\n")
+            used = assign_images.used_images(
+                repo, ["src/content/journal", "src/content/resources"])
+            self.assertIn("orlando-wedding-photography-test.webp", used)
+        finally:
+            shutil.rmtree(repo)
+
+    def test_frontmatter_image_counts_as_used(self):
+        repo = tempfile.mkdtemp()
+        try:
+            os.makedirs(os.path.join(repo, "src", "content", "journal"))
+            with open(os.path.join(
+                    repo, "src", "content", "journal", "entry.md"), "w") as f:
+                f.write('---\nimage: "/images/febus/website-photos/'
+                        'orlando-wedding-photography-used.webp"\n---\n')
+            used = assign_images.used_images(
+                repo, ["src/content/journal", "src/content/resources"])
+            self.assertIn("orlando-wedding-photography-used.webp", used)
+        finally:
+            shutil.rmtree(repo)
 
 
 if __name__ == "__main__":

@@ -43,16 +43,36 @@ def library_images(lib_dir):
 
 
 def used_images(repo, content_dirs):
-    """Filenames (basenames) already referenced by any entry."""
+    """Filenames (basenames) already referenced anywhere on the site."""
     used = set()
     img_ref = re.compile(r"[\"'\(](/[^\"'\)]*?\.(?:webp|jpg|jpeg|png|avif))", re.I)
-    for d in content_dirs:
-        full = os.path.join(repo, d)
-        if not os.path.isdir(full):
-            continue
-        for root, _dirs, files in os.walk(full):
+    # Photo-number references: websitePhoto(47) / highFidelityWebsitePhoto(67)
+    # resolve via src/data/website-photo-files.json (number -> filename).
+    num_ref = re.compile(r"(?:highFidelityW|w)ebsitePhoto\((\d+)\)")
+    num_to_file = {}
+    num_map = os.path.join(repo, "src", "data", "website-photo-files.json")
+    try:
+        import json
+        with open(num_map, encoding="utf-8") as f:
+            num_to_file = json.load(f)
+    except (OSError, ValueError):
+        pass
+    # Scan content collections (frontmatter + markdown references).
+    scan_dirs = [os.path.join(repo, d) for d in content_dirs
+                 if os.path.isdir(os.path.join(repo, d))]
+    # Plus site-wide code/data (photos.ts, components) — images referenced
+    # there count as used too.
+    for extra in ("src/data", "src/components"):
+        full = os.path.join(repo, extra)
+        if os.path.isdir(full):
+            scan_dirs.append(full)
+    for scan in scan_dirs:
+        for root, _dirs, files in os.walk(scan):
             for f in files:
-                if not f.endswith(".md"):
+                if not f.endswith((".md", ".ts", ".astro", ".tsx")):
+                    continue
+                if f in ("website-photo-files.json", "og-image-files.json",
+                          "high-fidelity-photo-numbers.json"):
                     continue
                 try:
                     text = open(os.path.join(root, f), encoding="utf-8").read()
@@ -60,12 +80,10 @@ def used_images(repo, content_dirs):
                     continue
                 for m in img_ref.finditer(text):
                     used.add(os.path.basename(m.group(1)))
-                fm = re.match(r"^---\n(.*?)\n---", text, re.S)
-                if fm:
-                    m = re.search(r"^image:\s*[\"']?([^\"'\n]+)[\"']?\s*$",
-                                  fm.group(1), re.M)
-                    if m:
-                        used.add(os.path.basename(m.group(1).strip()))
+                for m in num_ref.finditer(text):
+                    fn = num_to_file.get(m.group(1))
+                    if fn:
+                        used.add(os.path.basename(fn))
     return used
 
 
@@ -94,10 +112,11 @@ def main():
         return 2
 
     content_dirs = [cfg.get("content_dir", "src/content/journal")]
-    # Also scan the future guides collection if the site has one.
-    guides = cfg.get("guides_dir")
-    if guides:
-        content_dirs.append(guides)
+    # Also scan secondary collections (SEO hub etc.) for used images.
+    for key in ("guides_dir", "resources_dir"):
+        extra = cfg.get(key)
+        if extra:
+            content_dirs.append(extra)
 
     all_imgs = library_images(lib)
     if not all_imgs:
