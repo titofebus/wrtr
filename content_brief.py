@@ -413,7 +413,12 @@ def build_brief(cfg, target, kind=None):
           f"- Hero: pick a real brand photo from `{cfg.get('image_library', 'the site’s image library')}`; "
           "add per the site's image workflow. "
           "Do NOT invent a filename — verify it exists. "
-          "Tip: filenames are keyword-rich — search the library for the area/venue name first.",
+          "Tip: filenames are keyword-rich — search the library for the area/venue name first. "
+          "Better: run `assign_images.py --site <slug> --topic \"<keyword>\"` — "
+          "it picks the most relevant images never used before. ",
+          "RULE: never reuse an image already used in another entry until the "
+          "whole library has been cycled once (the script enforces this). "
+          "Use 1 hero + 2 inline images per entry.",
           "- Alt text: descriptive, includes the primary keyword once.",
           "", "## Front matter",
           "```md", "---",
@@ -452,11 +457,16 @@ def build_brief(cfg, target, kind=None):
     entry_url = (f"{site_url}/{route}/{slug}/" if route
                  else f"{site_url}/{slug}/") if site_url else "<published-url>"
     site_slug = cfg.get("slug", "<slug>")
+    repo = cfg.get("repo", "<repo>")
+    content_dir = cfg.get("content_dir", "src/content/<collection>")
+    draft_path = f"{repo}/{content_dir}/{slug}.md"
+    gate_cmd = cfg.get("repo_gate",
+                       "the repo's content gate (see its docs)")
     L += ["", "## Publish checklist",
-          "- [ ] Draft the entry from this brief (one H1 from the title; "
+          f"- [ ] Write the entry to `{draft_path}` (one H1 from the title; "
           "body starts at H2)",
           f"- [ ] Quality gate (HARD — must pass to publish; also enforced by "
-          f"`pnpm gate:journal` in the repo): from `~/workspace/seo-tools`, "
+          f"`{gate_cmd}` in the repo): from `~/workspace/seo-tools`, "
           f"`.venv/bin/python draft_score.py <draft.md> --site {site_slug} "
           f"--keyword \"{target}\"` — fix the 🟡/🔴 items and re-run until PASS",
           "- [ ] AI-sounding check (advisory only, never blocks): "

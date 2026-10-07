@@ -120,6 +120,10 @@ proactive_seeds: ["<broad seed 1>", "<broad seed 2>"]
 # the hard gate; the AI-sounding check (ai_check.py) stays advisory-only.
 draft_score_min: 80
 
+# The repo's mechanical gate command (runs the scorer on changed entries).
+# Named in briefs so the writer knows what enforces the bar.
+# e.g. repo_gate: pnpm gate:journal
+
 # Geo terms for filtering brief secondaries (autocomplete suggests other
 # regions otherwise). List the city/region/state terms this brand serves.
 geo_terms: ["<city>", "<region>", "<state>"]
