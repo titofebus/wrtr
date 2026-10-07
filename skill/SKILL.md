@@ -15,9 +15,10 @@ brand onboards by copying a config file, no code changes.
 - Toolkit: `<wrtr>/` (venv `.venv`, scripts run as `.venv/bin/python <script>`).
 - Site configs: `<wrtr>/sites/<slug>.yaml`. The multi-site-aware
   scripts (`weekly_scan.py`, `content_brief.py`, `bing.py`, `draft_score.py`)
-  take `--site <slug>` (or `SEO_SITE` env); default is `febusfilms`. Helpers
+  take `--site <slug>` (or `SEO_SITE` env); default is `example`. Helpers
   `gsc.py` and `keyword_miner.py` take explicit arguments;
-  `psi_check.py` takes none (Febus-only for now — URLs hardcoded).
+  `psi_check.py` reads comma-separated `PSI_URLS` from the environment
+  (falls back to the site config's URLs).
 - `site_config.py` loads the YAML. Never hardcode a brand's URLs, voice, or
   rules in a script — put them in the site's YAML.
 - Reference implementation: `sites/example.yaml` (filled-in example).
@@ -40,11 +41,10 @@ brand onboards by copying a config file, no code changes.
    matter, brand voice rules.
 3. **Draft** — write the markdown entry in the site's `content_dir` per its
    workflow doc and voice rules.
-4. **Optimize** — score with `content-optimizer-mcp` (`score_content`,
-   `get_content_recommendations`, `check_readability`); iterate to 80+.
-   Then run the hard quality gate: `draft_score.py <draft.md> --site <slug>
-   --keyword "<target>"` must PASS (score ≥ the site's `draft_score_min`,
-   default 80; no hard failures). The advisory `ai_check.py` never blocks.
+4. **Optimize** — run the hard quality gate: `draft_score.py <draft.md>
+   --site <slug> --keyword "<target>"` must PASS (score ≥ the site's
+   `draft_score_min`, default 80; no hard failures). Iterate on the flagged
+   items until it passes. The advisory `ai_check.py` never blocks.
 5. **Validate** — run the repo's validate (`pnpm validate`); fix causes, never
    weaken gates. The repo's validate should include the journal gate so the
    80-point bar is mechanically enforced, not just documented.
@@ -52,7 +52,7 @@ brand onboards by copying a config file, no code changes.
 7. **Submit** — `bing.py submit <url> [--site]`; request GSC indexing in the UI.
 8. **Monitor** — next scan watches the target query; the monthly layer
    (cron `<slug>-monthly-seo-layer`, 1st ~9am ET) covers competitor gaps,
-   venue-hub proposals, BigQuery freshness, `psi_check.py` vitals, and GBP
+   venue-hub proposals, `psi_check.py` vitals, and GBP
    status. See `references/site-onboarding.md` step 5.
 
 Supporting tools: `keyword_miner.py` (autocomplete fan-out),
@@ -71,7 +71,7 @@ needs Google brand verification).
 | `keyword_miner.py` | Autocomplete fan-out keyword ideas |
 | `psi_check.py` | CrUX + PageSpeed lab vitals |
 | `draft_score.py` | **Pre-publish quality gate (HARD):** draft scores 0–100, must reach the site's `draft_score_min` (default 80) |
-| `ai_check.py` | Advisory AI-sounding check (local SlopTotal); never blocks |
+| `ai_check.py` | Advisory AI-sounding check (local SlopTotal, see `docs/sloptotal-setup.md`); never blocks |
 
 ## Auth
 - GSC: a service account (key at `<wrtr>/.sa-key.json`, 0600). Each new

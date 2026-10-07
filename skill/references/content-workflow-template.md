@@ -59,10 +59,7 @@ image, no route/component/data edits.
 
 ### 4. Optimize — agent
 
-Score with content-optimizer-mcp (`score_content`,
-`get_content_recommendations`, `check_readability`); iterate to 80+.
-
-Then run the toolkit quality gate (HARD — the draft cannot publish until
+Run the toolkit quality gate (HARD — the draft cannot publish until
 this passes):
 
 ```bash

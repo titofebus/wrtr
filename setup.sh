@@ -47,7 +47,7 @@ if [ ! -d sloptotal ]; then
     sloptotal/.venv/bin/pip install -q --upgrade pip
     sloptotal/.venv/bin/pip install -q -r sloptotal/requirements.txt
   fi
-  echo "SlopTotal cloned — see sloptotal/SETUP.md to start the API"
+  echo "SlopTotal cloned — see docs/sloptotal-setup.md to start the API"
 else
   echo "sloptotal/ already present"
 fi
