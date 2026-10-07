@@ -3,8 +3,8 @@
 Run: .venv/bin/python -m unittest discover -s tests -v
 No network, no credentials, no real files (tmp files only).
 
-Note: fixtures use febusfilms.com URLs and queries because Febus Films is
-the reference brand — they exercise URL/query handling, not brand behavior.
+Note: fixtures use example.com URLs and queries — they exercise URL/query
+handling, not brand behavior.
 """
 import json
 import os
@@ -47,24 +47,24 @@ class TestLooksLikeHub(unittest.TestCase):
     def test_entry_under_content_route_is_not_hub(self):
         self.assertFalse(scan._looks_like_hub(
             "lake nona wedding venues",
-            "https://www.febusfilms.com/journal/lake-nona-wedding-venues/",
+            "https://www.example.com/journal/lake-nona-wedding-venues/",
             "/journal/"))
 
     def test_dedicated_hub_page(self):
         self.assertTrue(scan._looks_like_hub(
             "lake nona wedding venues",
-            "https://www.febusfilms.com/venues/lake-nona-wedding-venues/",
+            "https://www.example.com/venues/lake-nona-wedding-venues/",
             "/journal/"))
 
     def test_query_string_stripped(self):
         self.assertTrue(scan._looks_like_hub(
             "lake nona wedding venues",
-            "https://www.febusfilms.com/venues/lake-nona-wedding-venues/?x=1",
+            "https://www.example.com/venues/lake-nona-wedding-venues/?x=1",
             "/journal/"))
 
     def test_all_generic_query_assumes_covered(self):
         self.assertTrue(scan._looks_like_hub(
-            "wedding venues", "https://www.febusfilms.com/about/",
+            "wedding venues", "https://www.example.com/about/",
             "/journal/"))
 
 
@@ -228,23 +228,23 @@ class TestClassifyPick(unittest.TestCase):
         scan._liveness = self._orig
 
     def test_redirected_striking_becomes_venue(self):
-        scan._liveness = lambda page: (200, "https://www.febusfilms.com/journal/")
+        scan._liveness = lambda page: (200, "https://www.example.com/journal/")
         kind, status, final, redir = scan.classify_pick(
-            "striking", "https://www.febusfilms.com/blog/old/")
+            "striking", "https://www.example.com/blog/old/")
         self.assertEqual(kind, "venue")
         self.assertTrue(redir)
 
     def test_live_striking_stays(self):
         scan._liveness = lambda page: (200, page)
         kind, status, final, redir = scan.classify_pick(
-            "striking", "https://www.febusfilms.com/about/")
+            "striking", "https://www.example.com/about/")
         self.assertEqual(kind, "striking")
         self.assertFalse(redir)
 
     def test_dead_url_keeps_kind_but_flags(self):
         scan._liveness = lambda page: (404, page)
         kind, status, final, redir = scan.classify_pick(
-            "striking", "https://www.febusfilms.com/blog/dead/")
+            "striking", "https://www.example.com/blog/dead/")
         self.assertEqual(status, 404)
         self.assertFalse(redir)
 
