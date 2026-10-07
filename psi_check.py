@@ -20,14 +20,21 @@ ALERT_PERF_THRESHOLD = 70
 
 TEMPLATES = [u.strip() for u in
              os.environ.get("PSI_URLS", "").split(",") if u.strip()] or [
-    "https://www.febusfilms.com/",
-    "https://www.febusfilms.com/about/",
-    "https://www.febusfilms.com/services/",
-    "https://www.febusfilms.com/portfolio/",
-    "https://www.febusfilms.com/contact/",
-    "https://www.febusfilms.com/journal/",
-    "https://www.febusfilms.com/journal/finding-the-right-wedding-photographer-for-you/",
+    "https://www.example.com/",
+    "https://www.example.com/about/",
+    "https://www.example.com/services/",
+    "https://www.example.com/work/",
+    "https://www.example.com/contact/",
+    "https://www.example.com/journal/",
+    "https://www.example.com/journal/hello-world/",
 ]
+
+
+def _origin_from_templates():
+    """CrUX origin derived from the first template URL's origin."""
+    from urllib.parse import urlparse
+    p = urlparse(TEMPLATES[0])
+    return f"{p.scheme}://{p.netloc}"
 
 
 def _key():
@@ -39,7 +46,7 @@ def crux_origin():
     key = _key()
     r = requests.post(
         f"https://chromeuxreport.googleapis.com/v1/records:queryRecord?key={key}",
-        json={"origin": "https://www.febusfilms.com"},
+        json={"origin": _origin_from_templates()},
         timeout=60,
     )
     if r.status_code == 404:
@@ -70,7 +77,7 @@ def psi_score(url):
 
 
 def main():
-    out = ["# CWV check — febusfilms.com", ""]
+    out = ["# CWV check", ""]
     # CrUX is a nicety — a 429/500 here must not nuke the PSI lab scores.
     try:
         m = crux_origin()

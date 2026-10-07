@@ -1,6 +1,6 @@
 # Onboarding a new brand/site to the SEO content engine
 
-Checklist. Most steps are one-time; the owner (Tito) does the UI clicks,
+Checklist. Most steps are one-time; the site owner does the UI clicks,
 the agent does everything else.
 
 ## 1. Site config (agent)
@@ -75,12 +75,10 @@ the agent does everything else.
 2. Monthly layer: `cron.add` id `<slug>-monthly-seo-layer`, monthly on the
    1st ~9am America/New_York — competitor gap crawl, venue-hub proposal,
    BigQuery freshness check, vitals, GBP status.
-   (Clone the Febus `febus-monthly-seo-layer` body and swap the site —
-   same swap checklist, plus the BigQuery dataset
-   reference if the brand exports elsewhere.)
-   NOTE: `psi_check.py` is still Febus-hardcoded (URLs baked in) — do NOT
-   clone its step for a new brand until it's generalized; skip vitals or
-   wire the brand's own check.
+   (Clone the reference monthly-layer body and swap the site —
+   same swap checklist.)
+   NOTE: `psi_check.py` reads its URLs from `PSI_URLS` (comma-separated);
+   set that env var per brand, or it falls back to the example URLs.
 3. Owner reviews the brief before any draft is written (standing rule).
 
 ## 6. First run

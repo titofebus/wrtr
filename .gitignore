@@ -17,6 +17,6 @@ sites/*.yaml
 .venv/
 __pycache__/
 *.log
-.pip-tmp/
+.tmp/
 # SlopTotal is cloned by setup.sh (pinned commit), not vendored.
 /sloptotal/

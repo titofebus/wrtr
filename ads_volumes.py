@@ -1,6 +1,6 @@
 """Real keyword volumes via the Google Ads API (Keyword Planner).
 
-Free with Tito's Ads account (no spend). Non-spending accounts get volume
+Free with a Google Ads account (no spend). Non-spending accounts get volume
 ranges (buckets) rather than exact numbers — still the only legit volume data.
 
 Usage: .venv/bin/python ads_volumes.py "best running shoes" "running shoes near me" [--geo 1023652]

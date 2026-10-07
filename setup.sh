@@ -21,8 +21,10 @@ python3 --version
 
 echo "== venv"
 [ -d .venv ] || python3 -m venv .venv
-.venv/bin/pip install -q --upgrade pip
-.venv/bin/pip install -q -r requirements.txt
+.venv/bin/pip install -q --upgrade pip || {
+  echo "setup.sh: pip upgrade failed — aborting." >&2; exit 1; }
+.venv/bin/pip install -q -r requirements.txt || {
+  echo "setup.sh: dependency install failed — aborting. Check disk space and network." >&2; exit 1; }
 echo "dependencies installed"
 
 echo "== textstat syllable dictionary"

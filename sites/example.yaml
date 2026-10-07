@@ -9,7 +9,8 @@ repo: ~/workspace/<repo-dir>
 content_dir: src/content/<collection>
 content_route: /<collection>/
 # What the content collection is called in public copy — MUST match the brand's
-# terminology rules (e.g. Febus Films uses Journal / journal entries, never blog).
+# terminology rules (e.g. a photography brand might use Journal / journal
+# entries, never blog).
 content_kind: Blog
 
 # Public-copy terminology guardrails (enforced by the repo's lint, if any)

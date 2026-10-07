@@ -89,7 +89,7 @@ def _gsc_call(fn, *args, **kwargs):
     """Run a GSC API call with a clean failure message.
 
     A traceback can't tell the cron worker "Google is down, retry next
-    week" from "our key is dead, needs Tito" — this prints GSC_UNAVAILABLE
+    week" from "our key is dead, needs the owner" — this prints GSC_UNAVAILABLE
     with a one-line reason, flagging auth failures as owner action.
     """
     try:
@@ -351,7 +351,7 @@ def main(site_slug=None, save_pick=True):
             if prev_pick.get("kind") in (orig_kind, kind_pick):
                 L.append(f"Note: same pick as last week — if the action was "
                          f"already taken, keep tracking the trend; if not, "
-                         f"say so explicitly in the chat report so Tito can decide.")
+                         f"say so explicitly in the chat report so the owner can decide.")
         elif prev_pick:
             L.append(f"Last week's pick was `{prev_pick['query']}` "
                      f"(pos {prev_pick['position']:.1f} on {prev_pick['date']}) — "
