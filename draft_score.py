@@ -127,7 +127,13 @@ def keyword_hits(text, keyword):
 
 VOICE_TICS = ["furthermore", "additionally", "moreover", "in conclusion",
               "delve", "tapestry", "landscape", "leverage",
-              "it's important to note", "in today's fast-paced"]
+              "it's important to note", "in today's fast-paced",
+              "game-changer", "game changer", "nestled", "boasts",
+              "vibrant", "bustling", "testament to", "in the realm of",
+              "a tapestry of", "delve into", "embark", "elevate",
+              "unlock", "unleash", "harness", "pivotal", "crucially",
+              "seamless", "seamlessly", "cutting-edge", "cutting edge",
+              "in today's digital", "ever-evolving", "ever evolving"]
 
 
 def check_readability(text):
@@ -291,6 +297,17 @@ def check_voice(text):
         else:
             out.append(("burstiness", "yellow",
                         f"sentences are uniform (CV {cv:.2f}) — vary the rhythm"))
+    # Em dashes: the classic AI tell. Occasional use is fine; heavy use
+    # reads as generated. Yellow, not red — needs 4+ AND a high rate.
+    words = len(text.split())
+    emdashes = text.count("—") + text.count("–")
+    if emdashes >= 4 and words >= 200 and emdashes / (words / 1000) > 2:
+        out.append(("em dashes", "yellow",
+                    f"{emdashes} em/en dashes in {words} words — "
+                    "rewrite with commas, colons, or periods"))
+    else:
+        out.append(("em dashes", "green",
+                    f"{emdashes} em/en dashes — natural use"))
     # Human fingerprints (light heuristics)
     fps = []
     if re.search(r"\b(I|we|my|our)\b", text):

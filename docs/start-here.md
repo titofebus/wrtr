@@ -110,7 +110,7 @@ These three commands work with zero API keys, using the `example` site:
 | Readability | Flesch reading ease, sentence/paragraph length |
 | On-page SEO | Keyword in title, H1, first 100 words, H2s, image alts; density 0.5–2.5% |
 | Structure | Exactly one H1, sane heading hierarchy, enough length |
-| Voice | AI-style tics ("delve", "tapestry", "furthermore…"), sentence variety, contractions |
+| Voice | AI-style tics ("delve", "tapestry", "furthermore…"), em-dash overuse, sentence variety, contractions |
 | Human fingerprints | First-person experience, specific details, named places/people |
 | Hygiene | Banned terms, meta title/description lengths |
 

@@ -701,6 +701,16 @@ class TestDraftScore(unittest.TestCase):
         self.assertEqual(len(draft_score.VOICE_TICS),
                          len(set(draft_score.VOICE_TICS)))
 
+    def test_em_dash_overuse_flagged(self):
+        text = "Word " * 300 + "— a — b — c — d — e."
+        checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
+        self.assertEqual(checks["em dashes"][0], "yellow")
+
+    def test_em_dash_natural_ok(self):
+        text = "Word " * 300 + "— just one."
+        checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
+        self.assertEqual(checks["em dashes"][0], "green")
+
     def test_empty_keyword_rejected(self):
         r = subprocess.run(
             [sys.executable, os.path.join(HERE, "draft_score.py"),
