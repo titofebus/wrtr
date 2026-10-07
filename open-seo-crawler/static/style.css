@@ -1,0 +1,955 @@
+* { box-sizing: border-box; }
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #334155;
+  --border: #475569;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  /* --accent bumped from #3b82f6 (blue-500, ~3.68:1 with white text — fails
+     body 4.5) to #2563eb (blue-600, ~5.17:1) so primary CTAs (Start crawl,
+     Apply, Analyse) and ci-count badges pass WCAG body. */
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #ffffff;
+    --surface: #f8fafc;
+    --surface2: #e2e8f0;
+    --border: #cbd5e1;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+  }
+}
+/* Explicit theme overrides — JS toggle sets [data-theme] on <html>,
+   overriding the system preference. localStorage persists the choice. */
+[data-theme="light"] {
+  --bg: #ffffff;
+  --surface: #f8fafc;
+  --surface2: #e2e8f0;
+  --border: #cbd5e1;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+}
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #334155;
+  --border: #475569;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+}
+.theme-toggle {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.theme-toggle:hover { color: var(--text); border-color: var(--accent); }
+.theme-toggle svg { width: 13px; height: 13px; }
+.topbar-btn {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .12s, border-color .12s;
+}
+.topbar-btn:hover { color: var(--accent); border-color: var(--accent); }
+/* Right-hand cluster: byline + build badge. margin-left:auto pushes it,
+   and the export / theme buttons after it, to the right edge. */
+.topbar-meta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.byline {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 3px 0;
+  transition: color .12s;
+}
+.byline svg { width: 12px; height: 12px; opacity: .8; }
+.byline:hover { color: var(--accent); }
+.byline:hover svg { opacity: 1; }
+.build-badge {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  cursor: pointer;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: color .12s, border-color .12s;
+}
+.build-badge:hover { color: var(--text); border-color: var(--accent); }
+
+/* Inline-style buttons can't be re-themed via tokens without !important.
+   These hardcoded #0f172a / #fff / #f1f5f9 patterns pre-date the dark
+   mode toggle — overriding them here keeps the markup untouched. */
+[data-theme="dark"] #crawler-load-btn,
+[data-theme="dark"] #crawler-save-btn,
+[data-theme="dark"] #crawler-compare-btn,
+[data-theme="dark"] #crawler-bulk-recrawl-btn,
+[data-theme="dark"] #crawler-export-sitemap-btn,
+[data-theme="dark"] #crawler-export-view-btn,
+[data-theme="dark"] #crawler-export-xlsx-btn,
+[data-theme="dark"] .export-btn {
+  background: var(--surface2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+/* .url-cell is the clickable URL inside a regular table cell — must
+   stay transparent so it inherits the row's striping/hover bg.
+   Painting it surface2 made every URL look like a pill button. */
+[data-theme="dark"] .url-cell {
+  color: var(--accent) !important;
+}
+[data-theme="dark"] #crawler-empty {
+  color: var(--text-muted) !important;
+}
+[data-theme="dark"] #crawler-empty button {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] #crawler-limit-banner > div {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+}
+/* Saved crawls modal: the loader rows are built with deeply-nested
+   inline color:#0f172a / color:#64748b / background:#fff styles. Reach
+   into every descendant and pull onto the theme tokens. */
+[data-theme="dark"] #crawl-loader-body,
+[data-theme="dark"] #crawl-loader-body input {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] #crawl-loader-body [data-crawl-row] {
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] #crawl-loader-body [data-crawl-row] div {
+  color: var(--text) !important;
+}
+[data-theme="dark"] #crawl-loader-body [data-crawl-row] [style*="color:#64748b"],
+[data-theme="dark"] #crawl-loader-body [data-crawl-row] [style*="color: #64748b"] {
+  color: var(--text-muted) !important;
+}
+/* Header note + filter input above the rows — inline-styled with
+   background:#f8fafc / color:#0f172a / color:#64748b / border:#e2e8f0. */
+[data-theme="dark"] #crawl-loader-body > div[style*="background:#f8fafc"],
+[data-theme="dark"] #crawl-loader-body > div[style*="background: #f8fafc"] {
+  background: var(--surface2) !important;
+  color: var(--text-muted) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] #crawl-loader-body > div[style*="background:#f8fafc"] strong {
+  color: var(--text) !important;
+}
+[data-theme="dark"] #crawl-loader-search {
+  background: var(--surface2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+/* The "Date / Time / Website / Saved by / Pages" header row */
+[data-theme="dark"] #crawl-loader-body > div[style*="background:#f1f5f9"],
+[data-theme="dark"] #crawl-loader-body > div[style*="background: #f1f5f9"] {
+  background: var(--surface2) !important;
+  color: var(--text-muted) !important;
+  border-color: var(--border) !important;
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+.topbar {
+  padding: 10px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface);
+}
+.brand {
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+.brand svg {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.25);
+}
+.sub {
+  color: var(--text-muted);
+  font-size: 11.5px;
+  padding-left: 14px;
+  border-left: 1px solid var(--border);
+  letter-spacing: 0.01em;
+}
+.wrap {
+  display: grid;
+  grid-template-columns: 300px 240px 1fr;
+  height: calc(100vh - 49px);
+}
+.wrap:has(#issues-sidebar[style*="display:none"]),
+.wrap.nosb {
+  grid-template-columns: 300px 1fr;
+}
+.sidebar, .issues-sidebar {
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  background: var(--surface);
+  min-height: 0;  /* allow flex children to shrink so overflow-y:auto kicks in */
+}
+.sidebar { padding: 18px 16px; }
+.issues-sidebar { padding: 10px 8px; }
+.sidebar label { display: block; font-size: 12px; margin-bottom: 12px; }
+.sidebar input[type=url], .sidebar textarea {
+  width: 100%;
+  padding: 8px 10px;
+  /* Use surface2 (one step lighter than the sidebar's own surface) so
+     the field clearly sits above the panel background in dark mode.
+     Earlier --bg = same as page bg, --surface = same as sidebar; both
+     made the field invisible until focused. */
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  margin-top: 4px;
+  outline: none;
+  transition: border-color .12s, box-shadow .12s, background-color .12s;
+}
+.sidebar input[type=url]:hover,
+.sidebar textarea:hover {
+  border-color: #64748b;
+}
+.sidebar input[type=url]:focus,
+.sidebar textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.18);
+  background: var(--surface2);
+}
+.sidebar input[type=url]::placeholder,
+.sidebar textarea::placeholder {
+  color: #94a3b8;
+  opacity: .7;
+}
+@media (prefers-color-scheme: light) {
+  .sidebar input[type=url],
+  .sidebar textarea {
+    background: #ffffff;
+  }
+}
+/* Explicit data-theme="light" mirror — beats the OS-preference media
+   query so the manual toggle wins. Same for dark in case the OS is
+   light but the user toggled the app to dark. */
+[data-theme="light"] .sidebar input[type=url],
+[data-theme="light"] .sidebar textarea {
+  background: #ffffff;
+}
+[data-theme="dark"] .sidebar input[type=url],
+[data-theme="dark"] .sidebar textarea {
+  background: var(--surface2);
+  color: var(--text);
+}
+.sidebar textarea { font-family: ui-monospace, Menlo, monospace; font-size: 11px; }
+.slider-row input[type=range] { width: 100%; margin-top: 3px; }
+/* Block layout (not flex) so the label text + <small> flow as inline
+   text and wrap naturally — flex made each child its own column and
+   broke "Ignore noindex" / "Sitemap analysis" labels into stacked
+   blocks that wrapped weirdly. */
+/* Checkbox rows: box pinned left, label and helper text wrap as one
+   indented block so every row has the same rhythm. */
+.sidebar .check { display: block; position: relative; padding: 4px 0 4px 22px; margin-bottom: 6px; line-height: 1.45; cursor: pointer; font-size: 12.5px; color: var(--text); }
+.sidebar .check input[type="checkbox"] { position: absolute; left: 0; top: 6px; margin: 0; width: 14px; height: 14px; accent-color: var(--accent); }
+.sidebar .check small { color: var(--text-muted); font-size: 11.5px; font-weight: 400; }
+.filters { margin: 10px 0; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; }
+.filters summary { font-size: 11px; font-weight: 600; color: var(--text-muted); padding: 8px 0; cursor: pointer; }
+.filters label { margin-top: 8px; }
+.filters small { color: var(--text-muted); font-size: 10px; }
+/* Secondary buttons (Apply to current crawl etc.) — match the visual
+   weight of the primary CTA without competing with it. */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .12s, background-color .12s, color .12s;
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--surface2);
+}
+.btn-secondary:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.actions { display: flex; gap: 8px; margin-top: 8px; }
+.actions button {
+  flex: 1;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 5px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.actions button:hover { background: var(--accent-hover); }
+#crawler-stop-btn { background: #ef4444; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+.stats div {
+  background: var(--surface2);
+  border-radius: 5px;
+  padding: 8px;
+  text-align: center;
+}
+.stats span { display: block; font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+.stats strong { font-size: 16px; }
+
+/* Issues sidebar */
+.ci-cat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  margin: 1px 0;
+  color: var(--text);
+}
+.ci-cat:hover { background: var(--surface2); }
+.ci-cat.active { background: var(--accent); color: #fff; }
+.ci-cat.active .ci-count { color: #fff; }
+.ci-cat[data-hidden="1"] { display: none; }
+.ci-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-width: 24px;
+  text-align: right;
+}
+.ci-count.err { color: #ef4444; }
+.ci-count.warn { color: #f59e0b; }
+
+/* Severity-coded checks that came back clean (count = 0) get tagged
+   data-clean="true" by the sort logic. Render a green tick instead of "0". */
+.ci-cat[data-clean="true"] > span:first-child {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.ci-cat[data-clean="true"] .ci-count {
+  color: #16a34a;
+  font-size: 0;            /* hide the "0" textContent */
+  position: relative;
+}
+.ci-cat[data-clean="true"] .ci-count::before {
+  content: '✓';
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.ci-cat.active[data-clean="true"] .ci-count { color: #fff; }
+.ci-cat.active[data-clean="true"] .ci-count::before { color: #fff; }
+/* Active state has to override the muted label colour from the clean-row
+   rule above (specificity 0,2,1) — otherwise the highlighted label reads
+   as low-contrast gray on the purple background. */
+.ci-cat.active[data-clean="true"] > span:first-child {
+  color: #fff;
+  font-weight: 500;
+}
+.cat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  font-weight: 700;
+  padding: 12px 10px 4px;
+}
+.sitemap-status {
+  margin: 4px 8px 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface2);
+  font-size: 11px;
+  color: var(--text);
+  line-height: 1.45;
+}
+.sitemap-status.is-loading { border-color: var(--accent); }
+.sitemap-status.is-error   { border-color: #f59e0b; background: rgba(245,158,11,0.08); }
+.sitemap-status.is-skipped { color: var(--text-muted); font-style: italic; }
+.sitemap-status .ss-row { display: flex; align-items: center; gap: 6px; }
+.sitemap-status .ss-spinner {
+  width: 10px; height: 10px; border: 2px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: ss-spin 0.7s linear infinite;
+}
+@keyframes ss-spin { to { transform: rotate(360deg); } }
+.sitemap-status input.ss-input {
+  width: 100%; box-sizing: border-box; margin-top: 6px;
+  padding: 5px 7px; font-size: 11px;
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: 4px;
+}
+.sitemap-status .ss-btn-row { display: flex; gap: 6px; margin-top: 6px; }
+.sitemap-status button.ss-btn {
+  flex: 1; padding: 5px 8px; font-size: 11px; font-weight: 600;
+  border-radius: 4px; cursor: pointer; line-height: 1.2;
+}
+.sitemap-status button.ss-btn-primary {
+  background: var(--accent); color: #fff; border: 1px solid var(--accent);
+}
+.sitemap-status button.ss-btn-primary:hover { filter: brightness(1.1); }
+.sitemap-status button.ss-btn-secondary {
+  background: transparent; color: var(--text-muted); border: 1px solid var(--border);
+}
+.sitemap-status button.ss-btn-secondary:hover { color: var(--text); border-color: var(--text-muted); }
+.sev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 8px 0 4px; }
+.sev-cell {
+  padding: 6px 4px;
+  border-radius: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  text-align: center;
+}
+.sev-cell:hover { border-color: var(--accent); }
+.sev-cell.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.sev-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+.sev-num { font-size: 14px; font-weight: 700; }
+.sev-lbl.err, .sev-num.err { color: #ef4444; }
+.sev-lbl.warn, .sev-num.warn { color: #f59e0b; }
+.sev-lbl.info, .sev-num.info { color: #3b82f6; }
+
+/* Main content — flex column: banner/info/results/dock stack, table scrolls inside results */
+.main { overflow: hidden; padding: 0; display: flex; flex-direction: column; min-height: 0; }
+.results-panel { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.detail-title {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.table-wrap { overflow: auto; flex: 1; min-height: 0; }
+.empty { color: var(--text-muted); text-align: center; padding: 60px; font-size: 14px; }
+#crawler-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  table-layout: fixed;
+  /* table-layout:fixed only honours <col> widths when the table has an
+     explicit pixel width. width:max-content lets Chrome ignore col widths
+     and expand cells to fit content (Title/Meta blew out to 400px+). JS
+     sets table.style.width = sum(col widths) instead — see _scSyncTableWidth. */
+  width: 0;
+}
+#crawler-table td {
+  padding: 5px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#crawler-table thead th {
+  background: var(--surface);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0;
+  border-bottom: 2px solid var(--border);
+  text-align: left;
+  user-select: none;
+}
+#crawler-table thead th .th-label {
+  display: block;
+  padding: 6px 10px 6px 8px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#crawler-table thead th .th-label:hover { color: var(--accent); }
+#crawler-table thead th .th-resize {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 100%;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 3;
+}
+#crawler-table thead th .th-resize::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  right: 0;
+  width: 1px;
+  background: var(--border);
+  transition: background .12s, width .12s;
+}
+#crawler-table thead th .th-resize:hover::after,
+#crawler-table thead th .th-resize.is-dragging::after {
+  background: var(--accent);
+  width: 3px;
+}
+body.is-col-resizing { cursor: col-resize !important; user-select: none !important; }
+body.is-col-resizing * { cursor: col-resize !important; }
+.url-cell { color: var(--accent); cursor: pointer; }
+.url-cell:hover { text-decoration: underline; }
+.badge {
+  display: inline-block;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 10px;
+  margin: 1px;
+  font-weight: 600;
+}
+.badge.error { background: rgba(239,68,68,.15); color: #ef4444; }
+.badge.warn  { background: rgba(245,158,11,.15); color: #f59e0b; }
+.badge.info  { background: rgba(59,130,246,.15); color: #3b82f6; }
+
+/* CMS banner + issue info */
+#crawler-cms-banner, #issue-info-box { padding: 10px 14px; }
+.cms-banner {
+  background: rgba(59,130,246,.08);
+  border: 1px solid rgba(59,130,246,.3);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+}
+.cms-banner strong { color: var(--accent); }
+.cms-banner button {
+  margin-left: 6px;
+  padding: 3px 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+}
+.info-box {
+  background: var(--surface2);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.info-box .sev-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-right: 6px;
+}
+.info-box .sources {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.info-box .sources a { color: var(--accent); text-decoration: none; margin: 0 3px; }
+
+.copy-icon, .open-icon {
+  color: var(--text-muted);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 3px;
+  opacity: .7;
+}
+.copy-icon:hover, .open-icon:hover { opacity: 1; }
+
+/* Dock at the bottom — part of the flex column so the table shrinks when it opens */
+#crawler-dock {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: 280px;
+  min-height: 140px;
+  max-height: 50vh;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+#crawler-dock[hidden] { display: none; }
+.dock-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.dock-url {
+  flex: 1;
+  min-width: 0;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dock-tabs { display: flex; gap: 2px; }
+.dock-tab {
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: pointer;
+}
+.dock-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.dock-close {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+.dock-body { flex: 1; overflow: auto; padding: 12px 14px; }
+.dock-pane .kv {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 4px 14px;
+  font-size: 12px;
+  margin: 0;
+}
+.dock-pane .kv dt { color: var(--text-muted); }
+.dock-pane .kv dd { margin: 0; word-break: break-word; }
+.dock-pane .issue-row {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.dock-pane .link-row {
+  padding: 3px 0;
+  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dock-pane .link-row a {
+  color: var(--accent);
+  text-decoration: none;
+  font-family: ui-monospace, Menlo, monospace;
+}
+.dock-pane .link-row .anchor {
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-style: italic;
+}
+.dock-pane .link-row .placement {
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Column visibility per category — JS adds classes to #crawler-table.
+   Selectors target data-col on <col>, <th>, <td> so dynamically-injected
+   columns (e.g. H1 (2), H1 (3) in the Multiple H1s view) don't shift
+   nth-child indices and silently break the hide rules. */
+#crawler-table.hide-col-redirto [data-col="redirto"] { display: none; }
+#crawler-table.hide-col-inlinks [data-col="inlinks"] { display: none; }
+#crawler-table.hide-col-title [data-col="title"] { display: none; }
+#crawler-table.hide-col-tlen [data-col="tlen"] { display: none; }
+#crawler-table.hide-col-meta [data-col="meta"] { display: none; }
+#crawler-table.hide-col-h1 [data-col="h1"] { display: none; }
+#crawler-table.hide-col-words [data-col="words"] { display: none; }
+#crawler-table.hide-col-speed [data-col="speed"] { display: none; }
+
+/* Drag-select row highlighting */
+/* Row selection highlight — scope to any tbody, not just the main #crawler-tbody,
+   so report panels (sitemap orphans, all values, etc.) get the same blue tint
+   when drag-selected. */
+tbody tr.cr-selected { background: rgba(99,102,241,0.12) !important; }
+tbody tr.cr-selected td { background: transparent !important; }
+#crawler-tbody { user-select: none; }
+/* Any tbody whose rows are drag-selectable — disables text selection so a
+   row drag doesn't double-select text. :has() lights up on Chrome/Safari/FF. */
+tbody:has(tr[data-url]) { user-select: none; }
+
+/* Column sort indicator */
+.sc-sort-ind {
+  font-size: 10px;
+  color: var(--accent, #6366f1);
+  margin-left: 2px;
+  font-weight: 700;
+}
+
+/* Double-click any cell to expand and read the full value. Inline styles
+   set max-width + ellipsis on most TDs, so we override with !important. */
+#crawler-tbody td.cs-cell-expanded {
+  white-space: normal !important;
+  overflow: visible !important;
+  max-width: none !important;
+  word-break: break-all;
+  background: rgba(99, 102, 241, 0.06) !important;
+}
+#crawler-tbody td.cs-cell-expanded > *,
+#crawler-tbody td.cs-cell-expanded span {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: none !important;
+}
+
+/* Report tables (.crawler-grid) and sitemap-panel anchors render URLs in
+   dark blue (#4f46e5 inline / var(--accent) which is #3b82f6 in dark) on
+   the navy surface — unreadable. Force a brighter sky-blue in dark mode
+   and a darker blue in light. The !important is needed to beat inline
+   `style="color:..."` set by the JS row renderers. */
+.crawler-grid td a,
+#sitemap-panel a {
+  color: #60a5fa !important;
+  text-decoration: underline;
+  text-decoration-color: rgba(96, 165, 250, 0.35);
+  text-underline-offset: 2px;
+}
+.crawler-grid td a:hover,
+#sitemap-panel a:hover {
+  color: #93c5fd !important;
+  text-decoration-color: #93c5fd;
+}
+[data-theme="light"] .crawler-grid td a,
+[data-theme="light"] #sitemap-panel a {
+  color: #1d4ed8 !important;
+  text-decoration-color: rgba(29, 78, 216, 0.35);
+}
+[data-theme="light"] .crawler-grid td a:hover,
+[data-theme="light"] #sitemap-panel a:hover {
+  color: #1e40af !important;
+  text-decoration-color: #1e40af;
+}
+
+/* Schema-by-Page filter chips — active state. Done in CSS (not inline JS) so the
+   accent background and white text always win over the chip's default inline
+   code colour (var(--text)), which left active-chip labels dark-on-purple. */
+.sc-schema-chip.active { background: var(--accent, #6366f1) !important; border-color: var(--accent, #6366f1) !important; }
+.sc-schema-chip.active code,
+.sc-schema-chip.active span { color: #fff !important; }
+
+/* Crawler empty state — informative, on-brand pre-crawl canvas (ported from
+   SEO Studio's crawler). Headline + description + capability chips. */
+.crawler-empty-rich .ce-title {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--text, #0f172a);
+  margin: 0;
+}
+.crawler-empty-rich .ce-sub {
+  max-width: 500px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted, #64748b);
+}
+.crawler-empty-rich .ce-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  max-width: 540px;
+}
+.crawler-empty-rich .ce-chips span {
+  font-size: 11.5px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--surface, #f8fafc);
+  color: var(--text-muted, #64748b);
+}
+
+/* ── Crawl Budget view ───────────────────────────────────────────────── */
+.sc-views { display:flex; gap:4px; margin-left:14px; }
+.sc-view-btn {
+  font-size:12px; font-weight:600; padding:5px 12px; border-radius:6px;
+  background:transparent; border:1px solid transparent; color:var(--text-muted);
+  cursor:pointer;
+}
+.sc-view-btn:hover { color:var(--text); background:var(--surface2); }
+.sc-view-btn.active { color:#fff; background:var(--accent); border-color:var(--accent); }
+.cb-view { padding:28px 24px; overflow-y:auto; }
+.cb-inner { max-width:940px; margin:0 auto; }
+.cb-title { font-size:22px; font-weight:700; margin:0 0 4px; color:var(--text); }
+.cb-subtitle { color:var(--text-muted); font-size:13px; margin:0 0 20px; }
+.cb-input-row { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+.cb-input-row input {
+  flex:1; font-size:13px; padding:10px 12px; background:var(--surface2);
+  border:1px solid var(--border); border-radius:6px; color:var(--text);
+}
+.cb-btn-primary {
+  padding:10px 22px; font-size:13px; font-weight:600; white-space:nowrap;
+  background:var(--accent); color:#fff; border:none; border-radius:6px; cursor:pointer;
+}
+.cb-btn-primary:hover { background:var(--accent-hover); }
+.cb-btn-primary:disabled { opacity:.6; cursor:default; }
+.cb-status { font-size:12px; color:var(--text-muted); min-height:18px; margin-bottom:18px; }
+.cb-summary { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+.cb-stat {
+  flex:1; min-width:150px; background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; padding:14px 16px;
+}
+.cb-stat .v { font-size:24px; font-weight:800; line-height:1; }
+.cb-stat .l { font-size:11px; color:var(--text-muted); margin-top:5px; }
+.cb-table { width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.cb-table thead tr { background:var(--surface2); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); }
+.cb-table th { padding:8px 10px; text-align:left; }
+.cb-table td { padding:9px 10px; border-top:1px solid var(--border); }
+.cb-badge { font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:10px; text-transform:capitalize; }
+.cb-explainers { margin-top:30px; display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+.cb-card { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:16px; }
+.cb-card h3 { font-size:13px; font-weight:700; margin:0 0 8px; color:var(--text); }
+.cb-card p { font-size:12px; color:var(--text-muted); line-height:1.6; margin:0; }
+.cb-card code { background:var(--surface); padding:1px 4px; border-radius:3px; font-size:11px; }
+.cb-robots-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+.cb-robots-head h3 { font-size:13px; font-weight:700; margin:0; color:var(--text); }
+.cb-copy-btn { font-size:11px; padding:5px 12px; background:var(--accent); color:#fff; border:none; border-radius:5px; cursor:pointer; font-weight:600; }
+.cb-pre { background:#0f172a; color:#e2e8f0; font-size:12px; font-family:monospace; padding:14px; border-radius:8px; overflow-x:auto; margin:0; }
+.cb-note { font-size:11px; color:var(--text-muted); margin-top:6px; }
+
+/* ── Form select: match the URL input instead of the native control ── */
+.sidebar select {
+  width: 100%;
+  margin-top: 4px;
+  padding: 7px 30px 7px 10px;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--text);
+  background-color: var(--surface2);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  outline: none;
+  margin-bottom: 8px;
+  transition: border-color .12s, box-shadow .12s;
+}
+.sidebar select:hover { border-color: #64748b; }
+.sidebar select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.18); }
+[data-theme="light"] .sidebar select { background-color: #ffffff; }
+.sidebar input[type=range] { width: 100%; accent-color: var(--accent); }
+
+/* ── Narrow screens ─────────────────────────────────────────────────── */
+@media (max-width: 1180px) {
+  .sub { display: none; }
+}
+@media (max-width: 900px) {
+  .topbar { flex-wrap: wrap; padding: 10px 16px; gap: 10px; }
+  .sc-views { margin-left: 0; }
+  .wrap, .wrap.nosb, .wrap:has(#issues-sidebar[style*="display:none"]) {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .sidebar, .issues-sidebar { border-right: 0; border-bottom: 1px solid var(--border); overflow-y: visible; }
+}
+@media (max-width: 520px) {
+  /* Second row: byline + build badge on the left, theme toggle right. */
+  .topbar-meta { order: 10; flex: 1; margin-left: 0; }
+  .theme-toggle { order: 11; }
+}
+
+/* Near-dup threshold field and preset chips carry hardcoded light inline
+   colours; re-theme them for dark mode. */
+[data-theme="dark"] #crawler-neardup-threshold,
+[data-theme="dark"] #crawler-user-agent-custom {
+  background: var(--surface2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] #crawler-neardup-cfg button {
+  background: var(--surface2) !important;
+  color: var(--text-muted) !important;
+  border-color: var(--border) !important;
+}
+[data-theme="dark"] #crawler-neardup-cfg button:hover { color: var(--text) !important; border-color: var(--accent) !important; }
+#crawler-user-agent-custom {
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  outline: none;
+  margin-bottom: 8px;
+}
+#crawler-user-agent-custom:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.18); }
