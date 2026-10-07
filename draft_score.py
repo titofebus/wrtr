@@ -352,16 +352,15 @@ def check_voice(text):
     else:
         out.append(("AI structural patterns", "green",
                     "no clustered AI constructions"))
-    # Em dashes: the classic AI tell. Occasional use is fine; heavy use
-    # reads as generated. Yellow, not red — needs 4+ AND a high rate.
+    # Em dashes: prohibited entirely (owner rule 2026-10-07). HARD failure —
+    # rewrite with commas, colons, periods, or hyphens.
     emdashes = text.count("—") + text.count("–")
-    if emdashes >= 4 and words >= 200 and emdashes / (words / 1000) > 2:
-        out.append(("em dashes", "yellow",
-                    f"{emdashes} em/en dashes in {words} words — "
-                    "rewrite with commas, colons, or periods"))
+    if emdashes:
+        out.append(("em dashes", "red",
+                    f"HARD: {emdashes} em/en dash(es) — prohibited, "
+                    "rewrite with commas, colons, periods, or hyphens"))
     else:
-        out.append(("em dashes", "green",
-                    f"{emdashes} em/en dashes — natural use"))
+        out.append(("em dashes", "green", "no em/en dashes"))
     # Human fingerprints (light heuristics)
     fps = []
     if re.search(r"\b(I|we|my|our)\b", text):

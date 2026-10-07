@@ -110,7 +110,7 @@ These three commands work with zero API keys, using the `example` site:
 | Readability | Flesch reading ease, sentence/paragraph length |
 | On-page SEO | Keyword in title, H1, first 100 words, H2s, image alts; density 0.5–2.5% |
 | Structure | Exactly one H1, sane heading hierarchy, enough length |
-| Voice | AI tics (87 patterns incl. 2026 Graphite-study tells), structural tells ("not just X, it's Y", "whether you're…"), em-dash overuse, sentence variety, contractions |
+| Voice | AI tics (87 patterns incl. 2026 Graphite-study tells), structural tells ("not just X, it's Y", "whether you're…"), **em dashes prohibited (hard fail)**, sentence variety, contractions |
 | Human fingerprints | First-person experience, specific details, named places/people |
 | Hygiene | Banned terms, meta title/description lengths |
 

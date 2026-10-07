@@ -701,13 +701,16 @@ class TestDraftScore(unittest.TestCase):
         self.assertEqual(len(draft_score.VOICE_TICS),
                          len(set(draft_score.VOICE_TICS)))
 
-    def test_em_dash_overuse_flagged(self):
-        text = "Word " * 300 + "— a — b — c — d — e."
-        checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
-        self.assertEqual(checks["em dashes"][0], "yellow")
-
-    def test_em_dash_natural_ok(self):
+    def test_em_dash_prohibited(self):
+        # owner rule 2026-10-07: ANY em/en dash is a hard failure
         text = "Word " * 300 + "— just one."
+        checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
+        status, detail = checks["em dashes"]
+        self.assertEqual(status, "red")
+        self.assertIn("HARD", detail)
+
+    def test_em_dash_clean(self):
+        text = "Word " * 300 + "plain text, no dashes."
         checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
         self.assertEqual(checks["em dashes"][0], "green")
 
