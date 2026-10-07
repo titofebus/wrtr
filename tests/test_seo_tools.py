@@ -669,7 +669,7 @@ class TestDraftScore(unittest.TestCase):
         p = self._draft('title: "T"', "# T\n\nThis blog post is great. " * 20)
         fm, body = draft_score.parse_draft(p)
         checks = draft_score.check_seo(
-            fm, draft_score.plain_text(body),
+            fm, draft_score.plain_text(body), body,
             draft_score.headings(body), "wedding", cfg)
         banned = [c for c in checks if c[0] == "banned terms"][0]
         self.assertEqual(banned[1], "red")
@@ -681,7 +681,7 @@ class TestDraftScore(unittest.TestCase):
                         "## Section\n\nBody. " * 30)
         fm, body = draft_score.parse_draft(p)
         checks = draft_score.check_seo(
-            fm, draft_score.plain_text(body),
+            fm, draft_score.plain_text(body), body,
             draft_score.headings(body), "title", cfg)
         h1 = [c for c in checks if c[0] == "single H1"][0]
         self.assertEqual(h1[1], "green")
@@ -736,7 +736,7 @@ class TestDraftScore(unittest.TestCase):
                  (2, "Lake Nona wedding venues pricing"),
                  (2, "Lake Nona wedding venues photos")]
         checks = dict((c[0], c[1:]) for c in
-                      draft_score.check_seo({}, "x " * 500, heads,
+                      draft_score.check_seo({}, "x " * 500, "x " * 500, heads,
                                             "lake nona wedding venues", {}))
         self.assertEqual(checks["H2 keyword variety"][0], "yellow")
 
@@ -744,7 +744,7 @@ class TestDraftScore(unittest.TestCase):
         heads = [(2, "Lake Nona wedding venues guide"),
                  (2, "Best photo spots at sunset")]
         checks = dict((c[0], c[1:]) for c in
-                      draft_score.check_seo({}, "x " * 500, heads,
+                      draft_score.check_seo({}, "x " * 500, "x " * 500, heads,
                                             "lake nona wedding venues", {}))
         self.assertEqual(checks["H2 keyword variety"][0], "green")
 
@@ -764,6 +764,28 @@ class TestDraftScore(unittest.TestCase):
         from content_brief import classify_intent
         label, _ = classify_intent("febus films reviews", ["febus films"])
         self.assertEqual(label, "NAVIGATIONAL")
+
+    def test_internal_links(self):
+        text = ("See [venues](/venues/) and [journal](/journal/). " * 60)
+        checks = dict((c[0], c[1:]) for c in
+                      draft_score.check_seo({}, text, text, [], "venues", {}))
+        self.assertEqual(checks["internal links"][0], "green")
+
+    def test_internal_links_missing(self):
+        checks = dict((c[0], c[1:]) for c in
+                      draft_score.check_seo({}, "Word " * 500, "Word " * 500, [], "venues", {}))
+        self.assertEqual(checks["internal links"][0], "yellow")
+
+    def test_answer_first_h2s(self):
+        text = ("## Best sunset photo spots\n"
+                "The best sunset photo spots in Orlando are Lake Eola and Leu Gardens. More text here.\n"
+                "## What to wear\n"
+                "Completely unrelated opening sentence about something else entirely.\n") + "Word " * 400
+        heads = [(2, "Best sunset photo spots"), (2, "What to wear")]
+        checks = dict((c[0], c[1:]) for c in
+                      draft_score.check_seo({}, text, text, heads, "orlando", {}))
+        # 1 of 2 direct -> 50% meets the bar
+        self.assertEqual(checks["answer-first H2s"][0], "green")
 
     def test_bold_label_bullets_flagged(self):
         # Muse house style (leaked Jul 2026 prompt): "- **Label**: explanation"

@@ -111,7 +111,7 @@ These three commands work with zero API keys, using the `example` site:
 | On-page SEO | Keyword in title, H1, first 100 words, H2s, image alts; density 0.5–2.5% |
 | Structure | Exactly one H1, sane heading hierarchy, enough length |
 | Voice | AI tics (87 patterns incl. 2026 Graphite-study tells), structural tells ("not just X, it's Y", "whether you're…", bold-label bullets), **em dashes prohibited (hard fail)**, sentence variety, contractions |
-| SEO | Keyword in title/H1/H2/alt, density 0.5–2.5%, H2 keyword variety (no stuffing the primary), search-intent classification in every brief |
+| SEO | Keyword in title/H1/H2/alt, density 0.5–2.5%, H2 keyword variety, 2+ internal links, answer-first H2s (AI citation), search-intent classification in every brief |
 | Human fingerprints | First-person experience, specific details, named places/people |
 | Hygiene | Banned terms, meta title/description lengths |
 

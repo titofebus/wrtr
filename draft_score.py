@@ -226,7 +226,7 @@ def check_readability(text):
     return out
 
 
-def check_seo(fm, text, heads, keyword, cfg):
+def check_seo(fm, text, body, heads, keyword, cfg):
     out = []
     title = str(fm.get("title", ""))
     desc = str(fm.get("description", fm.get("excerpt", "")))
@@ -321,6 +321,57 @@ def check_seo(fm, text, heads, keyword, cfg):
         else:
             out.append(("meta description", "yellow",
                         f"{len(desc)} chars (target 120–160)"))
+
+    # Internal links: every source ranks internal linking as a core signal —
+    # it distributes authority and tells Google how pages relate. The brief
+    # already instructs 2+; this verifies. Counts relative links and links
+    # to the site's own domain.
+    site_url = str(cfg.get("site_url", "")).rstrip("/").lower()
+    domain = re.sub(r"^https?://", "", site_url).split("/")[0] if site_url else ""
+    md_links = re.findall(r"\[[^\]]*\]\(([^)]+)\)", text)
+    internal = [u for u in md_links
+                if u.startswith("/") or (domain and domain in u.lower())]
+    # Exclude image links and anchors.
+    internal = [u for u in internal if not u.startswith("#")]
+    if len(internal) >= 2:
+        out.append(("internal links", "green", f"{len(internal)} internal links"))
+    elif internal:
+        out.append(("internal links", "yellow",
+                    f"only {len(internal)} internal link — add at least 2"))
+    else:
+        out.append(("internal links", "yellow",
+                    "no internal links — link 2+ related entries/pages"))
+
+    # Answer-first H2s (GEO / AI citation): AI Overviews and featured snippets
+    # lift short, self-contained answers. The first sentence under each H2
+    # should echo the H2's key terms — that's what gets quoted.
+    # (Splits the raw markdown body: `text` is plain-text with markers stripped.)
+    stop = {"the", "a", "an", "and", "or", "of", "to", "in", "for", "on",
+            "is", "are", "what", "how", "why", "when", "where", "your", "you"}
+    def content_words(s):
+        return {w.strip(".,;:!?()\"'").lower() for w in s.split()
+                if len(w) > 2} - stop
+    sections = re.split(r"^#{2,3}\s+.*$", body, flags=re.M)
+    # sections[0] is pre-first-heading; pair each H2/H3 with its body.
+    h23 = [(lvl, t) for lvl, t in heads if lvl in (2, 3)]
+    direct, total = 0, 0
+    for (_, h), body in zip(h23, sections[1:]):
+        first = body.strip().split("\n")[0] if body.strip() else ""
+        sent = re.split(r"[.!?]", first, maxsplit=1)[0]
+        if not sent.strip():
+            continue
+        total += 1
+        if len(content_words(h) & content_words(sent)) >= 2:
+            direct += 1
+    if total == 0:
+        out.append(("answer-first H2s", "yellow", "no H2 body text found"))
+    elif direct / total >= 0.5:
+        out.append(("answer-first H2s", "green",
+                    f"{direct}/{total} H2s answered directly up front"))
+    else:
+        out.append(("answer-first H2s", "yellow",
+                    f"only {direct}/{total} H2s answer directly in the first "
+                    "sentence — lead with the answer for snippets/AI citation"))
     return out
 
 
@@ -439,7 +490,7 @@ def main():
 
     checks = []
     checks += check_readability(text)
-    checks += check_seo(fm, text, heads, args.keyword, cfg)
+    checks += check_seo(fm, text, body, heads, args.keyword, cfg)
     checks += check_voice(text)
 
     total = score(checks)
