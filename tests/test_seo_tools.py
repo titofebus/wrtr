@@ -8,6 +8,7 @@ the reference brand — they exercise URL/query handling, not brand behavior.
 """
 import json
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -184,19 +185,36 @@ class TestSiteConfigLoad(unittest.TestCase):
     def test_unknown_slug(self):
         with self.assertRaises(SystemExit) as cm:
             site_config.load("no-such-site-xyz")
-        self.assertIn("febusfilms", str(cm.exception))
+        # the error names a known site so the user sees what's available
+        self.assertIn("example", str(cm.exception))
 
     def test_bad_chars(self):
         with self.assertRaises(SystemExit):
             site_config.load("../secret")
 
     def test_env_override(self):
-        os.environ["SEO_SITE"] = "febusfilms"
+        # hermetic: write a temp site dir, don't rely on a shipped config
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        with open(os.path.join(d, "acme.yaml"), "w") as f:
+            f.write("name: Acme\nsite_url: https://acme.example/\n"
+                    "repo: /tmp/x\ncontent_dir: c\n")
+        orig = site_config.SITES_DIR
+        site_config.SITES_DIR = d
+        os.environ["SEO_SITE"] = "acme"
         try:
             cfg = site_config.load()
-            self.assertEqual(cfg["slug"], "febusfilms")
+            self.assertEqual(cfg["slug"], "acme")
         finally:
             del os.environ["SEO_SITE"]
+            site_config.SITES_DIR = orig
+
+    def test_default_site(self):
+        # the shipped default resolves without env vars
+        if "SEO_SITE" in os.environ:
+            del os.environ["SEO_SITE"]
+        cfg = site_config.load()
+        self.assertEqual(cfg["slug"], "example")
 
 
 class TestClassifyPick(unittest.TestCase):
