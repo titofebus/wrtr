@@ -175,6 +175,11 @@ STRUCTURAL_TELLS = [
      r"\bhere['’]s the thing\s*:"),
     ("paired adjectives",
      r"\b(simple yet powerful|elegant yet |\beffortless yet )"),
+    # Muse house style (leaked Jul 2026 system prompt): Meta instructs Muse
+    # to format with "- **Label**: explanation" bullets. Repeated use reads
+    # as AI-generated.
+    ("bold-label bullets",
+     r"^-\s+\*\*[^*]+\*\*:\s+\S"),
 ]
 
 
@@ -343,7 +348,7 @@ def check_voice(text):
     words = len(text.split())
     struct_hits = []
     for name, pat in STRUCTURAL_TELLS:
-        n = len(re.findall(pat, tl, re.I))
+        n = len(re.findall(pat, tl, re.I | re.M))
         if words >= 200 and n >= 2:
             struct_hits.append(f"{name} x{n}")
     if struct_hits:

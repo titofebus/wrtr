@@ -731,6 +731,14 @@ class TestDraftScore(unittest.TestCase):
                     "another dimension", "unwavering commitment"]:
             self.assertIn(tic, draft_score.VOICE_TICS, tic)
 
+    def test_bold_label_bullets_flagged(self):
+        # Muse house style (leaked Jul 2026 prompt): "- **Label**: explanation"
+        text = ("- **Venue**: a lakeside estate.\n" * 3) + "Word " * 300
+        checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
+        status, detail = checks["AI structural patterns"]
+        self.assertEqual(status, "yellow")
+        self.assertIn("bold-label bullets", detail)
+
     def test_empty_keyword_rejected(self):
         r = subprocess.run(
             [sys.executable, os.path.join(HERE, "draft_score.py"),
