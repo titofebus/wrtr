@@ -69,7 +69,7 @@ All credential files are gitignored. Never commit them.
 
 ## Tests
 
-`tests/test_seo_tools.py` — 85 unittest cases covering the pure functions. No network, no credentials.
+`tests/test_seo_tools.py` — 87 unittest cases covering the pure functions. No network, no credentials.
 
 Run: `.venv/bin/python -m unittest discover -s tests`
 

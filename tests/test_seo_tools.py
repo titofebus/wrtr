@@ -9,9 +9,12 @@ the reference brand — they exercise URL/query handling, not brand behavior.
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
+
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -656,6 +659,18 @@ class TestDraftScore(unittest.TestCase):
         tics = [c for c in checks if c[0] == "AI voice tics"][0]
         self.assertEqual(tics[1], "yellow")
         self.assertIn("furthermore", tics[2])
+
+    def test_voice_tics_no_duplicates(self):
+        self.assertEqual(len(draft_score.VOICE_TICS),
+                         len(set(draft_score.VOICE_TICS)))
+
+    def test_empty_keyword_rejected(self):
+        r = subprocess.run(
+            [sys.executable, os.path.join(HERE, "draft_score.py"),
+             "/dev/null", "--keyword", " ", "--site", "example"],
+            capture_output=True, text=True)
+        self.assertEqual(r.returncode, 2)
+        self.assertIn("--keyword must not be empty", r.stderr)
 
 
 if __name__ == "__main__":

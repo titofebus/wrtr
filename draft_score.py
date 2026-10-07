@@ -126,7 +126,7 @@ def keyword_hits(text, keyword):
 # ---------------------------------------------------------------------------
 
 VOICE_TICS = ["furthermore", "additionally", "moreover", "in conclusion",
-              "delve", "tapestry", "landscape", "leverage", "moreover,",
+              "delve", "tapestry", "landscape", "leverage",
               "it's important to note", "in today's fast-paced"]
 
 
@@ -328,6 +328,8 @@ def main():
                     help="minimum score to pass (default: site's "
                          "draft_score_min or 80)")
     args = ap.parse_args()
+    if not args.keyword.strip():
+        ap.error("--keyword must not be empty")
 
     if not os.path.isfile(args.draft):
         print(f"draft_score: no such file: {args.draft}", file=sys.stderr)
