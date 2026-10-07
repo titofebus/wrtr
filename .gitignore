@@ -1,0 +1,22 @@
+# Credentials — never commit these.
+.sa-key.json
+.bing-key
+.psi-key
+.google-ads.yaml
+.google-ads-oauth
+.brave-key
+.serper-key
+.exa-key
+# Local-only site configs (real business data). Ship only sites/example.yaml.
+sites/*.yaml
+!sites/example.yaml
+# Runtime state (regenerable)
+.weekly-pick-*.json
+.miner-cache-*.json
+# Build / machine-local
+.venv/
+__pycache__/
+*.log
+.pip-tmp/
+# SlopTotal is cloned by setup.sh (pinned commit), not vendored.
+/sloptotal/

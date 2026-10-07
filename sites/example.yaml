@@ -1,0 +1,147 @@
+# Example site config — a filled-in, working example. Copy to sites/<slug>.yaml
+# and customize for a real brand. This file uses example.com placeholder values.
+
+name: Brand Name
+site_url: https://www.example.com/
+repo: ~/workspace/<repo-dir>
+
+# Where new content entries live (markdown-first workflow)
+content_dir: src/content/<collection>
+content_route: /<collection>/
+# What the content collection is called in public copy — MUST match the brand's
+# terminology rules (e.g. Febus Films uses Journal / journal entries, never blog).
+content_kind: Blog
+
+# Public-copy terminology guardrails (enforced by the repo's lint, if any)
+banned_terms: []
+
+# Categories available for new entries (slug: description)
+categories:
+  stories: Real customer stories
+  tips: Advice from the brand's perspective
+
+# Maps brief --type values to this brand's category slugs — CUSTOMIZE.
+# If omitted, the engine falls back to a generic reference mapping.
+# Use neutral placeholder keys and rename them per brand — the --type values
+# ARE these keys.
+type_category_map:
+  guide: tips
+  story: stories
+  tip: tips
+
+# Optional per-type slug suffixes, e.g.:
+# type_slug_suffix:
+#   story: "-story"
+# Rename the type keys per brand — the --type values ARE these keys, and any
+# key listed here can carry a suffix. (A brand-specific type name with magic
+# behavior in code would be a bug; keep it all in config.)
+
+# Working-title templates for briefs ({title} = the target query, title-cased).
+# Customize with the brand's proof points and voice.
+title_templates:
+  - "{title}: A Professional's Guide"
+  - "Real Talk on {title}"
+  - "{title} — What to Know Before You Book"
+
+# imageAlt template for briefs ({title} and {name} available)
+# NOTE: {title} is the target query title-cased. If brand queries are likely
+# targets, prefer a pattern that doesn't duplicate the brand name.
+image_alt_template: "{title} — {name}"
+
+# Queries containing these are brand queries (excluded from opportunity scans).
+# Matching is case-insensitive SUBSTRING: use distinctive terms only — a
+# generic term like "films" would nuke legitimate queries like
+# "wedding films orlando".
+brand_terms: ["brandname"]
+
+# Query words that signal hub-page intent (e.g. venue words for photographers,
+# neighborhood words for real estate, condition words for clinics)
+venue_intent_words: ["venue", "location"]
+
+# Scan thresholds — tune to the site's traffic volume. Small sites need lower
+# impression minimums or every bucket comes back empty.
+scan_thresholds:
+  striking_min_impressions: 10
+  striking_min_position: 8
+  striking_max_position: 20
+  lowctr_min_impressions: 50
+  lowctr_max_position: 10
+  lowctr_max_ctr: 0.03
+  venue_min_impressions: 10
+  declining_min_impressions: 30
+  declining_ratio: 0.7
+
+# Content strategy for this brand (hub-and-spoke? topical authority? local pages?)
+hub_strategy: >
+  Describe the hub-and-spoke model here: which pages are hubs, which entries
+  are spokes, and what to deprioritize.
+
+services_note: Any hard service boundary (e.g. "photography only — never imply video").
+
+# Brand voice rules baked into every brief — copy from the brand's AGENTS.md
+# or brand doc. Never invent voice.
+voice_rules:
+  - Warm, human, confident — never corporate.
+  - End with a soft CTA, not a hard sell.
+
+# Optional: authorized experience claims the brief hands to the writer
+# (years in business, units sold, projects completed — anything claimable).
+proof_points:
+  - "<claim 1>"
+
+# Optional: the brand's own preferred phrasing (signature words/phrases
+# from its voice guidelines — gives the brief texture, not just rules).
+preferred_phrases:
+  - "<phrase 1>"
+
+# Optional: one-line article angle per type (what the writer orients on).
+# Keys must match type_category_map keys.
+type_angles:
+  guide: "<angle for guide briefs>"
+
+# Optional: venues/locations/products the brand has actually worked with
+# and may recommend by name (rendered in venue/guide briefs).
+shot_venues: []
+
+# Data sources wired for this site
+# gsc_property usually equals site_url; it defaults to site_url when omitted.
+# Set it explicitly only if the Search Console property differs.
+gsc_property: https://www.example.com/
+# NOTE: the optional GSC→BigQuery bulk export is checked by the monthly cron,
+# which names the dataset explicitly. There is no per-site BQ config key —
+# don't add one; nothing reads it.
+
+# Optional: seeds for the weekly scan's proactive bucket — miner suggestions
+# with zero GSC presence become net-new hub/entry candidates.
+proactive_seeds: ["<broad seed 1>", "<broad seed 2>"]
+
+# Minimum draft_score.py score (0-100) required to publish. The scorer is
+# the hard gate; the AI-sounding check (ai_check.py) stays advisory-only.
+draft_score_min: 80
+
+# Geo terms for filtering brief secondaries (autocomplete suggests other
+# regions otherwise). List the city/region/state terms this brand serves.
+geo_terms: ["<city>", "<region>", "<state>"]
+
+# Where hero images live (brief tells the writer to pick a real file from here)
+image_library: "public/images/"
+
+# Target lengths per brief type (keys must match type_category_map)
+length_targets:
+  guide: "1,500–2,000 words"
+  tip: "1,000–1,500 words"
+
+# Fallback H2 scaffolds when autocomplete mining comes up thin (<3 questions)
+h2_scaffolds:
+  guide:
+    - "Top options for this area"
+    - "What they typically cost"
+    - "How to choose"
+
+# Which brief --type a "venue" pick gets (the scan prints the exact command).
+# Defaults to the first key of type_category_map when omitted.
+venue_pick_brief_type: guide
+
+# Traps specific to this brand — rendered as "What NOT to write"
+brief_donts:
+  - "Don't invent facts, prices, or claims."
