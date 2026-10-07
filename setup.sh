@@ -7,6 +7,11 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 cd "$HERE"
 
+# pip stages wheels in $TMPDIR — /tmp is a tiny tmpfs on some machines.
+export TMPDIR="$HERE/.tmp"
+mkdir -p "$TMPDIR"
+trap 'rm -rf "$TMPDIR"' EXIT
+
 echo "== python"
 if ! command -v python3 >/dev/null; then
   echo "setup.sh: python3 not found — install Python 3.10+ first." >&2
