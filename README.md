@@ -7,6 +7,10 @@ content briefs, a hard pre-publish quality gate, and monitoring.
 Built 2026-10-07. Extracted from a production wedding-photography site's
 SEO program.
 
+> **New here?** Start with [`docs/start-here.md`](docs/start-here.md) —
+> a 15-minute walkthrough for first-time agents: what this is, how to
+> install it, and your first end-to-end run.
+
 ## Quick start
 
 ```bash
