@@ -711,6 +711,23 @@ class TestDraftScore(unittest.TestCase):
         checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
         self.assertEqual(checks["em dashes"][0], "green")
 
+    def test_structural_tells_flagged(self):
+        text = "It is not just a venue, it is an experience. " * 3 + "Word " * 300
+        checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
+        self.assertEqual(checks["AI structural patterns"][0], "yellow")
+        self.assertIn("negative parallelism", checks["AI structural patterns"][1])
+
+    def test_structural_tells_clean(self):
+        text = "Word " * 400 + "plain human text here."
+        checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
+        self.assertEqual(checks["AI structural patterns"][0], "green")
+
+    def test_2026_tics_present(self):
+        # spot-check 2026-era additions from the Graphite study
+        for tic in ["this matters", "quietly powerful", "indelible mark",
+                    "another dimension", "unwavering commitment"]:
+            self.assertIn(tic, draft_score.VOICE_TICS, tic)
+
     def test_empty_keyword_rejected(self):
         r = subprocess.run(
             [sys.executable, os.path.join(HERE, "draft_score.py"),

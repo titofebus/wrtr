@@ -125,15 +125,57 @@ def keyword_hits(text, keyword):
 # Checks — each returns (name, status, detail); status in green/yellow/red
 # ---------------------------------------------------------------------------
 
-VOICE_TICS = ["furthermore", "additionally", "moreover", "in conclusion",
-              "delve", "tapestry", "landscape", "leverage",
-              "it's important to note", "in today's fast-paced",
-              "game-changer", "game changer", "nestled", "boasts",
-              "vibrant", "bustling", "testament to", "in the realm of",
-              "a tapestry of", "delve into", "embark", "elevate",
-              "unlock", "unleash", "harness", "pivotal", "crucially",
-              "seamless", "seamlessly", "cutting-edge", "cutting edge",
-              "in today's digital", "ever-evolving", "ever evolving"]
+VOICE_TICS = [
+    # Classic formal tics (2023 era, still flag)
+    "furthermore", "additionally", "moreover", "in conclusion",
+    "delve", "tapestry", "landscape", "leverage",
+    "it's important to note", "in today's fast-paced",
+    # Tier-1 distinctive AI vocabulary (Graphite/better-writing 2026)
+    "testament", "intricate", "meticulous", "pivotal", "underscore",
+    "realm", "showcase", "multifaceted", "myriad", "plethora",
+    "commendable", "paramount", "burgeoning", "quintessential",
+    "cornerstone", "beacon", "nuanced",
+    # 2026-era additions
+    "quietly powerful", "interplay", "enduring",
+    # Overused Tier-2 (flagged at any density here — cluster matters)
+    "game-changer", "game changer", "nestled", "boasts",
+    "vibrant", "bustling", "testament to", "in the realm of",
+    "a tapestry of", "delve into", "embark", "elevate",
+    "unlock", "unleash", "harness", "crucially",
+    "seamless", "seamlessly", "cutting-edge", "cutting edge",
+    "in today's digital", "ever-evolving", "ever evolving",
+    "comprehensive", "foster", "streamline", "empower",
+    "tailor", "ensure", "robust", "holistic", "scalable",
+    # Inflated symbolism phrases (100-468x more frequent in AI text)
+    "provide a valuable insight", "valuable insight",
+    "left an indelible mark", "indelible mark",
+    "play a significant role in shaping", "significant role in shaping",
+    "unwavering commitment", "open a new avenue", "new avenue",
+    "a stark reminder", "stark reminder",
+    "gain a comprehensive understanding", "comprehensive understanding",
+    "serves as a testament", "watershed moment", "deeply rooted",
+    # 2026 model-specific tells (Graphite Oct 2026 study)
+    "dependable", "this matters", "why it matters", "why this matters",
+    "another dimension", "may provide", "can provide",
+    "can help you", "is genuinely",
+]
+
+# Structural patterns (regexes) — sentence constructions AI overuses.
+# Each is (name, pattern). Counted per 1000 words; 2+ hits flags yellow.
+STRUCTURAL_TELLS = [
+    ("negative parallelism",
+     r"\bit(?:['’]s| is) not (just|merely|only|simply) .{1,60}?,? it(?:['’]s| is) "),
+    ("corrective framing",
+     r"\b(not simply|rather than relying|rather than|instead of merely)\b"),
+    ("more-than framing",
+     r"\bis more than an? \w+.{1,40}?,? it(?:['’]s| is) an? "),
+    ("false inclusivity",
+     r"\bwhether you(?:['’]re| are) .{1,40}? or "),
+    ("faux-conversational pivot",
+     r"\bhere['’]s the thing\s*:"),
+    ("paired adjectives",
+     r"\b(simple yet powerful|elegant yet |\beffortless yet )"),
+]
 
 
 def check_readability(text):
@@ -297,9 +339,21 @@ def check_voice(text):
         else:
             out.append(("burstiness", "yellow",
                         f"sentences are uniform (CV {cv:.2f}) — vary the rhythm"))
+    # Structural AI patterns: counted per 1000 words, 2+ hits flags yellow.
+    words = len(text.split())
+    struct_hits = []
+    for name, pat in STRUCTURAL_TELLS:
+        n = len(re.findall(pat, tl, re.I))
+        if words >= 200 and n >= 2:
+            struct_hits.append(f"{name} x{n}")
+    if struct_hits:
+        out.append(("AI structural patterns", "yellow",
+                    f"{'; '.join(struct_hits)} — rewrite in plain structure"))
+    else:
+        out.append(("AI structural patterns", "green",
+                    "no clustered AI constructions"))
     # Em dashes: the classic AI tell. Occasional use is fine; heavy use
     # reads as generated. Yellow, not red — needs 4+ AND a high rate.
-    words = len(text.split())
     emdashes = text.count("—") + text.count("–")
     if emdashes >= 4 and words >= 200 and emdashes / (words / 1000) > 2:
         out.append(("em dashes", "yellow",
