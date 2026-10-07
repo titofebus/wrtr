@@ -47,7 +47,9 @@ def draft_text(path):
     return re.sub(r"\s+", " ", text).strip()
 
 
-def post(endpoint, payload, timeout=30):
+# Timeout raised 30 -> 120 (2026-10-07): a full ~1300-word draft takes ~30s
+# on this VM's CPU (server chunks long text); 30s timed out on real drafts.
+def post(endpoint, payload, timeout=120):
     req = urllib.request.Request(
         SLOPTOTAL + endpoint,
         data=json.dumps(payload).encode(),
@@ -98,7 +100,7 @@ def main():
             engines = data.get("engines", data.get("top_engines", []))
             for e in (engines or [])[:3]:
                 if isinstance(e, dict):
-                    print(f"  - {e.get('name', '?')}: {e.get('score', '?')}")
+                    print(f"  - {e.get('name', e.get('engine', '?'))}: {e.get('score', '?')}")
             try:
                 if isinstance(score, (int, float)) and score >= ELEVATED_AT:
                     print()
