@@ -127,6 +127,41 @@ QUESTION_WORDS = set(keyword_miner.QUESTION_PREFIXES) - {"best", "top"}
 # (Single source of truth: site_config.NICHE_GENERIC_WORDS.)
 GENERIC_WORDS = site_config.NICHE_GENERIC_WORDS
 
+# Search-intent signals. Transactional = the searcher is ready to book/buy —
+# the intent that pays. Commercial investigation ("best", "top", "reviews")
+# counts as transactional: they're comparing vendors, not browsing ideas.
+TRANSACTIONAL_WORDS = {
+    "book", "booking", "hire", "price", "pricing", "cost", "costs",
+    "package", "packages", "quote", "quotes", "near me", "affordable",
+    "best", "top", "luxury", "reviews", "review", "for hire",
+}
+INFORMATIONAL_WORDS = {
+    "how", "what", "why", "when", "where", "guide", "tips", "ideas",
+    "inspiration", "checklist", "timeline", "traditions",
+}
+
+
+def classify_intent(target, brand_terms=()):
+    """Heuristic search-intent label for a target keyword.
+
+    Returns (label, rationale). Labels: TRANSACTIONAL, INFORMATIONAL,
+    NAVIGATIONAL, MIXED. The writer must confirm — this is a starting
+    judgment, not a verdict.
+    """
+    t = target.lower()
+    words = set(t.split())
+    if any(b.lower() in t for b in brand_terms):
+        return ("NAVIGATIONAL",
+                "contains a brand term — the searcher already knows who they want")
+    if words & TRANSACTIONAL_WORDS or "near me" in t:
+        return ("TRANSACTIONAL",
+                "booking/comparison language — the searcher is ready to act")
+    if words & INFORMATIONAL_WORDS:
+        return ("INFORMATIONAL",
+                "question/guide language — the searcher is researching, not booking")
+    return ("MIXED",
+            "no strong signal — confirm intent from the SERP before drafting")
+
 
 def _anchors(target):
     """The target's distinctive words — what makes it *this* topic."""
@@ -346,6 +381,23 @@ def build_brief(cfg, target, kind=None, collection="journal"):
     else:
         L.append("- none found — clear to draft")
     L.append("")
+    intent, why = classify_intent(target, cfg.get("brand_terms", []))
+    L += ["## Search intent",
+          f"- **{intent}** — {why}.",
+          "- Confirm against the live SERP: if the top results are vendor/booking "
+          "pages, the keyword is transactional no matter what this heuristic says.",
+          "- Transactional/commercial keywords book clients; informational keywords "
+          "build topical authority. Know which job this entry does before drafting.",
+          "",
+          "## On-page keyword map (fill in as you draft)",
+          "- Every element below must deliberately target a keyword — title tag, H1, "
+          "each H2, and body copy. No element targets nothing; no two H2s target "
+          "the same keyword.",
+          "- Title tag → primary keyword (front-load it).",
+          "- H1 → primary keyword, phrased for humans.",
+          "- Each H2 → one distinct secondary keyword from the list below.",
+          "- Body → answer the H2's keyword in the first sentence under it.",
+          ""]
     L += ["## Working titles (pick one, keep under 60 chars)",
           *[f"- {t}" for t in titles], "",
           "## Keywords",

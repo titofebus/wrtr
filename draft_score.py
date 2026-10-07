@@ -254,6 +254,17 @@ def check_seo(fm, text, heads, keyword, cfg):
     out.append(("keyword in an H2",
                 "green" if any(has_kw(t) for t in h2s) else "yellow",
                 "present" if any(has_kw(t) for t in h2s) else "missing"))
+    # H2 keyword variety: each H2 should target a DISTINCT secondary keyword.
+    # Repeating the primary verbatim in 3+ H2s is over-optimization — it reads
+    # as stuffed and wastes headings that could capture long-tail queries.
+    h2_with_kw = sum(1 for t in h2s if has_kw(t))
+    if h2_with_kw >= 3:
+        out.append(("H2 keyword variety", "yellow",
+                    f"{h2_with_kw} H2s repeat the primary keyword — "
+                    "give each H2 its own secondary keyword"))
+    else:
+        out.append(("H2 keyword variety", "green",
+                    "H2s don't stuff the primary keyword"))
     alt = str(fm.get("imageAlt", fm.get("image_alt", "")))
     out.append(("keyword in image alt",
                 "green" if has_kw(alt) else "yellow",

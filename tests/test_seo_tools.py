@@ -731,6 +731,40 @@ class TestDraftScore(unittest.TestCase):
                     "another dimension", "unwavering commitment"]:
             self.assertIn(tic, draft_score.VOICE_TICS, tic)
 
+    def test_h2_keyword_variety(self):
+        heads = [(2, "Lake Nona wedding venues guide"),
+                 (2, "Lake Nona wedding venues pricing"),
+                 (2, "Lake Nona wedding venues photos")]
+        checks = dict((c[0], c[1:]) for c in
+                      draft_score.check_seo({}, "x " * 500, heads,
+                                            "lake nona wedding venues", {}))
+        self.assertEqual(checks["H2 keyword variety"][0], "yellow")
+
+    def test_h2_keyword_variety_ok(self):
+        heads = [(2, "Lake Nona wedding venues guide"),
+                 (2, "Best photo spots at sunset")]
+        checks = dict((c[0], c[1:]) for c in
+                      draft_score.check_seo({}, "x " * 500, heads,
+                                            "lake nona wedding venues", {}))
+        self.assertEqual(checks["H2 keyword variety"][0], "green")
+
+    def test_intent_transactional(self):
+        from content_brief import classify_intent
+        label, _ = classify_intent("best wedding photographer orlando")
+        self.assertEqual(label, "TRANSACTIONAL")
+        label, _ = classify_intent("orlando wedding photographer pricing")
+        self.assertEqual(label, "TRANSACTIONAL")
+
+    def test_intent_informational(self):
+        from content_brief import classify_intent
+        label, _ = classify_intent("how to plan a wedding timeline")
+        self.assertEqual(label, "INFORMATIONAL")
+
+    def test_intent_navigational(self):
+        from content_brief import classify_intent
+        label, _ = classify_intent("febus films reviews", ["febus films"])
+        self.assertEqual(label, "NAVIGATIONAL")
+
     def test_bold_label_bullets_flagged(self):
         # Muse house style (leaked Jul 2026 prompt): "- **Label**: explanation"
         text = ("- **Venue**: a lakeside estate.\n" * 3) + "Word " * 300
