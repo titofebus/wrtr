@@ -88,7 +88,17 @@ SMOKE=$(curl -s -m 15 -X POST http://localhost:8000/api/quick-score \
 if echo "$SMOKE" | grep -q "score"; then
   echo "SLOPTOTAL_OK"
 else
-  echo "SLOPTOTAL_BROKEN — ai_check.py will print SKIPPED until it's restarted (see sloptotal/SETUP.md)"
+  echo "SLOPTOTAL_BROKEN — attempting restart"
+  (cd "$WRTR_DIR/sloptotal" && ./start.sh) 2>/dev/null
+  sleep 45
+  SMOKE2=$(curl -s -m 15 -X POST http://localhost:8000/api/quick-score \
+    -H "Content-Type: application/json" \
+    -d '{"text":"The garden was quiet that morning."}' 2>/dev/null)
+  if echo "$SMOKE2" | grep -q "score"; then
+    echo "SLOPTOTAL_RESTARTED_OK"
+  else
+    echo "SLOPTOTAL_STILL_DOWN — ai_check.py will print SKIPPED until it's restarted (see sloptotal/SETUP.md)"
+  fi
 fi
 
 # --- verify: SEO toolkit tests must still pass ---
