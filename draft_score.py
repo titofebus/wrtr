@@ -2,9 +2,10 @@
 """draft_score.py — pre-publish quality gate for Journal drafts.
 
 Scores a markdown draft (front matter + body) on readability, on-page SEO,
-and human-voice signals, Yoast-traffic-light style. This is the publishing
-gate: a draft must reach the minimum score (default 80, configurable per
-site via `draft_score_min`) with no hard failures to publish.
+AEO (answer engine optimization, advisory only), and human-voice signals,
+Yoast-traffic-light style. This is the publishing gate: a draft must reach
+the minimum score (default 80, configurable per site via `draft_score_min`)
+with no hard failures to publish.
 
 Usage:
     .venv/bin/python draft_score.py <draft.md> --site <slug> --keyword "..."
@@ -375,6 +376,138 @@ def check_seo(fm, text, body, heads, keyword, cfg):
     return out
 
 
+def check_aeo(fm, body, heads, cfg):
+    """AEO (Answer Engine Optimization): is this draft citable by AI answers?
+
+    Covers ChatGPT, Perplexity, Gemini, Copilot, Claude, and Google AI
+    Overviews/Mode. All advisory (yellow at worst, never HARD): citation
+    is probabilistic, so these guide the writer instead of blocking.
+    Research basis: AirOps 2026 State of AI Search (2.8x citation lift for
+    sequential headings; 83% of citations from pages updated within 12
+    months), plus the industry AEO checklist consensus (40-60 word answer
+    blocks, question-shaped headings, FAQ + schema, original data).
+    """
+    out = []
+    h2s = [t for lvl, t in heads if lvl == 2]
+
+    # Question-shaped H2s: answer engines match questions to answers.
+    qstart = {"who", "what", "when", "where", "why", "how", "which",
+              "whom", "whose", "can", "could", "do", "does", "did", "is",
+              "are", "was", "were", "should", "will", "would", "has",
+              "have"}
+
+    def is_question(h):
+        hs = h.strip()
+        if hs.endswith("?"):
+            return True
+        first = hs.split()[0].lower().strip(".,:") if hs.split() else ""
+        return first in qstart
+
+    if not h2s:
+        out.append(("question H2s", "yellow", "no H2s to shape as questions"))
+    else:
+        nq = sum(1 for t in h2s if is_question(t))
+        if nq / len(h2s) >= 0.5:
+            out.append(("question H2s", "green",
+                        f"{nq}/{len(h2s)} H2s phrased as questions"))
+        elif nq:
+            out.append(("question H2s", "yellow",
+                        f"only {nq}/{len(h2s)} H2s are questions - phrase "
+                        "more as the questions searchers ask"))
+        else:
+            out.append(("question H2s", "yellow",
+                        "no question-shaped H2s - answer engines match "
+                        "questions to answers"))
+
+    # Answer blocks: the first paragraph under each H2 should be a
+    # self-contained 40-80 word answer - that's the chunk that gets quoted.
+    sections = re.split(r"^#{2,3}\s+.*$", body, flags=re.M)
+    h23 = [(lvl, t) for lvl, t in heads if lvl in (2, 3)]
+    good, total = 0, 0
+    for (_, h), sec in zip(h23, sections[1:]):
+        para = sec.strip().split("\n\n")[0] if sec.strip() else ""
+        para = re.sub(r"^>\s?", "", para, flags=re.M).strip()
+        wc = len(para.split())
+        if wc < 10:
+            continue  # image-only or stub section - not a real answer block
+        total += 1
+        if 40 <= wc <= 80:
+            good += 1
+    if total == 0:
+        out.append(("answer blocks", "yellow", "no H2 body text found"))
+    elif good / total >= 0.5:
+        out.append(("answer blocks", "green",
+                    f"{good}/{total} H2s open with a 40-80 word answer"))
+    else:
+        out.append(("answer blocks", "yellow",
+                    f"only {good}/{total} H2s open with a 40-80 word "
+                    "self-contained answer - that's the quotable chunk"))
+
+    # FAQ section: explicit Q&A is the most liftable format for AI answers.
+    has_faq = bool(re.search(
+        r"^#{2,4}\s+.*\b(faq|frequently asked questions)\b", body,
+        re.I | re.M))
+    if has_faq:
+        out.append(("FAQ section", "green",
+                    "FAQ block present - pair it with FAQPage schema"))
+    else:
+        out.append(("FAQ section", "yellow",
+                    "no FAQ block - 3-5 real Q&As near the end earn citations"))
+
+    # Brand entity: the canonical brand name must appear so AI associates
+    # the answers with the business (not a competitor's page about you).
+    brand = str(cfg.get("name", "")).strip()
+    mentions = len(re.findall(re.escape(brand), body, re.I)) if brand else 0
+    if mentions >= 2:
+        out.append(("brand entity", "green",
+                    f'"{brand}" named {mentions}x - consistent entity'))
+    elif mentions == 1:
+        out.append(("brand entity", "yellow",
+                    f'"{brand}" named once - use the canonical name 2+ times'))
+    else:
+        out.append(("brand entity", "yellow",
+                    f'brand "{brand}" never named - AI can\'t attribute '
+                    "these answers to the business"))
+
+    # Citable numbers: specific data gives AI a reason to cite YOU over a
+    # generic source. Counts distinct numeric tokens in the body.
+    nums = set(re.findall(r"\b\d[\d,]*(?:\.\d+)?\b", body))
+    if len(nums) >= 3:
+        out.append(("citable numbers", "green",
+                    f"{len(nums)} distinct numbers - data earns citations"))
+    else:
+        out.append(("citable numbers", "yellow",
+                    "fewer than 3 distinct numbers - add specific stats, "
+                    "counts, or years only you can provide"))
+
+    # Freshness: most AI citations go to pages updated within 12 months.
+    import datetime as _dt
+    fresh = None
+    for key in ("updated", "date"):
+        raw = str(fm.get(key, "")).strip().strip("'\"")
+        m = re.match(r"^(\d{4})-(\d{2})-(\d{2})", raw)
+        if m:
+            try:
+                d = _dt.date(*map(int, m.groups()))
+                age = (_dt.date.today() - d).days
+                fresh = age <= 365
+                break
+            except ValueError:
+                pass
+    if fresh is True:
+        out.append(("freshness", "green",
+                    "front-matter date within 12 months"))
+    elif fresh is False:
+        out.append(("freshness", "yellow",
+                    "front-matter date is over 12 months old - refresh "
+                    "the entry to keep AI citations"))
+    else:
+        out.append(("freshness", "yellow",
+                    "no parseable date/updated in front matter - add one; "
+                    "AI favors recently updated pages"))
+    return out
+
+
 def check_voice(text):
     out = []
     tl = text.lower()
@@ -491,6 +624,7 @@ def main():
     checks = []
     checks += check_readability(text)
     checks += check_seo(fm, text, body, heads, args.keyword, cfg)
+    checks += check_aeo(fm, body, heads, cfg)
     checks += check_voice(text)
 
     total = score(checks)

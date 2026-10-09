@@ -398,6 +398,26 @@ def build_brief(cfg, target, kind=None, collection="journal"):
           "- Each H2 → one distinct secondary keyword from the list below.",
           "- Body → answer the H2's keyword in the first sentence under it.",
           ""]
+    L += ["## AEO - get cited by AI answers",
+          "Goal: when someone asks ChatGPT, Perplexity, Gemini, Copilot, "
+          "Claude, or Google AI Overviews/Mode a question in this space, "
+          "this entry should be the source they quote. Citation is the new "
+          "ranking.",
+          "- Phrase H2s as questions where natural (see the mined questions "
+          "above) - answer engines match questions to answers.",
+          "- Open EACH H2 with a 40-60 word self-contained answer, then add "
+          "supporting detail below it. That opening paragraph is the chunk "
+          "that gets quoted.",
+          "- Add an FAQ section near the end (3-5 real questions from the "
+          "list above). The site adds FAQPage schema to it.",
+          "- Include 2-3 citable facts only this brand can provide: specific "
+          "numbers, years, counts (see the proof points below). Data with "
+          "attribution is what earns citations over generic sources.",
+          "- Use the brand's canonical name consistently, never a variant, "
+          "so AI associates the answers with the business.",
+          "- Schema (site dev): Article on every entry; FAQPage when an FAQ "
+          "block is present. Validate after publishing.",
+          ""]
     L += ["## Working titles (pick one, keep under 60 chars)",
           *[f"- {t}" for t in titles], "",
           "## Keywords",
@@ -489,6 +509,8 @@ def build_brief(cfg, target, kind=None, collection="journal"):
           "", "## Front matter",
           "```md", "---",
           f'title: "{titles[0]}"',
+          f"date: \"{datetime.date.today()}\"",
+          f"updated: \"{datetime.date.today()}\"  # refresh the entry quarterly; AI favors recently updated pages",
           f"categorySlug: {category}",
           f'image: "<chosen hero filename — must exist in {cfg.get("image_library", "the image library")}>\"',
           f'imageAlt: "{image_alt}"',

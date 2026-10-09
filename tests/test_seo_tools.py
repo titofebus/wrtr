@@ -804,6 +804,127 @@ class TestDraftScore(unittest.TestCase):
         self.assertIn("--keyword must not be empty", r.stderr)
 
 
+class TestAEO(unittest.TestCase):
+    def _aeo(self, fm, body, heads, cfg=None):
+        cfg = cfg if cfg is not None else {"name": "Febus Films"}
+        return dict((c[0], c[1:]) for c in
+                    draft_score.check_aeo(fm, body, heads, cfg))
+
+    def test_question_h2s_green(self):
+        heads = [(2, "How much does it cost?"),
+                 (2, "What is included?")]
+        body = "## How much does it cost?\n\n" + "word " * 50
+        self.assertEqual(
+            self._aeo({}, body, heads)["question H2s"][0], "green")
+
+    def test_question_h2s_none(self):
+        heads = [(2, "Pricing details"), (2, "Our approach")]
+        self.assertEqual(
+            self._aeo({}, "x", heads)["question H2s"][0], "yellow")
+
+    def test_answer_blocks_green(self):
+        body = ("## How much?\n\n" + "word " * 50 + "\n\n"
+                "## When?\n\n" + "word " * 55 + "\n")
+        heads = [(2, "How much?"), (2, "When?")]
+        self.assertEqual(
+            self._aeo({}, body, heads)["answer blocks"][0], "green")
+
+    def test_answer_blocks_thin(self):
+        body = "## How much?\n\nToo short.\n"
+        self.assertEqual(
+            self._aeo({}, body, [(2, "How much?")])["answer blocks"][0],
+            "yellow")
+
+    def test_faq_present(self):
+        body = "## FAQ\n\n**Q: How much?**\n\nA: Plenty.\n"
+        self.assertEqual(
+            self._aeo({}, body, [(2, "FAQ")])["FAQ section"][0], "green")
+
+    def test_faq_missing(self):
+        body = "## Pricing\n\nWords here.\n"
+        self.assertEqual(
+            self._aeo({}, body, [(2, "Pricing")])["FAQ section"][0],
+            "yellow")
+
+    def test_brand_entity_green(self):
+        body = "Febus Films shot this. Febus Films again.\n"
+        self.assertEqual(
+            self._aeo({}, body, [])["brand entity"][0], "green")
+
+    def test_brand_entity_missing(self):
+        body = "A studio shot this wedding.\n"
+        self.assertEqual(
+            self._aeo({}, body, [])["brand entity"][0], "yellow")
+
+    def test_citable_numbers_green(self):
+        body = "14 years, 400 weddings, 3 collections.\n"
+        self.assertEqual(
+            self._aeo({}, body, [])["citable numbers"][0], "green")
+
+    def test_citable_numbers_thin(self):
+        body = "One wedding was lovely.\n"
+        self.assertEqual(
+            self._aeo({}, body, [])["citable numbers"][0], "yellow")
+
+    def test_freshness_recent(self):
+        import datetime
+        today = datetime.date.today().isoformat()
+        self.assertEqual(
+            self._aeo({"updated": today}, "x", [])["freshness"][0],
+            "green")
+
+    def test_freshness_stale(self):
+        self.assertEqual(
+            self._aeo({"updated": "2020-01-01"}, "x", [])["freshness"][0],
+            "yellow")
+
+    def test_freshness_missing(self):
+        self.assertEqual(
+            self._aeo({}, "x", [])["freshness"][0], "yellow")
+
+    def test_brief_has_aeo_section(self):
+        import keyword_miner
+        orig_mine, orig_gsc = keyword_miner.mine, brief.gsc_related
+        keyword_miner.mine = lambda seed, depth=2: []
+        brief.gsc_related = lambda cfg, target: []
+        try:
+            cfg = {"name": "Test Brand", "repo": "/nonexistent",
+                   "content_dir": "x", "content_route": "/journal/",
+                   "site_url": "https://example.com",
+                   "type_category_map": {"guide": "tips"},
+                   "categories": {"tips": "Tips"}}
+            out = brief.build_brief(cfg, "test topic", "guide")
+        finally:
+            keyword_miner.mine, brief.gsc_related = orig_mine, orig_gsc
+        self.assertIn("## AEO", out)
+        self.assertIn("updated:", out)
+
+
+class TestAEOMap(unittest.TestCase):
+    def test_is_question(self):
+        import aeo_map
+        self.assertTrue(aeo_map.is_question("how much does it cost"))
+        self.assertTrue(aeo_map.is_question("what is included"))
+        self.assertFalse(aeo_map.is_question("best wedding venues"))
+        self.assertFalse(aeo_map.is_question("orlando wedding photographer"))
+
+    def test_covering_entry_found(self):
+        import aeo_map
+        entries = [("lake-nona-wedding-venues",
+                    {"lake", "nona", "wedding", "venues"})]
+        self.assertEqual(
+            aeo_map.covering_entry(
+                "what are the best lake nona wedding venues?", entries),
+            "lake-nona-wedding-venues")
+
+    def test_covering_entry_gap(self):
+        import aeo_map
+        entries = [("lake-nona-wedding-venues",
+                    {"lake", "nona", "wedding", "venues"})]
+        self.assertIsNone(
+            aeo_map.covering_entry("how to choose a florist?", entries))
+
+
 class TestAssignImages(unittest.TestCase):
     def test_photo_number_reference_counts_as_used(self):
         repo = tempfile.mkdtemp()

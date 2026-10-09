@@ -48,7 +48,7 @@ What `setup.sh` does, step by step:
    readability scoring. Stored once in `~/nltk_data`.
 4. **Clones SlopTotal** (pinned commit) — the local AI-text detector used by
    `ai_check.py`. This is optional; everything else works without it.
-5. **Runs the test suite** — 87 tests. If they don't all pass, stop and
+5. **Runs the test suite** — 122 tests. If they don't all pass, stop and
    investigate before using the tools.
 
 Expected end state: `setup.sh` prints "Done" and the tests say `OK`.
@@ -112,6 +112,7 @@ These three commands work with zero API keys, using the `example` site:
 | Structure | Exactly one H1, sane heading hierarchy, enough length |
 | Voice | AI tics (87 patterns incl. 2026 Graphite-study tells), structural tells ("not just X, it's Y", "whether you're…", bold-label bullets), **em dashes prohibited (hard fail)**, sentence variety, contractions |
 | SEO | Keyword in title/H1/H2/alt, density 0.5–2.5%, H2 keyword variety, 2+ internal links, answer-first H2s (AI citation), search-intent classification in every brief |
+| AEO (advisory) | Question-shaped H2s, 40–80 word answer blocks under each H2, FAQ section, canonical brand name 2+ times, 3+ citable numbers, front-matter date within 12 months |
 | Human fingerprints | First-person experience, specific details, named places/people |
 | Hygiene | Banned terms, meta title/description lengths |
 
@@ -119,6 +120,7 @@ These three commands work with zero API keys, using the `example` site:
 
 - No H1, or more than one H1
 - Any banned term present
+- Any em dash (`—`) or en dash (`–`) — owner rule, rewrite with commas, colons, periods, or hyphens
 
 **Exit codes:** `0` = pass, `1` = blocked, `2` = usage error (bad args,
 unreadable file, empty keyword).
