@@ -91,7 +91,7 @@ Default site is `example`.
 | `cluster_keywords.py` | TF-IDF topic clusters; one cluster = one angle | `.venv/bin/python cluster_keywords.py kws.txt --n 8` |
 | `assign_images.py` | Picks the most relevant never-used image from the site's library | `.venv/bin/python assign_images.py --site <slug> --topic "<keyword>"` |
 | `bing.py` | Bing Webmaster: top queries, instant URL submit | `.venv/bin/python bing.py submit <url> --site <slug>` |
-| `nap_audit.py` | NAP consistency audit: published business identity (homepage + contact page, JSON-LD) vs the canonical `nap:` block — phone, email, address visibility, LocalBusiness schema | `.venv/bin/python nap_audit.py --site <slug>` |
+| `nap_audit.py` | NAP consistency audit: published business identity (homepage + contact page, JSON-LD) vs the canonical `local_seo:` block - phone, email, address visibility, LocalBusiness schema | `.venv/bin/python nap_audit.py --site <slug>` |
 | `gsc.py` | Search Console API client (sites, searchAnalytics) | `.venv/bin/python gsc.py` |
 | `serp_check.py` | Competitor SERP snapshots (needs free Brave/Serper/Exa key) | see `--help` |
 | `psi_check.py` | Core Web Vitals: CrUX field + PSI lab scores | `.venv/bin/python psi_check.py` (env `PSI_URLS`, key in `.psi-key`) |
@@ -173,10 +173,12 @@ low-cost site-side bet, not a content strategy. Don't sell it as one.
 in a script; put them in the YAML. Copy `sites/example.yaml` to onboard.
 
 - `name` - canonical brand name (also the AEO entity check target).
-- `nap` - canonical business identity: `phone`, `email`, `address_hidden`
-  (true for service-area businesses: no street address published anywhere),
-  `address` (public storefronts only), `service_areas`. `nap_audit.py`
-  verifies the site publishes exactly this. Omit unpublished fields.
+- `local_seo` - local business identity: `operating_model` (storefront /
+  service_area / hybrid), `hide_address`, `service_areas` (max 20, GBP
+  limit), nested `nap` (phone, email, name override), `gbp_utm` (UTM for
+  the GBP website link). Validated by `site_config.validate_local_seo`;
+  `nap_audit.py` and `local_schema_check.py` verify the site publishes
+  exactly this.
 - `site_url`, `repo` (local path), `content_dir`, `content_route`,
   `content_kind` - main collection (e.g. Journal at `/journal/`).
 - `resources_dir`, `resources_route`, `resources_kind` - optional second

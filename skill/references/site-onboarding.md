@@ -13,9 +13,10 @@ in this order — it mirrors how local visibility actually works
    name (no keyword stuffing), phone (local, business-controlled), email,
    domain, and address visibility. Storefront (customers visit) shows the
    real address; service-area business hides it; hybrid shows it plus
-   service areas. Never invent coordinates in target cities. Put the
-   auditable fields in the site YAML's `nap:` block (see the template) and
-   verify with `nap_audit.py --site <slug>`.
+   service areas. Never invent coordinates in target cities. Fill the
+   site YAML's `local_seo` block (see the template): operating model,
+   service areas, nested `nap` (phone/email), `gbp_utm`. Verify with
+   `nap_audit.py --site <slug>` and `local_schema_check.py`.
 2. **Google Business Profile.** Owner claims/verifies (Google picks the
    method: phone, email, video, postcard). Complete every field: categories,
    hours + special hours, services, 750-char description, photos, Q&A.
@@ -131,19 +132,15 @@ let the cron take over. Note the new site in the daily log
 
 
 ## Local SEO setup (for local businesses; follow references/local-seo-playbook.md)
+
+Supplements section 0 above with the wrtr mechanics:
 1. Decide the operating model with the owner (storefront, service_area, hybrid)
    and fill the `local_seo` block. A service-area business hides its address:
    no street address, map pin or geo on the site or in schema.
-2. Canonical NAP record: one exact name, phone, website and email used everywhere
-   (site, schema, GBP, Bing, Apple, citations). Never invent a phone or address.
-3. GBP website link uses `gbp_utm` so GBP traffic is separable in GA4.
-4. Check schema after every deploy:
+2. Check schema after every deploy:
    `.venv/bin/python local_schema_check.py https://<site>/ --site <slug>`
    (phone present and matching, SAB has no address/geo, areaServed present).
-5. Area/city pages: content_brief adds a doorway guard when the target names
+3. Area/city pages: content_brief adds a doorway guard when the target names
    a place. No mass city or ZIP pages.
-6. Review asks: draft_score HARD-fails incentivized, star-conditioned, gated or
+4. Review asks: draft_score HARD-fails incentivized, star-conditioned, gated or
    Yelp review solicitations (FTC rule, Google and Yelp policy).
-7. First wave order: GBP, site and domain, GSC, GA4/GTM, Bing Places, Apple
-   Business, core citations, review system, Central Florida orgs. Report each
-   item as done, gap, or needs the owner.

@@ -959,9 +959,11 @@ class TestNapAudit(unittest.TestCase):
 
     def test_audit_all_ok(self):
         cfg = {"name": "Acme Studio",
-               "nap": {"phone": "+1 407-555-0123",
-                       "email": "hello@acme.test",
-                       "address_hidden": True}}
+               "local_seo": {"operating_model": "service_area",
+                             "hide_address": True,
+                             "service_areas": ["Orlando"],
+                             "nap": {"phone": "+1 407-555-0123",
+                                     "email": "hello@acme.test"}}}
         html = ('<script type="application/ld+json">{"@context": '
                 '"https://schema.org", "@type": "ProfessionalService", '
                 '"name": "Acme Studio"}</script>'
@@ -972,21 +974,30 @@ class TestNapAudit(unittest.TestCase):
 
     def test_audit_phone_mismatch_warns(self):
         cfg = {"name": "Acme Studio",
-               "nap": {"phone": "+1 407-555-0123", "address_hidden": True}}
+               "local_seo": {"operating_model": "service_area",
+                             "hide_address": True,
+                             "service_areas": ["Orlando"],
+                             "nap": {"phone": "+1 407-555-0123"}}}
         html = '<a href="tel:3215559999">call</a>'
         results = dict((f, s) for f, s, _ in
                        self.nap.audit_nap(cfg, {"homepage": html}))
         self.assertEqual(results["phone"], "warn")
 
     def test_audit_sab_street_address_warns(self):
-        cfg = {"name": "Acme Studio", "nap": {"address_hidden": True}}
+        cfg = {"name": "Acme Studio",
+               "local_seo": {"operating_model": "service_area",
+                             "hide_address": True,
+                             "service_areas": ["Orlando"]}}
         html = "<p>Visit us at 123 Main Street, Orlando FL</p>"
         results = dict((f, s) for f, s, _ in
                        self.nap.audit_nap(cfg, {"homepage": html}))
-        self.assertEqual(results["address (SAB hidden)"], "warn")
+        self.assertEqual(results["address (hidden)"], "warn")
 
     def test_audit_missing_localbusiness_warns(self):
-        cfg = {"name": "Acme Studio", "nap": {"address_hidden": True}}
+        cfg = {"name": "Acme Studio",
+               "local_seo": {"operating_model": "service_area",
+                             "hide_address": True,
+                             "service_areas": ["Orlando"]}}
         html = "<p>hello</p>"
         results = dict((f, s) for f, s, _ in
                        self.nap.audit_nap(cfg, {"homepage": html}))

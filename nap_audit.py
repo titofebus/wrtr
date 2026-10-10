@@ -3,8 +3,12 @@
 The local SEO playbook's first rule: one canonical business identity, and
 every public surface must match it exactly. This tool checks the site's
 published identity (homepage + contact page HTML, JSON-LD business nodes)
-against the canonical `nap:` block in sites/<slug>.yaml and reports
-field-by-field mismatches.
+against the canonical `local_seo:` block in sites/<slug>.yaml (nap, service
+areas, address visibility) and reports field-by-field mismatches.
+
+Companion to local_schema_check.py: that tool checks one page's JSON-LD
+against the config (CI-friendly, exits 1 on red); this one crawls the
+site's visible pages for NAP consistency (audit, always exits 0).
 
 Usage: .venv/bin/python nap_audit.py --site <slug>
 Exit code is always 0 - this is an audit, not a gate.
@@ -117,13 +121,13 @@ def audit_nap(cfg, pages):
     cfg: site config dict. pages: {label: html}.
     Returns a list of (field, status, detail); status in ok/warn.
     """
-    nap = cfg.get("nap") or {}
+    ls = cfg.get("local_seo") or {}
+    nap = ls.get("nap") or {}
     out = []
-    canonical_name = (cfg.get("name") or "").strip().lower()
+    canonical_name = (nap.get("name") or cfg.get("name") or "").strip().lower()
     canonical_phone = normalize_phone(nap.get("phone", ""))
     canonical_email = (nap.get("email", "") or "").lower()
-    address_hidden = bool(nap.get("address_hidden", False))
-    canonical_address = (nap.get("address", "") or "").strip()
+    address_hidden = site_config.hides_address(cfg)
 
     combined = "\n".join(pages.values())
     phones = set()
@@ -179,21 +183,15 @@ def audit_nap(cfg, pages):
         out.append(("email", "warn",
                     "email(s) published but no canonical email in YAML"))
 
-    # Address: SAB must not publish a street address; storefront must
+    # Address: a hidden-address business must not publish a street address.
     street_hits = {m.group(0) for m in STREET_RE.finditer(combined)}
     if address_hidden and street_hits:
-        out.append(("address (SAB hidden)", "warn",
+        out.append(("address (hidden)", "warn",
                     "address is marked hidden but street-like text found: "
                     + "; ".join(sorted(street_hits)[:3])))
     elif address_hidden:
-        out.append(("address (SAB hidden)", "ok",
+        out.append(("address (hidden)", "ok",
                     "no street address published, as configured"))
-    elif canonical_address:
-        if canonical_address.lower() in combined.lower():
-            out.append(("address", "ok", "canonical address published"))
-        else:
-            out.append(("address", "warn",
-                        "canonical address NOT found in site HTML"))
 
     # LocalBusiness schema presence
     lb_types = set()
@@ -238,11 +236,12 @@ def main(argv=None):
     if contact_html:
         pages["contact"] = contact_html
 
-    nap = cfg.get("nap") or {}
+    ls = cfg.get("local_seo") or {}
+    nap = ls.get("nap") or {}
     print(f"NAP audit - {cfg.get('name')} ({base})")
     print(f"canonical: phone={nap.get('phone') or '-'} "
           f"email={nap.get('email') or '-'} "
-          f"address={'hidden (SAB)' if nap.get('address_hidden') else (nap.get('address') or '-')}")
+          f"address={'hidden' if site_config.hides_address(cfg) else 'shown'}")
     print()
     results = audit_nap(cfg, pages)
     warns = 0
