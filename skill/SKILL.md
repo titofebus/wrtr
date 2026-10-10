@@ -73,6 +73,7 @@ needs Google brand verification).
 | `draft_score.py` | **Pre-publish quality gate (HARD):** draft scores 0–100, must reach the site's `draft_score_min` (default 80). Covers readability, on-page SEO, AEO (advisory: question H2s, answer blocks, FAQ, brand entity, citable numbers, freshness), and voice |
 | `ai_check.py` | Advisory AI-sounding check (local SlopTotal, see `docs/sloptotal-setup.md`); never blocks |
 | `aeo_map.py` | Answer engine question map: what buyers ask AI assistants vs what the site can cite — ranked gaps to brief |
+| `nap_audit.py` | NAP consistency audit: published business identity vs the canonical `nap:` block in the site YAML |
 
 ## Auth
 - GSC: a service account (key at `<wrtr>/.sa-key.json`, 0600). Each new

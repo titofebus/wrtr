@@ -3,6 +3,49 @@
 Checklist. Most steps are one-time; the site owner does the UI clicks,
 the agent does everything else.
 
+## 0. Local foundation (do this before the content loop)
+
+Content can't fix a broken business identity. Establish these first,
+in this order — it mirrors how local visibility actually works
+(relevance, distance, prominence):
+
+1. **Canonical NAP record.** Freeze one source of truth: exact public brand
+   name (no keyword stuffing), phone (local, business-controlled), email,
+   domain, and address visibility. Storefront (customers visit) shows the
+   real address; service-area business hides it; hybrid shows it plus
+   service areas. Never invent coordinates in target cities. Put the
+   auditable fields in the site YAML's `nap:` block (see the template) and
+   verify with `nap_audit.py --site <slug>`.
+2. **Google Business Profile.** Owner claims/verifies (Google picks the
+   method: phone, email, video, postcard). Complete every field: categories,
+   hours + special hours, services, 750-char description, photos, Q&A.
+   Add `?utm_source=google&utm_medium=organic&utm_campaign=gbp` to the
+   website link for GA4 attribution. Service areas describe the territory;
+   they do not manufacture proximity — distance still counts.
+3. **Bing Places + Apple Business** (renamed from Apple Business Connect
+   in 2026). Quick wins after GBP.
+4. **Citation tiers, in order:** data sources (Data Axle, TransUnion
+   Digital Business Profile, Foursquare) → major platforms (Yelp,
+   Facebook) → industry verticals (for weddings: The Knot, WeddingWire) →
+   local chambers/orgs the business genuinely participates in. Authority
+   and accuracy beat volume; keep a master listing spreadsheet and audit
+   for duplicates with `"Exact Name"` / phone / address searches.
+5. **Review system.** Post-service neutral ask (honest review, never
+   five-star; one reminder max). Never pay or discount for reviews (FTC +
+   Google policy). Yelp: do not solicit (their policy). Respond to every
+   review.
+6. **Verification evidence folder.** Keep signage/exterior/interior photos,
+   lease or utility bill, licenses, insurance, and domain/phone access in
+   one folder before a verification or reinstatement issue arises.
+7. **Measurement.** GSC (queries/clicks/indexing) + GA4 (behavior/
+   conversions: calls, forms, bookings as key events) + GBP insights.
+   Track qualified local revenue, not vanity rankings.
+
+Maintenance cadence once live: weekly (reviews, GBP spot-check),
+monthly (KPIs, citations, one substantial local proof asset),
+quarterly (full GBP + citation + schema audit), annually (entity audit:
+name/address/phone/domain/licenses).
+
 ## 1. Site config (agent)
 1. Copy `references/site-config-template.yaml` to
    `<wrtr>/sites/<slug>.yaml`.

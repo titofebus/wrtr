@@ -5,6 +5,17 @@ name: Brand Name
 site_url: https://www.example.com/
 repo: ~/workspace/<repo-dir>
 
+# Canonical business identity (the NAP source of truth). nap_audit.py
+# verifies the site publishes exactly this. Omit fields you don't publish.
+# Service-area business (no public storefront): set address_hidden: true
+# and leave address empty. Public storefront: set address, not the flag.
+# nap:
+#   phone: "+1 407-555-0123"
+#   email: "hello@example.com"
+#   address_hidden: true
+#   address: ""
+#   service_areas: ["Orlando", "Winter Park"]
+
 # Where new content entries live (markdown-first workflow)
 content_dir: src/content/<collection>
 content_route: /<collection>/

@@ -925,6 +925,74 @@ class TestAEOMap(unittest.TestCase):
             aeo_map.covering_entry("how to choose a florist?", entries))
 
 
+class TestNapAudit(unittest.TestCase):
+    def setUp(self):
+        import nap_audit
+        self.nap = nap_audit
+
+    def test_normalize_phone(self):
+        self.assertEqual(self.nap.normalize_phone("+1 (407) 555-0123"),
+                         "4075550123")
+        self.assertEqual(self.nap.normalize_phone("407.555.0123"),
+                         "4075550123")
+        self.assertEqual(self.nap.normalize_phone("not a phone"), "")
+
+    def test_extract_phones_ignores_long_digit_runs(self):
+        html = ('<form action="https://assets.mailerlite.com/jsonp/319759/'
+                'forms/191180898656322832/subscribe"></form>'
+                '<a href="tel:+14075550123">Call us</a>')
+        self.assertEqual(self.nap.extract_phones(html), {"4075550123"})
+
+    def test_extract_emails(self):
+        html = '<a href="mailto:Hello@Example.com">mail</a>'
+        self.assertEqual(self.nap.extract_emails(html), {"hello@example.com"})
+
+    def test_business_nodes_from_graph(self):
+        html = ('<script type="application/ld+json">{"@context": '
+                '"https://schema.org", "@graph": ['
+                '{"@type": "ProfessionalService", "name": "Acme"}, '
+                '{"@type": "WebSite", "name": "Acme site"}]}</script>')
+        docs = self.nap.extract_jsonld(html)
+        nodes = list(self.nap.business_nodes(docs[0]))
+        self.assertEqual(len(nodes), 1)
+        self.assertEqual(nodes[0]["name"], "Acme")
+
+    def test_audit_all_ok(self):
+        cfg = {"name": "Acme Studio",
+               "nap": {"phone": "+1 407-555-0123",
+                       "email": "hello@acme.test",
+                       "address_hidden": True}}
+        html = ('<script type="application/ld+json">{"@context": '
+                '"https://schema.org", "@type": "ProfessionalService", '
+                '"name": "Acme Studio"}</script>'
+                '<a href="tel:4075550123">call</a> '
+                '<a href="mailto:hello@acme.test">mail</a>')
+        results = self.nap.audit_nap(cfg, {"homepage": html})
+        self.assertTrue(all(s == "ok" for _, s, _ in results))
+
+    def test_audit_phone_mismatch_warns(self):
+        cfg = {"name": "Acme Studio",
+               "nap": {"phone": "+1 407-555-0123", "address_hidden": True}}
+        html = '<a href="tel:3215559999">call</a>'
+        results = dict((f, s) for f, s, _ in
+                       self.nap.audit_nap(cfg, {"homepage": html}))
+        self.assertEqual(results["phone"], "warn")
+
+    def test_audit_sab_street_address_warns(self):
+        cfg = {"name": "Acme Studio", "nap": {"address_hidden": True}}
+        html = "<p>Visit us at 123 Main Street, Orlando FL</p>"
+        results = dict((f, s) for f, s, _ in
+                       self.nap.audit_nap(cfg, {"homepage": html}))
+        self.assertEqual(results["address (SAB hidden)"], "warn")
+
+    def test_audit_missing_localbusiness_warns(self):
+        cfg = {"name": "Acme Studio", "nap": {"address_hidden": True}}
+        html = "<p>hello</p>"
+        results = dict((f, s) for f, s, _ in
+                       self.nap.audit_nap(cfg, {"homepage": html}))
+        self.assertEqual(results["LocalBusiness schema"], "warn")
+
+
 class TestAssignImages(unittest.TestCase):
     def test_photo_number_reference_counts_as_used(self):
         repo = tempfile.mkdtemp()
