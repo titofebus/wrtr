@@ -56,7 +56,7 @@ def mine(seed, depth=2):
         pass
     seen, frontier = set(), [seed]
     results = set()
-    # Consecutive suggest failures — if the endpoint is down, bail out of
+    # Consecutive suggest failures - if the endpoint is down, bail out of
     # the fan-out instead of burning ~9 minutes on timeouts (F4).
     fails = 0
     dead = False

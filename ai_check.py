@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ai_check.py — advisory AI-sounding check for a draft via local SlopTotal.
+"""ai_check.py - advisory AI-sounding check for a draft via local SlopTotal.
 
 Posts the draft text to a locally running SlopTotal instance
 (http://localhost:8000/api/quick-score) and prints the score plus the
@@ -77,7 +77,7 @@ def main():
         print(f"AI-CHECK SKIPPED (cannot read draft: {type(e).__name__}).")
         return 0
     if len(text.split()) < 80:
-        print("AI-CHECK SKIPPED: draft under ~80 words — detectors are "
+        print("AI-CHECK SKIPPED: draft under ~80 words - detectors are "
               "unreliable on short text.")
         return 0
 
@@ -104,12 +104,12 @@ def main():
             try:
                 if isinstance(score, (int, float)) and score >= ELEVATED_AT:
                     print()
-                    print("Elevated — worth a human re-read. This is advisory; "
+                    print("Elevated - worth a human re-read. This is advisory; "
                           "it does not block publishing.")
                     print(FINGERPRINTS)
             except TypeError:
                 pass
-    except Exception as e:  # noqa: BLE001 — service down, timeout, bad JSON
+    except Exception as e:  # noqa: BLE001 - service down, timeout, bad JSON
         print(f"AI-CHECK SKIPPED (SlopTotal not reachable at {SLOPTOTAL}: "
               f"{type(e).__name__}). Start it per sloptotal/SETUP.md.")
         return 0

@@ -22,7 +22,7 @@ os.environ.setdefault("REQUESTS_CA_BUNDLE", "/etc/ssl/certs/ca-certificates.crt"
 BASE = "https://www.googleapis.com/webmasters/v3"
 
 # Search Console API page-size cap (used for both the request and the
-# "last page" check — keep them in sync via this constant).
+# "last page" check - keep them in sync via this constant).
 MAX_PAGE_SIZE = 25000
 
 

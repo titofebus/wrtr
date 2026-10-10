@@ -25,7 +25,7 @@ import site_config  # noqa: E402
 DEFAULT_TITLE_TEMPLATES = [
     "{title}: A Professional's Guide",
     "Real Talk on {title}",
-    "{title} — What to Know Before You Book",
+    "{title} - What to Know Before You Book",
 ]
 
 STOP_WORDS = {"the", "a", "an", "in", "of", "for", "and", "or", "to", "at",
@@ -127,7 +127,7 @@ QUESTION_WORDS = set(keyword_miner.QUESTION_PREFIXES) - {"best", "top"}
 # (Single source of truth: site_config.NICHE_GENERIC_WORDS.)
 GENERIC_WORDS = site_config.NICHE_GENERIC_WORDS
 
-# Search-intent signals. Transactional = the searcher is ready to book/buy —
+# Search-intent signals. Transactional = the searcher is ready to book/buy -
 # the intent that pays. Commercial investigation ("best", "top", "reviews")
 # counts as transactional: they're comparing vendors, not browsing ideas.
 TRANSACTIONAL_WORDS = {
@@ -145,26 +145,26 @@ def classify_intent(target, brand_terms=()):
     """Heuristic search-intent label for a target keyword.
 
     Returns (label, rationale). Labels: TRANSACTIONAL, INFORMATIONAL,
-    NAVIGATIONAL, MIXED. The writer must confirm — this is a starting
+    NAVIGATIONAL, MIXED. The writer must confirm - this is a starting
     judgment, not a verdict.
     """
     t = target.lower()
     words = set(t.split())
     if any(b.lower() in t for b in brand_terms):
         return ("NAVIGATIONAL",
-                "contains a brand term — the searcher already knows who they want")
+                "contains a brand term - the searcher already knows who they want")
     if words & TRANSACTIONAL_WORDS or "near me" in t:
         return ("TRANSACTIONAL",
-                "booking/comparison language — the searcher is ready to act")
+                "booking/comparison language - the searcher is ready to act")
     if words & INFORMATIONAL_WORDS:
         return ("INFORMATIONAL",
-                "question/guide language — the searcher is researching, not booking")
+                "question/guide language - the searcher is researching, not booking")
     return ("MIXED",
-            "no strong signal — confirm intent from the SERP before drafting")
+            "no strong signal - confirm intent from the SERP before drafting")
 
 
 def _anchors(target):
-    """The target's distinctive words — what makes it *this* topic."""
+    """The target's distinctive words - what makes it *this* topic."""
     return {w for w in target.lower().split()
             if w not in STOP_WORDS and w not in GENERIC_WORDS}
 
@@ -187,7 +187,7 @@ _US_STATES = [
     ("washington", "wa"), ("west virginia", "wv"), ("wisconsin", "wi"),
     ("wyoming", "wy"),
 ]
-# Abbreviations that are also ordinary English words — never treat as states.
+# Abbreviations that are also ordinary English words - never treat as states.
 _AMBIGUOUS_ABBR = {"in", "or", "me", "hi", "ok", "pa", "ma", "la"}
 
 
@@ -254,9 +254,9 @@ def filter_secondaries(secondaries, target, geo_terms):
         seen.add(key)
         qstates = _states_in(s)
         if brand_states and (qstates - brand_states):
-            continue  # names a different state — wrong market
+            continue  # names a different state - wrong market
         if not brand_states and qstates:
-            continue  # no geo scope configured — stay conservative
+            continue  # no geo scope configured - stay conservative
         swords = {w for w in sl.split() if w not in STOP_WORDS}
         shared = len(twords & swords)
         geo = any(g in sl for g in geo_terms)
@@ -271,7 +271,7 @@ def related_entries(entries, target, n=2):
     """The n existing entries most topically related to the target.
 
     Anchor words (the target's distinctive terms) score 3x; entries with
-    no anchor overlap aren't named — generic matches are worse than none.
+    no anchor overlap aren't named - generic matches are worse than none.
     """
     anchors = _anchors(target)
     core = {w for w in target.lower().split() if w not in STOP_WORDS}
@@ -345,7 +345,7 @@ def build_brief(cfg, target, kind=None, collection="journal"):
         else:
             collection_note = (
                 "> Note: `--collection resources` requested but this site has "
-                "no `resources_*` keys — falling back to the main collection.")
+                "no `resources_*` keys - falling back to the main collection.")
     suffix_map = site_config.need_dict(cfg, "type_slug_suffix")
     slug = slugify(target + suffix_map.get(kind, ""))
     voice_rules = cfg.get("voice_rules", [])
@@ -357,7 +357,7 @@ def build_brief(cfg, target, kind=None, collection="journal"):
                                        default=DEFAULT_TITLE_TEMPLATES)
     titles = [_render_template(t, "title_templates entry",
                                title=title_words) for t in templates]
-    image_alt = _render_template(cfg.get("image_alt_template", "{title} — {name}"),
+    image_alt = _render_template(cfg.get("image_alt_template", "{title} - {name}"),
                                  "image_alt_template",
                                  title=title_words, name=cfg["name"])
 
@@ -374,23 +374,23 @@ def build_brief(cfg, target, kind=None, collection="journal"):
     if length:
         L.append(f"Target length: ~{length}")
         L.append("")
-    L.append("## Overlap check — existing entries on this topic")
+    L.append("## Overlap check - existing entries on this topic")
     if dupes:
         for d in dupes:
-            L.append(f"- ⚠ `{d}` — differentiate or refresh instead of duplicating")
+            L.append(f"- ⚠ `{d}` - differentiate or refresh instead of duplicating")
     else:
-        L.append("- none found — clear to draft")
+        L.append("- none found - clear to draft")
     L.append("")
     intent, why = classify_intent(target, cfg.get("brand_terms", []))
     L += ["## Search intent",
-          f"- **{intent}** — {why}.",
+          f"- **{intent}** - {why}.",
           "- Confirm against the live SERP: if the top results are vendor/booking "
           "pages, the keyword is transactional no matter what this heuristic says.",
           "- Transactional/commercial keywords book clients; informational keywords "
           "build topical authority. Know which job this entry does before drafting.",
           "",
           "## On-page keyword map (fill in as you draft)",
-          "- Every element below must deliberately target a keyword — title tag, H1, "
+          "- Every element below must deliberately target a keyword - title tag, H1, "
           "each H2, and body copy. No element targets nothing; no two H2s target "
           "the same keyword.",
           "- Title tag → primary keyword (front-load it).",
@@ -422,7 +422,7 @@ def build_brief(cfg, target, kind=None, collection="journal"):
           *[f"- {t}" for t in titles], "",
           "## Keywords",
           f"- Primary: `{target}` (in title, H1, first 100 words, one H2, image alt)",
-          "- Secondary (filtered for geo relevance — verify before targeting):"]
+          "- Secondary (filtered for geo relevance - verify before targeting):"]
     core_words = {w for w in target.lower().split() if w not in STOP_WORDS}
     # Strictly tighter than filter_secondaries' own >=2 gate (which these
     # already passed): a secondary must share 3+ content words or name the
@@ -436,34 +436,34 @@ def build_brief(cfg, target, kind=None, collection="journal"):
         L += [f"  - `{k}`" for k in usable]
     elif secondaries:
         # Survivors share <2 content words with the primary (e.g. a
-        # neighboring city) — listing them invites keyword stuffing.
-        L.append("  - (none usable — survivors don't match this topic closely "
+        # neighboring city) - listing them invites keyword stuffing.
+        L.append("  - (none usable - survivors don't match this topic closely "
                  "enough; write to the primary only)")
     else:
         L.append("  - (none survived filtering)")
     L += ["", "## Questions to answer (use as H2s)"]
     if questions:
-        L.append("_(mined from real searches — keep the strong ones; "
+        L.append("_(mined from real searches - keep the strong ones; "
                  "a weak one can fold into the intro)_")
         L += [f"- {q.capitalize()}?" if not q.endswith("?") else f"- {q}"
               for q in questions]
     scaffold = cfg.get("h2_scaffolds", {}).get(kind, [])
     if len(questions) < 3 and scaffold:
         # Plain-text note, NOT a bullet: a bullet here reads as an H2.
-        L += ["", "_(mining was thin — type-based scaffolds below; "
+        L += ["", "_(mining was thin - type-based scaffolds below; "
               "treat as starting points, not mandates)_"]
         L += [f"- {h}" for h in scaffold]
     if not questions and not scaffold:
-        L.append("- (none mined — draft from experience)")
+        L.append("- (none mined - draft from experience)")
     if any("cost" in q.lower() for q in questions + scaffold):
         L.append("- _For any cost H2: use only published/sourced ranges or "
-                 "describe what drives cost — never state a specific price._")
+                 "describe what drives cost - never state a specific price._")
     L += ["", "## What Google already shows us for (GSC, 28d)"]
     shown = False
     for r in related:
         if r["impressions"]:
             shown = True
-            L.append(f"- `{r['query']}` — {r['impressions']:.0f} impr, "
+            L.append(f"- `{r['query']}` - {r['impressions']:.0f} impr, "
                      f"pos {r['position']:.1f}")
     if not shown:
         failed = next((r["query"] for r in related
@@ -476,14 +476,14 @@ def build_brief(cfg, target, kind=None, collection="journal"):
     if named or shot or kind == "venue-guide":
         L += ["", "## Venues to cover"]
         if named:
-            L.append("Real demand from GSC — cover the ones you've actually shot:")
-            L += [f"- `{r['query']}` — {r['impressions']:.0f} impr, "
+            L.append("Real demand from GSC - cover the ones you've actually shot:")
+            L += [f"- `{r['query']}` - {r['impressions']:.0f} impr, "
                   f"pos {r['position']:.1f}" for r in named]
         if shot:
             L.append("Venues the studio has shot (safe to recommend by name):")
             L += [f"- {v}" for v in shot]
         if not named and not shot:
-            L.append("- (no venue-named queries in GSC yet — research the area's "
+            L.append("- (no venue-named queries in GSC yet - research the area's "
                      "venues and list the ones you've shot before drafting)")
         L.append("- Never present a venue you haven't shot as a recommendation.")
     L += ["", "## Internal links to include"]
@@ -493,14 +493,14 @@ def build_brief(cfg, target, kind=None, collection="journal"):
         L.append("- Link these existing entries (most topically related):")
         L += [f"  - `{e}`" for e in link_targets]
     else:
-        L.append("- (no related entries found — skip this step)")
+        L.append("- (no related entries found - skip this step)")
     L += ["- Soft CTA: link the site's contact page (and pricing/booking page where natural).",
           "", "## Images",
           f"- Hero: pick a real brand photo from `{cfg.get('image_library', 'the site’s image library')}`; "
           "add per the site's image workflow. "
-          "Do NOT invent a filename — verify it exists. "
-          "Tip: filenames are keyword-rich — search the library for the area/venue name first. "
-          "Better: run `assign_images.py --site <slug> --topic \"<keyword>\"` — "
+          "Do NOT invent a filename - verify it exists. "
+          "Tip: filenames are keyword-rich - search the library for the area/venue name first. "
+          "Better: run `assign_images.py --site <slug> --topic \"<keyword>\"` - "
           "it picks the most relevant images never used before. ",
           "RULE: never reuse an image already used in another entry until the "
           "whole library has been cycled once (the script enforces this). "
@@ -512,7 +512,7 @@ def build_brief(cfg, target, kind=None, collection="journal"):
           f"date: \"{datetime.date.today()}\"",
           f"updated: \"{datetime.date.today()}\"  # refresh the entry quarterly; AI favors recently updated pages",
           f"categorySlug: {category}",
-          f'image: "<chosen hero filename — must exist in {cfg.get("image_library", "the image library")}>\"',
+          f'image: "<chosen hero filename - must exist in {cfg.get("image_library", "the image library")}>\"',
           f'imageAlt: "{image_alt}"',
           "keywords:",
           # Quoted: an unquoted keyword containing ":" parses as a dict and
@@ -526,11 +526,11 @@ def build_brief(cfg, target, kind=None, collection="journal"):
     L += [f"- {r}" for r in voice_rules]
     proof = _as_list(cfg, "proof_points")
     if proof:
-        L += ["", "Experience proof points (authorized claims — use naturally):"]
+        L += ["", "Experience proof points (authorized claims - use naturally):"]
         L += [f"- {p}" for p in proof]
     phrases = _as_list(cfg, "preferred_phrases")
     if phrases:
-        L += ["", "Preferred vocabulary (the brand's own texture — reach for these):"]
+        L += ["", "Preferred vocabulary (the brand's own texture - reach for these):"]
         L += [f"- {p}" for p in phrases]
     banned = cfg.get("banned_terms", [])
     if banned:
@@ -553,10 +553,10 @@ def build_brief(cfg, target, kind=None, collection="journal"):
     L += ["", "## Publish checklist",
           f"- [ ] Write the entry to `{draft_path}` (one H1 from the title; "
           "body starts at H2)",
-          f"- [ ] Quality gate (HARD — must pass to publish; also enforced by "
+          f"- [ ] Quality gate (HARD - must pass to publish; also enforced by "
           f"`{gate_cmd}` in the repo): from the wrtr repo root, "
           f"`.venv/bin/python draft_score.py <draft.md> --site {site_slug} "
-          f"--keyword \"{target}\"` — fix the 🟡/🔴 items and re-run until PASS",
+          f"--keyword \"{target}\"` - fix the 🟡/🔴 items and re-run until PASS",
           "- [ ] AI-sounding check (advisory only, never blocks): "
           "`.venv/bin/python ai_check.py <draft.md>`",
           "- [ ] The repo's validate passes (lint + content checks)",

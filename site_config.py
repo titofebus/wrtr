@@ -17,7 +17,7 @@ DEFAULT_SITE = "example"
 REQUIRED_KEYS = ["name", "site_url", "repo", "content_dir"]
 
 # Generic fallback mapping for brands that omit type_category_map.
-# Deliberately brand-neutral — a default must never silently impose one
+# Deliberately brand-neutral - a default must never silently impose one
 # brand's taxonomy (e.g. wedding types) on another.
 DEFAULT_TYPE_CATEGORY_MAP = {
     "guide": "guides",

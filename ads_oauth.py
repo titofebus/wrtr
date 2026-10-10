@@ -93,7 +93,7 @@ def main():
     r.raise_for_status()
     tok = r.json()
     cfg = (
-        f"# Google Ads API config — generated {__import__('datetime').date.today()}\n"
+        f"# Google Ads API config - generated {__import__('datetime').date.today()}\n"
         f"developer_token: \n"  # 2026: managed in Cloud Console; leave blank, fill if API demands it
         f"client_id: {client_id}\n"
         f"client_secret: {client_secret}\n"

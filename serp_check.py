@@ -2,7 +2,7 @@
 
 Supports (first available wins): Brave Search API ($5/mo free, own index,
 official MCP), Serper (2,500 free queries, Google SERPs), Exa ($10/mo free,
-returns page contents — best for content-gap analysis).
+returns page contents - best for content-gap analysis).
 
 Keys live in 0600 files next to this script: .brave-key, .serper-key, .exa-key
 (one per line, raw key). With no keys it prints setup pointers and exits.
@@ -63,7 +63,7 @@ def via_exa(query, key):
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] in ("-h", "--help"):
-        print('Usage: serp_check.py ["<query>"] — checks SERP via Brave/Serper/Exa keys.')
+        print('Usage: serp_check.py ["<query>"] - checks SERP via Brave/Serper/Exa keys.')
         print("Without a query it uses the default seed. Keys are optional; "
               "without any key it prints where to get free ones.")
         return

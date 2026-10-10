@@ -1,7 +1,7 @@
 """Real keyword volumes via the Google Ads API (Keyword Planner).
 
 Free with a Google Ads account (no spend). Non-spending accounts get volume
-ranges (buckets) rather than exact numbers — still the only legit volume data.
+ranges (buckets) rather than exact numbers - still the only legit volume data.
 
 Usage: .venv/bin/python ads_volumes.py "best running shoes" "running shoes near me" [--geo 1023652]
 Config: .google-ads.yaml (0600). Default geo: US (2840); pass --geo with a

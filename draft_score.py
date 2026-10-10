@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""draft_score.py — pre-publish quality gate for Journal drafts.
+"""draft_score.py - pre-publish quality gate for Journal drafts.
 
 Scores a markdown draft (front matter + body) on readability, on-page SEO,
 AEO (answer engine optimization, advisory only), and human-voice signals,
@@ -14,7 +14,7 @@ Usage:
 Exit codes: 0 = pass (publish), 1 = failed gate (fix and re-run),
 2 = usage/config error.
 
-The AI-sounding check (SlopTotal) is intentionally NOT part of this gate —
+The AI-sounding check (SlopTotal) is intentionally NOT part of this gate -
 detectors false-positive on polished human writing, so `ai_check.py` stays
 advisory-only. This scorer checks things that are deterministically true
 about the text.
@@ -123,7 +123,7 @@ def keyword_hits(text, keyword):
     return len(re.findall(pat, text.lower()))
 
 # ---------------------------------------------------------------------------
-# Checks — each returns (name, status, detail); status in green/yellow/red
+# Checks - each returns (name, status, detail); status in green/yellow/red
 # ---------------------------------------------------------------------------
 
 VOICE_TICS = [
@@ -138,7 +138,7 @@ VOICE_TICS = [
     "cornerstone", "beacon", "nuanced",
     # 2026-era additions
     "quietly powerful", "interplay", "enduring",
-    # Overused Tier-2 (flagged at any density here — cluster matters)
+    # Overused Tier-2 (flagged at any density here - cluster matters)
     "game-changer", "game changer", "nestled", "boasts",
     "vibrant", "bustling", "testament to", "in the realm of",
     "a tapestry of", "delve into", "embark", "elevate",
@@ -161,7 +161,7 @@ VOICE_TICS = [
     "can help you", "is genuinely",
 ]
 
-# Structural patterns (regexes) — sentence constructions AI overuses.
+# Structural patterns (regexes) - sentence constructions AI overuses.
 # Each is (name, pattern). Counted per 1000 words; 2+ hits flags yellow.
 STRUCTURAL_TELLS = [
     ("negative parallelism",
@@ -194,17 +194,17 @@ def check_readability(text):
         ease = textstat.flesch_reading_ease(text)
     except ImportError:
         return [("readability", "yellow",
-                 "textstat not installed — skipping readability")]
+                 "textstat not installed - skipping readability")]
     except LookupError:
-        # Missing NLTK corpus (~/nltk_data) — the gate must degrade, not crash.
+        # Missing NLTK corpus (~/nltk_data) - the gate must degrade, not crash.
         return [("readability", "yellow",
-                 "syllable dictionary missing (~/nltk_data) — skipping readability")]
+                 "syllable dictionary missing (~/nltk_data) - skipping readability")]
     if 7 <= grade <= 11:
-        out.append(("reading grade", "green", f"grade {grade:.1f} (target 7–11)"))
+        out.append(("reading grade", "green", f"grade {grade:.1f} (target 7-11)"))
     elif 5 <= grade <= 13:
-        out.append(("reading grade", "yellow", f"grade {grade:.1f} (target 7–11)"))
+        out.append(("reading grade", "yellow", f"grade {grade:.1f} (target 7-11)"))
     else:
-        out.append(("reading grade", "red", f"grade {grade:.1f} — too hard or too simple (target 7–11)"))
+        out.append(("reading grade", "red", f"grade {grade:.1f} - too hard or too simple (target 7-11)"))
     sents = sentences(text)
     long_s = [s for s in sents if len(s.split()) > 20]
     if not sents:
@@ -214,12 +214,12 @@ def check_readability(text):
                     f"{len(long_s)}/{len(sents)} over 20 words"))
     else:
         out.append(("sentence length", "yellow",
-                    f"{len(long_s)}/{len(sents)} over 20 words — shorten some"))
+                    f"{len(long_s)}/{len(sents)} over 20 words - shorten some"))
     paras = [p for p in text.split("\n\n") if p.strip()]
     long_p = [p for p in paras if len(p.split()) > 150]
     if long_p:
         out.append(("paragraph length", "yellow",
-                    f"{len(long_p)} paragraph(s) over 150 words — break up"))
+                    f"{len(long_p)} paragraph(s) over 150 words - break up"))
     else:
         out.append(("paragraph length", "green", "paragraphs are scannable"))
     out.append(("reading ease", "green" if ease >= 60 else "yellow",
@@ -250,18 +250,18 @@ def check_seo(fm, text, body, heads, keyword, cfg):
     first100 = " ".join(text.split()[:100])
     out.append(("keyword in first 100 words",
                 "green" if has_kw(first100) else "yellow",
-                "present" if has_kw(first100) else "missing — move it up"))
+                "present" if has_kw(first100) else "missing - move it up"))
     h2s = [t for lvl, t in heads if lvl == 2]
     out.append(("keyword in an H2",
                 "green" if any(has_kw(t) for t in h2s) else "yellow",
                 "present" if any(has_kw(t) for t in h2s) else "missing"))
     # H2 keyword variety: each H2 should target a DISTINCT secondary keyword.
-    # Repeating the primary verbatim in 3+ H2s is over-optimization — it reads
+    # Repeating the primary verbatim in 3+ H2s is over-optimization - it reads
     # as stuffed and wastes headings that could capture long-tail queries.
     h2_with_kw = sum(1 for t in h2s if has_kw(t))
     if h2_with_kw >= 3:
         out.append(("H2 keyword variety", "yellow",
-                    f"{h2_with_kw} H2s repeat the primary keyword — "
+                    f"{h2_with_kw} H2s repeat the primary keyword - "
                     "give each H2 its own secondary keyword"))
     else:
         out.append(("H2 keyword variety", "green",
@@ -271,15 +271,15 @@ def check_seo(fm, text, body, heads, keyword, cfg):
                 "green" if has_kw(alt) else "yellow",
                 "present" if has_kw(alt) else "missing from imageAlt"))
 
-    # Density 0.5–2.5%
+    # Density 0.5-2.5%
     wc = words(text)
     dens = keyword_hits(text, keyword) / max(len(wc), 1) * 100
     if 0.5 <= dens <= 2.5:
-        out.append(("keyword density", "green", f"{dens:.2f}% (band 0.5–2.5%)"))
+        out.append(("keyword density", "green", f"{dens:.2f}% (band 0.5-2.5%)"))
     elif dens < 0.5:
-        out.append(("keyword density", "yellow", f"{dens:.2f}% — thin, use it more naturally"))
+        out.append(("keyword density", "yellow", f"{dens:.2f}% - thin, use it more naturally"))
     else:
-        out.append(("keyword density", "red", f"{dens:.2f}% — stuffing risk, trim"))
+        out.append(("keyword density", "red", f"{dens:.2f}% - stuffing risk, trim"))
 
     # Heading structure (h1s already includes the title fallback above).
     if len(h1s) == 1:
@@ -288,7 +288,7 @@ def check_seo(fm, text, body, heads, keyword, cfg):
     elif not h1s:
         out.append(("single H1", "red", "HARD: no H1 found"))
     else:
-        out.append(("single H1", "red", f"HARD: {len(h1s)} H1s — keep one"))
+        out.append(("single H1", "red", f"HARD: {len(h1s)} H1s - keep one"))
     levels = [lvl for lvl, _ in heads]
     skipped = any(b - a > 1 for a, b in zip(levels, levels[1:]))
     out.append(("heading order", "green" if not skipped else "yellow",
@@ -299,9 +299,9 @@ def check_seo(fm, text, body, heads, keyword, cfg):
     if len(wc) >= 600:
         out.append(("length", "green", f"{len(wc)} words"))
     else:
-        out.append(("length", "yellow", f"{len(wc)} words — thin for SEO (600+ better)"))
+        out.append(("length", "yellow", f"{len(wc)} words - thin for SEO (600+ better)"))
 
-    # Banned terms — HARD failure
+    # Banned terms - HARD failure
     banned = [b for b in cfg.get("banned_terms", []) if str(b).strip()]
     found = [b for b in banned if str(b).lower() in text.lower()
              or str(b).lower() in title.lower()]
@@ -315,15 +315,15 @@ def check_seo(fm, text, body, heads, keyword, cfg):
     if title and len(title) <= 60:
         out.append(("title length", "green", f"{len(title)} chars"))
     elif title:
-        out.append(("title length", "yellow", f"{len(title)} chars — over 60"))
+        out.append(("title length", "yellow", f"{len(title)} chars - over 60"))
     if desc:
         if 120 <= len(desc) <= 160:
             out.append(("meta description", "green", f"{len(desc)} chars"))
         else:
             out.append(("meta description", "yellow",
-                        f"{len(desc)} chars (target 120–160)"))
+                        f"{len(desc)} chars (target 120-160)"))
 
-    # Internal links: every source ranks internal linking as a core signal —
+    # Internal links: every source ranks internal linking as a core signal -
     # it distributes authority and tells Google how pages relate. The brief
     # already instructs 2+; this verifies. Counts relative links and links
     # to the site's own domain.
@@ -342,14 +342,14 @@ def check_seo(fm, text, body, heads, keyword, cfg):
         out.append(("internal links", "green", f"{len(internal)} internal links"))
     elif internal:
         out.append(("internal links", "yellow",
-                    f"only {len(internal)} internal link — add at least 2"))
+                    f"only {len(internal)} internal link - add at least 2"))
     else:
         out.append(("internal links", "yellow",
-                    "no internal links — link 2+ related entries/pages"))
+                    "no internal links - link 2+ related entries/pages"))
 
     # Answer-first H2s (GEO / AI citation): AI Overviews and featured snippets
     # lift short, self-contained answers. The first sentence under each H2
-    # should echo the H2's key terms — that's what gets quoted.
+    # should echo the H2's key terms - that's what gets quoted.
     # (Splits the raw markdown body: `text` is plain-text with markers stripped.)
     stop = {"the", "a", "an", "and", "or", "of", "to", "in", "for", "on",
             "is", "are", "what", "how", "why", "when", "where", "your", "you"}
@@ -376,7 +376,7 @@ def check_seo(fm, text, body, heads, keyword, cfg):
     else:
         out.append(("answer-first H2s", "yellow",
                     f"only {direct}/{total} H2s answer directly in the first "
-                    "sentence — lead with the answer for snippets/AI citation"))
+                    "sentence - lead with the answer for snippets/AI citation"))
     return out
 
 
@@ -518,17 +518,17 @@ def check_voice(text):
     tics = sorted({t for t in VOICE_TICS if t in tl})
     if tics:
         out.append(("AI voice tics", "yellow",
-                    f"formal tics: {', '.join(tics)} — rewrite in your own words"))
+                    f"formal tics: {', '.join(tics)} - rewrite in your own words"))
     else:
         out.append(("AI voice tics", "green", "none of the usual formal tics"))
     sents = sentences(text)
     contr = len(re.findall(r"\b\w+'(re|ve|ll|d|s|m|t)\b", tl))
     if sents and contr / len(sents) >= 0.15:
         out.append(("contractions", "green",
-                    f"{contr} contractions — sounds human"))
+                    f"{contr} contractions - sounds human"))
     elif sents:
         out.append(("contractions", "yellow",
-                    "few contractions — stiff copy reads as AI"))
+                    "few contractions - stiff copy reads as AI"))
     else:
         out.append(("contractions", "yellow", "no sentences found"))
     # Burstiness: uniform sentence lengths read as AI
@@ -542,7 +542,7 @@ def check_voice(text):
                         f"sentence lengths vary (CV {cv:.2f})"))
         else:
             out.append(("burstiness", "yellow",
-                        f"sentences are uniform (CV {cv:.2f}) — vary the rhythm"))
+                        f"sentences are uniform (CV {cv:.2f}) - vary the rhythm"))
     # Structural AI patterns: counted per 1000 words, 2+ hits flags yellow.
     words = len(text.split())
     struct_hits = []
@@ -552,16 +552,16 @@ def check_voice(text):
             struct_hits.append(f"{name} x{n}")
     if struct_hits:
         out.append(("AI structural patterns", "yellow",
-                    f"{'; '.join(struct_hits)} — rewrite in plain structure"))
+                    f"{'; '.join(struct_hits)} - rewrite in plain structure"))
     else:
         out.append(("AI structural patterns", "green",
                     "no clustered AI constructions"))
-    # Em dashes: prohibited entirely (owner rule 2026-10-07). HARD failure —
+    # Em dashes: prohibited entirely (owner rule 2026-10-07). HARD failure -
     # rewrite with commas, colons, periods, or hyphens.
     emdashes = text.count("—") + text.count("–")
     if emdashes:
         out.append(("em dashes", "red",
-                    f"HARD: {emdashes} em/en dash(es) — prohibited, "
+                    f"HARD: {emdashes} em/en dash(es) - prohibited, "
                     "rewrite with commas, colons, periods, or hyphens"))
     else:
         out.append(("em dashes", "green", "no em/en dashes"))
@@ -577,7 +577,7 @@ def check_voice(text):
         out.append(("human fingerprints", "green", ", ".join(fps)))
     else:
         out.append(("human fingerprints", "yellow",
-                    "no first person, numbers, or named people — add something only you could write"))
+                    "no first person, numbers, or named people - add something only you could write"))
     return out
 
 
@@ -614,7 +614,7 @@ def check_review_compliance(text):
 
 
 def score(checks):
-    """0–100 from Yoast-style traffic lights: green=full, yellow=half, red=0."""
+    """0-100 from Yoast-style traffic lights: green=full, yellow=half, red=0."""
     if not checks:
         return 0
     pts = {"green": 1.0, "yellow": 0.5, "red": 0.0}
@@ -651,7 +651,7 @@ def main():
     try:
         fm, body = parse_draft(args.draft)
     except UnicodeDecodeError:
-        print(f"draft_score: {args.draft} is not valid UTF-8 — save it as UTF-8 and re-run.",
+        print(f"draft_score: {args.draft} is not valid UTF-8 - save it as UTF-8 and re-run.",
               file=sys.stderr)
         return 2
     heads = headings(body)
@@ -677,13 +677,13 @@ def main():
 
     if hard:
         print("BLOCKED: hard failures must be fixed: "
-              + "; ".join(f"{n} — {d}" for n, _, d in hard))
+              + "; ".join(f"{n} - {d}" for n, _, d in hard))
         return 1
     if total < min_score:
         print(f"BLOCKED: score {total} is below the minimum {min_score}. "
               f"Fix the 🟡/🔴 items above and re-run.")
         return 1
-    print("PASS — ready for the next step (ai_check.py, then validate).")
+    print("PASS - ready for the next step (ai_check.py, then validate).")
     return 0
 
 

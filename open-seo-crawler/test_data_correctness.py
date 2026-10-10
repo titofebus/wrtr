@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DATA-CORRECTNESS test — drives the UI like a real user, then reads
+DATA-CORRECTNESS test - drives the UI like a real user, then reads
 the underlying state out of `window` and asserts every detector's
 items satisfy its detection rule. The kind of test that would have
 caught the Redirects-in-Sitemap false positive.
@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 
 # Pass site URLs as CLI args, or fall back to the defaults below. Any real
-# site works — every check asserts internal consistency of the detectors,
+# site works - every check asserts internal consistency of the detectors,
 # not site-specific values. Best coverage comes from sites with sitemaps,
 # redirects, and near-duplicate templated pages.
 TEST_SITES = sys.argv[1:] or [
@@ -22,7 +22,7 @@ MAX_PAGES = 50
 failures = []
 def ok(label):  print(f"    [PASS] {label}")
 def fail(label, detail=""):
-    print(f"    [FAIL] {label}{(' — ' + detail) if detail else ''}")
+    print(f"    [FAIL] {label}{(' - ' + detail) if detail else ''}")
     failures.append(f"{label} {detail}")
 
 def norm(u):
@@ -122,7 +122,7 @@ def run(site):
             // through any function that has access. _ndPairs is on window.
             let results = [];
             try { results = (typeof crawlerResults !== 'undefined') ? crawlerResults : []; } catch {}
-            // The table rendered rows expose URL — fall back to that if module var unreachable.
+            // The table rendered rows expose URL - fall back to that if module var unreachable.
             if (!results.length) {
                 const rows = document.querySelectorAll('#crawler-tbody tr[data-url]');
                 results = Array.from(rows).map(r => ({

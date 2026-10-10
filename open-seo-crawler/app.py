@@ -1,5 +1,5 @@
 """
-Open SEO Crawler — a fast, concurrent SEO-focused web crawler.
+Open SEO Crawler - a fast, concurrent SEO-focused web crawler.
 
 Single-file Flask app. Run with:
     python3 app.py
@@ -95,7 +95,7 @@ def _robots_pattern_match(pattern, url):
     """robots.txt-style path pattern matcher (Google's spec).
 
     Wildcards: ``*`` matches any sequence, ``$`` at end anchors end of URL.
-    Everything else is literal — including ``?``. Match is anchored at the
+    Everything else is literal - including ``?``. Match is anchored at the
     start of the path; a leading ``*`` lets it match anywhere. Tests path+query
     first, then full URL so users can paste either form.
     """
@@ -179,13 +179,13 @@ def _build_robots_checker(robots_text):
 
 # Well-known AI crawler user-agents (2026), split by what blocking them costs.
 #
-# _AI_CRAWLER_UAS — answer/citation/assistant bots. These feed live AI answers
+# _AI_CRAWLER_UAS - answer/citation/assistant bots. These feed live AI answers
 # (ChatGPT, Claude, Perplexity, Google AI Overviews, Alexa, DuckAssist):
 # blocking them removes the site from AI answer surfaces, so it's a red error.
 #
-# _AI_TRAINING_UAS — training/data-collection-only crawlers (Common Crawl,
+# _AI_TRAINING_UAS - training/data-collection-only crawlers (Common Crawl,
 # Bytespider, Diffbot etc.). They don't feed any live answer product, and
-# blocking them is a common, deliberate content-protection choice — flagging
+# blocking them is a common, deliberate content-protection choice - flagging
 # that as an error is a false positive (a site can allow every answer bot and
 # still block these). Surfaced as an info-level note instead.
 _AI_CRAWLER_UAS = [
@@ -276,8 +276,8 @@ def _analyze_robots_txt(robots_text):
         return _robots_root_blocked(star)  # no own group -> falls back to the * group
 
     # Cloudflare-style Content-Signal opt-out (e.g. "search=yes,ai-train=no").
-    # ai-input=no cuts the site out of live AI answers (RAG/grounding) — answer
-    # tier. ai-train=no only opts out of model training — training tier.
+    # ai-input=no cuts the site out of live AI answers (RAG/grounding) - answer
+    # tier. ai-train=no only opts out of model training - training tier.
     input_signal = train_signal = False
     for raw in robots_text.splitlines():
         l = raw.split('#', 1)[0].strip().lower().replace(' ', '')
@@ -295,7 +295,7 @@ def _analyze_robots_txt(robots_text):
                 names.append(ua)
         return names
 
-    # Answer/citation AI bots — blocking these removes the site from AI answers.
+    # Answer/citation AI bots - blocking these removes the site from AI answers.
     ai_names = blocked_names(_AI_CRAWLER_UAS)
     if ai_names or input_signal:
         if ai_names:
@@ -303,28 +303,28 @@ def _analyze_robots_txt(robots_text):
             if len(ai_names) > 10:
                 shown.append(f'+{len(ai_names) - 10} more')
             tail = ' (+ Content-Signal ai-input=no)' if input_signal else ''
-            issues.append('AI crawlers blocked in robots.txt — ' + ', '.join(shown) + tail)
+            issues.append('AI crawlers blocked in robots.txt - ' + ', '.join(shown) + tail)
         else:
-            issues.append('AI crawlers blocked in robots.txt — Content-Signal set to ai-input "no"')
+            issues.append('AI crawlers blocked in robots.txt - Content-Signal set to ai-input "no"')
 
-    # Training-only crawlers — blocking these does not affect AI answer
+    # Training-only crawlers - blocking these does not affect AI answer
     # visibility; usually deliberate. Info-level note, distinct issue string.
     train_names = blocked_names(_AI_TRAINING_UAS)
     if train_names or train_signal:
         if train_names:
             tail = ' (+ Content-Signal ai-train=no)' if train_signal else ''
-            issues.append('AI training bots blocked in robots.txt — ' + ', '.join(train_names) + tail
-                          + ' — training/data-collection only; AI answer visibility is not affected')
+            issues.append('AI training bots blocked in robots.txt - ' + ', '.join(train_names) + tail
+                          + ' - training/data-collection only; AI answer visibility is not affected')
         else:
-            issues.append('AI training bots blocked in robots.txt — Content-Signal ai-train=no'
-                          + ' — training opt-out only; AI answer visibility is not affected')
+            issues.append('AI training bots blocked in robots.txt - Content-Signal ai-train=no'
+                          + ' - training opt-out only; AI answer visibility is not affected')
 
     # Classic search engines.
     blocked_se = [ua for ua in _SEARCH_ENGINE_UAS if is_blocked(ua)]
     if blocked_se:
-        issues.append('Search engines blocked in robots.txt — ' + ', '.join(blocked_se))
+        issues.append('Search engines blocked in robots.txt - ' + ', '.join(blocked_se))
     elif _robots_root_blocked(star):
-        issues.append('Search engines blocked in robots.txt — User-agent: * Disallow: /')
+        issues.append('Search engines blocked in robots.txt - User-agent: * Disallow: /')
 
     return issues
 
@@ -333,7 +333,7 @@ _DUP_NOISE_PARAMS = frozenset({
     'add-to-cart', 'replytocom', 'fbclid', 'gclid', 'gad_source', 'gbraid',
     'wbraid', 'mc_cid', 'mc_eid', '_ga', 'msclkid', 'yclid', 'dclid',
     'igshid', 'srsltid', 'ref', 'ref_src', 'ref_url',
-    # WooCommerce SWOOF / product filter plugins — ?swoof=1&pa_cube-size=28mm
+    # WooCommerce SWOOF / product filter plugins - ?swoof=1&pa_cube-size=28mm
     # &product_cat=drawer&really_curr_tax=63-product_cat etc. Each combination
     # is a separate URL but renders the same template; collapsing them stops
     # filter permutations from polluting duplicate-meta/title groups.
@@ -355,7 +355,7 @@ def _normalize_url_for_dup(url):
         parsed = urlparse(url)
     except Exception:
         return url
-    # Collapse http vs https — the same URL on different schemes is the same
+    # Collapse http vs https - the same URL on different schemes is the same
     # page, not a duplicate-title issue. (HTTP-only pages are surfaced
     # separately by the security report.)
     scheme = 'https'
@@ -409,18 +409,18 @@ _BOOT_SHA = _local_commit_sha()
 
 
 # ---------------------------------------------------------------------------
-# Crawl Budget analyzer — on-demand scan that finds URL-parameter patterns
+# Crawl Budget analyzer - on-demand scan that finds URL-parameter patterns
 # generating large numbers of near-duplicate / phantom URLs (page-builder
 # pagination, faceted filters, sort, tracking tags). These waste a crawler's
 # (and Googlebot's) finite crawl budget and are the #1 cause of crawl-queue
 # explosion (see _url_allowed). Returns ready-to-paste robots.txt Disallow
-# rules. Pure stdlib + requests + bs4 — no external AI calls.
+# rules. Pure stdlib + requests + bs4 - no external AI calls.
 # ---------------------------------------------------------------------------
 _CB_PARAM_RULES = [
     (lambda k: k.startswith('e-page-'),            'pagination', 'Elementor Pro Posts/Loop AJAX pagination'),
     (lambda k: k.startswith('e-filter-'),          'faceting',   'Elementor Pro taxonomy filter'),
     (lambda k: k in ('page', 'paged', 'pg', 'pagenum', 'start', 'offset'), 'pagination', 'Pagination parameter'),
-    (lambda k: k in ('orderby', 'order', 'sort', 'sort_by', 'sortby'),     'sort',       'Result sorting — duplicate views of the same set'),
+    (lambda k: k in ('orderby', 'order', 'sort', 'sort_by', 'sortby'),     'sort',       'Result sorting - duplicate views of the same set'),
     (lambda k: k in ('filter', 'filters', 'filter_by') or k.startswith('filter_') or k.endswith('_filter') or k.startswith('pa_') or k in ('color', 'colour', 'size', 'brand', 'min_price', 'max_price', 'swoof', 'jsf'), 'faceting', 'Faceted navigation filter'),
     (lambda k: k.startswith('utm_') or k in ('gclid', 'fbclid', 'msclkid', 'mc_cid', 'mc_eid', 'yclid'), 'tracking', 'Campaign / click tracking tag'),
     (lambda k: k in ('replytocom', 'phpsessid', 'sessionid', 'sid', 'jsessionid'), 'session', 'Session / comment-reply parameter'),
@@ -575,7 +575,7 @@ def _analyze_crawl_budget(start_url, max_pages=14, timeout=10):
         recommend = bool(typ) or cnt >= VOL_THRESHOLD
         params.append({
             'key': nk, 'type': typ or 'parameter',
-            'why': why or f'{cnt} URLs generated by one parameter — high-volume crawl trap',
+            'why': why or f'{cnt} URLs generated by one parameter - high-volume crawl trap',
             'count': cnt, 'max_num': b['max_num'], 'examples': b['examples'], 'trap': recommend,
         })
     _sev = {'pagination': 5, 'faceting': 4, 'sort': 3, 'tracking': 2, 'session': 2, 'search': 1, 'parameter': 0}
@@ -637,13 +637,13 @@ def update_self():
     Restart is handled separately (POST /restart) so the UI can fire it
     immediately after.
 
-    Windows-safe by design — this is the path that was bricking installs:
+    Windows-safe by design - this is the path that was bricking installs:
       * Every git call runs with `-c gc.auto=0` so git never repacks
         objects mid-update (the usual cause of "Unlink of file failed:
         .git/objects/..." when the app process is still running), plus
         GIT_OPTIONAL_LOCKS=0 to stop background index refreshes grabbing
         locks the running process holds.
-      * It no longer refuses when tracked files look "modified" — on
+      * It no longer refuses when tracked files look "modified" - on
         Windows a CRLF checkout makes git report every file as changed,
         which used to abort the update outright.
       * When a clean fast-forward isn't possible (CRLF-dirtied tree, a
@@ -655,7 +655,7 @@ def update_self():
     import subprocess as _sp
     repo = os.path.dirname(os.path.abspath(__file__))
     if not os.path.isdir(os.path.join(repo, '.git')):
-        return jsonify({'ok': False, 'error': 'Not a git checkout — install via git clone to use auto-update.'}), 400
+        return jsonify({'ok': False, 'error': 'Not a git checkout - install via git clone to use auto-update.'}), 400
 
     _env = {**os.environ, 'GIT_OPTIONAL_LOCKS': '0'}
     def _git(*args, timeout=60):
@@ -664,7 +664,7 @@ def update_self():
 
     def _req_hash():
         """SHA1 of requirements.txt so we can tell if deps changed and need a
-        reinstall after the pull — an update that adds a dependency would
+        reinstall after the pull - an update that adds a dependency would
         otherwise crash the app on restart and look like a brick."""
         try:
             import hashlib
@@ -703,9 +703,9 @@ def update_self():
                 dep = _sp.run([pip, 'install', '-r', os.path.join(repo, 'requirements.txt')],
                               capture_output=True, text=True, timeout=300)
                 msg += ' Dependencies updated.' if dep.returncode == 0 \
-                    else ' WARNING: dependency reinstall failed — restart may fail.'
+                    else ' WARNING: dependency reinstall failed - restart may fail.'
             else:
-                msg += ' (requirements changed but venv pip not found — reinstall manually.)'
+                msg += ' (requirements changed but venv pip not found - reinstall manually.)'
 
         after = _local_commit_sha()
         return jsonify({
@@ -739,7 +739,7 @@ def restart_self():
         # no-console pythonw process: DETACHED_PROCESS and every cmd.exe/`start`
         # variant silently no-op here (and `start` in a console-less context is
         # what threw the "Windows cannot find '\\'" shell error). The child
-        # survives us being killed — Windows doesn't cascade-kill children.
+        # survives us being killed - Windows doesn't cascade-kill children.
         CREATE_NO_WINDOW = 0x08000000
         pyw = os.path.join(repo, 'venv', 'Scripts', 'pythonw.exe')
         if not os.path.exists(pyw):
@@ -824,11 +824,11 @@ CMS_PROFILES = {
         ],
         'suggested_settings': {'render_js': False, 'max_workers': 5},
         'schema_warnings': [
-            'OnlineStore schema without a visible physical address triggers Google validation warnings — prefer plain Organization.',
+            'OnlineStore schema without a visible physical address triggers Google validation warnings - prefer plain Organization.',
             'Shopify themes often auto-emit Organization + WebSite schema; check for duplication before adding custom blocks.',
         ],
         'tips': [
-            'Shopify uses /search?q= — valid SearchAction target.',
+            'Shopify uses /search?q= - valid SearchAction target.',
             'Watch for ?variant= and ?srsltid= duplicate URLs.',
         ],
     },
@@ -848,7 +848,7 @@ CMS_PROFILES = {
         'suggested_settings': {'render_js': False, 'max_workers': 3, 'crawl_delay': 1.0},
         'schema_warnings': [],
         'tips': [
-            'WordPress on shared hosting can throttle under load — reduce workers to 2-3 on fragile sites.',
+            'WordPress on shared hosting can throttle under load - reduce workers to 2-3 on fragile sites.',
             'Author, tag, and feed URLs rarely deserve indexing.',
         ],
     },
@@ -865,7 +865,7 @@ CMS_PROFILES = {
         'suggested_settings': {'render_js': False, 'max_workers': 3, 'crawl_delay': 1.0},
         'schema_warnings': [
             'Yoast auto-emits an @graph with Organization, WebSite, WebPage, Article, BreadcrumbList. Do NOT duplicate these in custom schema blocks.',
-            'Yoast can also emit FAQPage if the FAQ block is used — audit before writing your own FAQPage.',
+            'Yoast can also emit FAQPage if the FAQ block is used - audit before writing your own FAQPage.',
         ],
         'tips': [
             'If you\'re adding custom schema, put it in a new @graph node with distinct @id values.',
@@ -893,7 +893,7 @@ CMS_PROFILES = {
         'suggested_settings': {'render_js': False, 'max_workers': 5},
         'schema_warnings': [],
         'tips': [
-            'Webflow handles trailing slashes at the server — confirm redirect behaviour is consistent.',
+            'Webflow handles trailing slashes at the server - confirm redirect behaviour is consistent.',
         ],
     },
     'wix': {
@@ -902,7 +902,7 @@ CMS_PROFILES = {
         'suggested_settings': {'render_js': True, 'max_workers': 1},
         'schema_warnings': [],
         'tips': [
-            'Wix is heavily client-side rendered — enable Render JS or the link graph will be incomplete.',
+            'Wix is heavily client-side rendered - enable Render JS or the link graph will be incomplete.',
         ],
     },
     'squarespace': {
@@ -911,8 +911,8 @@ CMS_PROFILES = {
         'suggested_settings': {'render_js': True, 'max_workers': 3},
         'schema_warnings': [],
         'tips': [
-            'Squarespace injects nav client-side — enable Render JS to discover all pages.',
-            'Meta title template is "<page title> — <site title>" by default.',
+            'Squarespace injects nav client-side - enable Render JS to discover all pages.',
+            'Meta title template is "<page title> - <site title>" by default.',
         ],
     },
     'kajabi': {
@@ -921,7 +921,7 @@ CMS_PROFILES = {
         'suggested_settings': {'render_js': False, 'max_workers': 3},
         'schema_warnings': [],
         'tips': [
-            'Kajabi lays out testimonials deep in the DOM — review word counts manually for sales pages.',
+            'Kajabi lays out testimonials deep in the DOM - review word counts manually for sales pages.',
         ],
     },
     'ghost': {
@@ -962,7 +962,7 @@ def detect_cms(url, html=None, headers=None):
     or {'cms': None, ...} if nothing recognisable is found.
     """
     headers = {k.lower(): (v or '') for k, v in (headers or {}).items()}
-    html_sample = (html or '')[:80000]  # cap scan to first 80kb — fingerprints live in <head>
+    html_sample = (html or '')[:80000]  # cap scan to first 80kb - fingerprints live in <head>
     lower = html_sample.lower()
     signals = []
     confidence = 'low'
@@ -1066,7 +1066,7 @@ _CRAWL_NOISE_PARAMS = frozenset({
     'fbclid', 'gclid', 'mc_cid', 'mc_eid', 'gad_source', 'gbraid', 'wbraid',
     'msclkid', 'yclid', 'dclid', 'igshid', 'srsltid',
     'ref', 'ref_src', 'ref_url',
-    # WooCommerce action endpoints — not real pages.
+    # WooCommerce action endpoints - not real pages.
     'add-to-cart', 'remove_item', 'removed_item', 'undo_item',
     'wc-ajax', 'wc-api', 'wcml_currency', 'orderby', 'product-page',
     'min_price', 'max_price',
@@ -1076,7 +1076,7 @@ _CRAWL_NOISE_PARAMS = frozenset({
 })
 
 # Match a bare email shape in an href that lacks the mailto: prefix.
-# Authors sometimes write <a href="sales@example.com"> by mistake — without
+# Authors sometimes write <a href="sales@example.com"> by mistake - without
 # this filter, urljoin resolves it relative to the current page and the
 # email lands in the crawl as a fake URL like /contact/sales@example.com.
 _MAILTO_NO_SCHEME_RE = _re.compile(r'^[^/\s:?#]+@[^/\s:?#]+\.[A-Za-z]{2,}$')
@@ -1156,9 +1156,9 @@ def _detect_js_platform(html):
 
 
 # Third-party widget images the site owner cannot meaningfully add alt text
-# to — reCAPTCHA badges, analytics 1×1 pixels, chat-widget assets, ad-tech
+# to - reCAPTCHA badges, analytics 1×1 pixels, chat-widget assets, ad-tech
 # beacons. Flagging them as "missing alt" pollutes every page that loads a
-# contact form. Match by hostname OR filename — both routes needed because
+# contact form. Match by hostname OR filename - both routes needed because
 # self-hosted recaptcha-black.svg in a WP theme bypasses the host check.
 _THIRD_PARTY_IMG_HOSTS = (
     'gstatic.com',
@@ -1192,7 +1192,7 @@ def _is_third_party_widget_image(abs_src):
     """Return True for images injected by third-party widgets/trackers.
 
     The crawler can see these but the site owner cannot meaningfully add alt
-    text — reCAPTCHA logos, analytics 1×1 beacons, chat-widget assets, etc.
+    text - reCAPTCHA logos, analytics 1×1 beacons, chat-widget assets, etc.
     Filtering them out keeps the 'imgs missing alt' view actionable.
     """
     if not abs_src:
@@ -1214,7 +1214,7 @@ def _is_third_party_widget_image(abs_src):
 # alt="" is the spec-correct pattern for decorative images, but on real sites
 # the bucket also catches photos / screenshots / logos where the alt was simply
 # forgotten. Match the filename against page-builder shape exports (Elementor,
-# Figma, Sketch, XD) and common UI ornament names — anything that does NOT
+# Figma, Sketch, XD) and common UI ornament names - anything that does NOT
 # match is treated as likely content and surfaced for owner review.
 _DECORATIVE_FILENAME_RE = _re.compile(
     r'(?:'
@@ -1259,11 +1259,11 @@ def _filename_looks_decorative(src):
 
 
 def _parse_no_js_subset(html, base_url):
-    """Parse a subset of SEO-critical fields from raw HTML — used for the
+    """Parse a subset of SEO-critical fields from raw HTML - used for the
     JS-vs-non-JS comparison so we can show what content is missing when JS
     isn't executed. Same parsers/idioms as the main pass in `_crawl_page`,
     just trimmed to the fields we diff against. Kept self-contained on
-    purpose — no shared state with the main crawl pass.
+    purpose - no shared state with the main crawl pass.
     """
     from urllib.parse import urlparse, urljoin
     out = {
@@ -1392,7 +1392,7 @@ def _compute_js_diff(js, nojs):
 def _detect_waf_block(resp):
     """Sniff a 403/429/503 response for WAF block-page markers.
     Returns 'wordfence' / 'cloudflare' / 'sucuri' / 'siteground' / None.
-    Retrying these against the same IP just escalates the block — the caller
+    Retrying these against the same IP just escalates the block - the caller
     should bail out of retries and let the host-pause kick in for ~5 minutes."""
     if resp is None: return None
     if resp.status_code not in (403, 429, 503): return None
@@ -1781,7 +1781,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                 last_exc = None
             except requests.exceptions.SSLError as e:
                 # Broken/incomplete certificate chain (most often a missing
-                # intermediate cert). The site IS reachable — browsers fetch the
+                # intermediate cert). The site IS reachable - browsers fetch the
                 # missing intermediate via AIA automatically, requests does not.
                 # Retry with verification OFF so the crawl can proceed, flag it
                 # loudly, and disable verify for the rest of this session so we
@@ -1816,7 +1816,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                         time.sleep(wait)
                         continue
                 elif 500 <= resp.status_code < 600:
-                    # WAF block-page check — Wordfence/Cloudflare/Sucuri 503s.
+                    # WAF block-page check - Wordfence/Cloudflare/Sucuri 503s.
                     # Retrying just escalates the block, so bail and let the
                     # host-pause window cool the IP down.
                     _waf = _detect_waf_block(resp)
@@ -1828,7 +1828,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                         time.sleep(0.5 * (2 ** attempt))  # 0.5s, 1s, 2s
                         continue
                 elif resp.status_code == 403:
-                    # WAF check first — UA-swap won't help against an IP-flag,
+                    # WAF check first - UA-swap won't help against an IP-flag,
                     # and trying it just spends quota.
                     _waf = _detect_waf_block(resp)
                     if _waf:
@@ -1836,7 +1836,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                         break
                     # Cloudflare-style managed challenge. Testing showed no UA
                     # (Googlebot/bingbot/Chrome/Firefox), no header set and no
-                    # headless browser gets through — only a headed one — and
+                    # headless browser gets through - only a headed one - and
                     # the host issues no clearance cookie, so every page needs
                     # the browser. Skip the UA swap entirely here: it cannot
                     # work and each attempt is another 403 against the host.
@@ -1850,11 +1850,11 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                                 result['challenge_solved'] = True
                             else:
                                 result['issues'].append(
-                                    'Bot challenge (Cloudflare) could not be solved — page not crawlable: '
+                                    'Bot challenge (Cloudflare) could not be solved - page not crawlable: '
                                     + (_ch_err or 'unknown error'))
                         else:
                             result['issues'].append(
-                                'Bot challenge (Cloudflare) blocked this page — enable "Solve bot challenges" to crawl this site')
+                                'Bot challenge (Cloudflare) blocked this page - enable "Solve bot challenges" to crawl this site')
                         break
                     # One UA-swap attempt to dodge Cloudflare-style fingerprinting.
                     # Only swap UA on the first attempt so we don't keep cycling.
@@ -1885,13 +1885,13 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         result['retries'] = retries_done
         if ssl_bypassed:
             result['ssl_verify_failed'] = True
-            result['issues'].append('SSL certificate verification failed (incomplete chain / untrusted cert) — crawled with verification disabled; fix the cert chain')
+            result['issues'].append('SSL certificate verification failed (incomplete chain / untrusted cert) - crawled with verification disabled; fix the cert chain')
         result['status_code'] = challenge_status if challenge_html else resp.status_code
         result['response_time'] = round(resp.elapsed.total_seconds(), 2)
         result['content_type'] = resp.headers.get('Content-Type', '')[:50]
         result['last_modified'] = resp.headers.get('Last-Modified', '')[:60]
 
-        # Track redirects — classify by type so trivial normalizations (trailing slash,
+        # Track redirects - classify by type so trivial normalizations (trailing slash,
         # www, https) don't pollute the main Redirect bucket
         if resp.history:
             from urllib.parse import urlparse as _up
@@ -1907,7 +1907,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             # No-op loop: the server bounced us through 1+ hops but landed
             # right back at the requested URL (same scheme + host + path +
             # query). Common with Wordfence / SiteGround / Cloudflare cookie
-            # handshakes. Not a real redirect from the user/SEO perspective —
+            # handshakes. Not a real redirect from the user/SEO perspective -
             # don't set redirect_url, don't append an issue, don't classify.
             # Otherwise the Redirects bucket showed "From: X  To: X" rows
             # the user couldn't action.
@@ -1922,7 +1922,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                 result['redirect_url'] = resp.url
                 # The first hop carries the real 3xx code (301/302/307/308).
                 # status_code on the row is the FINAL 200 because we follow
-                # redirects, so capture the originating status separately —
+                # redirects, so capture the originating status separately -
                 # otherwise the Redirects view can't tell permanent from
                 # temporary.
                 result['redirect_status'] = resp.history[0].status_code
@@ -1996,7 +1996,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         # --- Pagination detection ---
         import re as _re_pag
         _pag_path = _re_pag.search(r'/page/\d+/?$', _parsed_url.path)
-        # Leading _? catches builder-prefixed params like ?_page=2 —
+        # Leading _? catches builder-prefixed params like ?_page=2 -
         # \b alone never fires between '_' and 'page' (both word chars).
         _pag_query = _re_pag.search(r'(?:^|[?&;])\s*_?(page|paged|pg)\s*=\s*[2-9]\d*', _parsed_url.query)
         result['is_pagination'] = bool(_pag_path or _pag_query)
@@ -2039,7 +2039,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         # Strategy: wait for `load` (fires after all initial subresources), then
         # try (but don't require) networkidle as a short grace window so late
         # analytics scripts (GA4, GTM, FB Pixel) can inject. Wix/Shopify/React
-        # SPAs often ping telemetry continuously, so networkidle never settles —
+        # SPAs often ping telemetry continuously, so networkidle never settles -
         # we still read .content() regardless so we don't fall back to the
         # empty pre-JS HTML. That silent fallback was why "No analytics
         # detected" fired on JS-rendered sites like Wix.
@@ -2072,7 +2072,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         result['meta_len'] = len(result['meta_description'])
 
         # H1s and H2s (full lists, not just first/count). Pick the first
-        # non-empty H1 for the displayed column value — themes that wrap a
+        # non-empty H1 for the displayed column value - themes that wrap a
         # logo image in <h1> emit an empty H1 as the first tag, which would
         # otherwise mask a real H1 later in the DOM and cause the row to be
         # flagged as both Missing H1 and Multiple H1s.
@@ -2091,7 +2091,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         result['h2_list'] = [_clean_heading(t)[:200] for t in h2_tags][:20]
         result['h2_count'] = len(h2_tags)
 
-        # Canonical — classify as self / canonicalised / mismatch
+        # Canonical - classify as self / canonicalised / mismatch
         can_tag = soup.find('link', attrs={'rel': 'canonical'})
         result['canonical'] = can_tag.get('href', '') if can_tag else ''
         if result['canonical']:
@@ -2101,7 +2101,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             if same:
                 result['canonical_kind'] = 'self'
             else:
-                # canonical points elsewhere — that's a canonicalised page
+                # canonical points elsewhere - that's a canonicalised page
                 result['canonical_kind'] = 'canonicalised'
         else:
             result['canonical_match'] = False
@@ -2114,7 +2114,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             if hl and hf:
                 result['hreflang'].append({'lang': hl, 'href': urljoin(url, hf)})
 
-        # Schema types — schema.org @type can be a single string or a list
+        # Schema types - schema.org @type can be a single string or a list
         # ("@type": ["Service", "LocalBusiness"]). Flatten to individual
         # strings so the client receives list[str] and rendering doesn't
         # choke on a nested array element.
@@ -2141,7 +2141,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                             _push_type(item['@type'])
             except Exception:
                 pass
-        # Microdata (itemtype="https://schema.org/Product") — older themes
+        # Microdata (itemtype="https://schema.org/Product") - older themes
         # mark up with microdata instead of JSON-LD; without this they read
         # as "no structured data" when they plainly have some.
         for el in soup.find_all(attrs={'itemtype': True})[:25]:
@@ -2159,7 +2159,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             elif nm.startswith('twitter:') and content:
                 result['twitter_tags'][nm[8:]] = content[:500]
 
-        # Analytics / tracking pixels — inspect script srcs + inline JS
+        # Analytics / tracking pixels - inspect script srcs + inline JS
         # Each entry: (label, list of regex patterns to search anywhere in the HTML)
         _TRACKERS = [
             ('GA4',               [r'gtag/js\?id=G-', r"gtag\(\s*'config'\s*,\s*'G-"]),
@@ -2196,7 +2196,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             result['indexable'] = False
             result['issues'].append('noindex')
 
-        # Word count — strip nav/footer/script/style + class-based nav for
+        # Word count - strip nav/footer/script/style + class-based nav for
         # non-semantic sites (Elementor/Divi/WP themes that render nav inside
         # <div class="elementor-nav-menu">). Also prefer <main>/<article>
         # content when present so the body word count reflects actual content,
@@ -2255,17 +2255,17 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         text_root = main_container if main_container else soup_body
         body_text = text_root.get_text(separator=' ', strip=True)
         result['word_count'] = len(body_text.split()) if body_text else 0
-        # Cap body text at 30k chars — sufficient for shingle-based near-dup
+        # Cap body text at 30k chars - sufficient for shingle-based near-dup
         # detection on any reasonable page; keeps the SSE payload bounded.
         result['body_text'] = (body_text[:30_000] if body_text else '')
 
-        # Body hash for exact-duplicate detection — normalize whitespace first
+        # Body hash for exact-duplicate detection - normalize whitespace first
         import hashlib as _hashlib
         _norm = ' '.join(body_text.lower().split())
         result['body_hash'] = _hashlib.md5(_norm.encode('utf-8', errors='ignore')).hexdigest() if _norm else ''
 
         # Mixed content: HTTPS page loading HTTP resources.
-        # <link> is rel-dependent — most rels are pure metadata (rel="profile"
+        # <link> is rel-dependent - most rels are pure metadata (rel="profile"
         # for XFN, rel="canonical", rel="alternate", rel="EditURI"/"pingback"/
         # "https://api.w.org/" for WP) and don't trigger any fetch. Browsers
         # only fire mixed-content warnings on the rels below.
@@ -2294,7 +2294,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                     mixed.append(v)
             result['mixed_content'] = mixed[:20]
 
-        # Images — smarter than "any <img> without alt".
+        # Images - smarter than "any <img> without alt".
         # Matches what Google + WCAG actually care about:
         #   - Missing `alt` attribute entirely = real issue (flag)
         #   - `alt=""` explicitly = decorative, correct pattern (info, not issue)
@@ -2303,17 +2303,17 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         #     (the image doesn't need its own alt for screen readers).
         imgs = soup.find_all('img')
         result['images_total'] = len(imgs)
-        no_alt_imgs = []              # offending — no alt attr AND not decorative
-        no_alt_data = []              # rich per-image records — feeds the missing-alt detail row
-        all_images_data = []          # every meaningful image on the page — feeds the All Images panel
-        empty_alt_count = 0           # <img alt=""> on genuinely decorative imagery — correct pattern
-        empty_alt_content_imgs = []   # <img alt=""> on what looks like content (photo/screenshot/logo) — needs review
+        no_alt_imgs = []              # offending - no alt attr AND not decorative
+        no_alt_data = []              # rich per-image records - feeds the missing-alt detail row
+        all_images_data = []          # every meaningful image on the page - feeds the All Images panel
+        empty_alt_count = 0           # <img alt=""> on genuinely decorative imagery - correct pattern
+        empty_alt_content_imgs = []   # <img alt=""> on what looks like content (photo/screenshot/logo) - needs review
         skipped_decorative = 0        # skipped via heuristics (tracker px, aria-hidden, widgets, labeled parent)
 
         def _has_accessible_name(node):
-            """Whether a parent link/button carries its own accessible name —
+            """Whether a parent link/button carries its own accessible name -
             text, aria-label, aria-labelledby, or title (own or on a descendant
-            img per W3C accessible-name algorithm) — making a missing/empty img
+            img per W3C accessible-name algorithm) - making a missing/empty img
             alt fine for screen readers."""
             if not node:
                 return False
@@ -2339,7 +2339,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             alt_attr = img.get('alt')  # None if missing, '' if empty, str otherwise
             src = img.get('src', '') or img.get('data-src', '') or ''
 
-            # Decorative / non-content filters — applied to BOTH the
+            # Decorative / non-content filters - applied to BOTH the
             # missing-alt list and the All Images list. We don't want
             # tracking pixels or hidden spacers polluting either view.
             aria_hidden = (img.get('aria-hidden') or '').lower() == 'true'
@@ -2362,14 +2362,14 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             _img_base = (getattr(resp, 'url', None) or url) if resp is not None else url
             abs_src = urljoin(_img_base, src)
 
-            # Third-party widget filter — reCAPTCHA badges, analytics pixels,
+            # Third-party widget filter - reCAPTCHA badges, analytics pixels,
             # chat widgets etc. The site owner can't write alt text for them
             # and they pollute every page that has a contact form.
             if _is_third_party_widget_image(abs_src):
                 skipped_decorative += 1
                 continue
 
-            # Capture parent + surrounding once per image — used by both
+            # Capture parent + surrounding once per image - used by both
             # the missing-alt detail row and the All Images panel.
             _ptag = img.find_parent(['a', 'button', 'figure'])
             _ptag_name = _ptag.name if _ptag else ''
@@ -2381,7 +2381,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             # Per W3C accessible-name computation: when alt="" inside a link,
             # the link still has an accessible name if the img carries
             # title/aria-label OR the link itself does. Don't flag those as
-            # "empty in link" — screen readers do read them.
+            # "empty in link" - screen readers do read them.
             if alt_attr is None:
                 _classification = 'missing'
             elif alt_attr.strip() == '':
@@ -2429,7 +2429,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                     empty_alt_count += 1
                 continue
             if alt_attr is not None and alt_attr.strip():
-                continue  # Has meaningful alt — good
+                continue  # Has meaningful alt - good
 
             # alt is missing entirely. Skip if the parent link/button
             # already carries the accessible name.
@@ -2452,7 +2452,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         result['images_no_alt'] = len(no_alt_imgs)
         result['images_no_alt_urls'] = no_alt_imgs[:20]  # cap at 20 per page
         result['images_no_alt_data'] = no_alt_data       # rich per-image records (cap 20)
-        result['images_all_data']    = all_images_data   # every meaningful img (cap 50) — feeds All Images panel
+        result['images_all_data']    = all_images_data   # every meaningful img (cap 50) - feeds All Images panel
         result['images_empty_alt'] = empty_alt_count
         result['images_empty_alt_content'] = len(empty_alt_content_imgs)
         result['images_empty_alt_content_urls'] = empty_alt_content_imgs[:20]
@@ -2460,7 +2460,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
 
         # Links - extract internal + external with anchor text + placement.
         # Placement = which site region the link sits in (nav / header / footer / main),
-        # so users can tell boilerplate links from content links — like Screaming Frog.
+        # so users can tell boilerplate links from content links - like Screaming Frog.
         def _placement(a_tag):
             for ancestor in a_tag.parents:
                 name = (getattr(ancestor, 'name', None) or '').lower()
@@ -2481,7 +2481,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         # Resolve relative hrefs against the FINAL URL after redirects, not
         # the request URL. Otherwise crawling http://example.com/ (which 301s
         # to https://example.com/) produces http://example.com/services for
-        # every <a href="/services"> in the body — bogus HTTP URLs that don't
+        # every <a href="/services"> in the body - bogus HTTP URLs that don't
         # exist anywhere in the actual HTML.
         link_base = (getattr(resp, 'url', None) or url) if resp is not None else url
         # Honor <base href> when present. The HTML spec says relative URLs
@@ -2489,7 +2489,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         # directory-style URLs (/page/) + relative links without a leading
         # slash (href="other/") otherwise spawn infinite phantom nested paths
         # (/page/other/, /page/other/more/, …) whenever the server returns 200
-        # for arbitrary depths — a crawler trap that buries real pages.
+        # for arbitrary depths - a crawler trap that buries real pages.
         base_tag = soup.find('base', href=True)
         if base_tag:
             base_href = (base_tag.get('href') or '').strip()
@@ -2514,13 +2514,13 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                 or href_low.startswith('data:')
                 or href_low.startswith('file:')):
                 continue
-            # Bare email written without the mailto: prefix —
+            # Bare email written without the mailto: prefix -
             # <a href="sales@example.com">. urljoin would otherwise produce
-            # https://example.com/path/sales@example.com — the email lands
+            # https://example.com/path/sales@example.com - the email lands
             # in the crawl as a fake URL.
             if '@' in href and _MAILTO_NO_SCHEME_RE.match(href):
                 continue
-            # Plain text pasted into an href — e.g. a street address or a
+            # Plain text pasted into an href - e.g. a street address or a
             # Google Maps Plus Code (<a href="7FG4+8Q Springfield, Example
             # State">). A raw space can't appear in a real URL, and
             # with no scheme urljoin resolves the text relative to the
@@ -2558,7 +2558,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                         if src:
                             fname = src.split('?', 1)[0].rstrip('/').split('/')[-1][:80]
                         if alt and fname:
-                            anchor = f'[image: {alt} — {fname}]'
+                            anchor = f'[image: {alt} - {fname}]'
                         elif alt:
                             anchor = f'[image: {alt}]'
                         elif fname:
@@ -2577,7 +2577,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
                 ext_count += 1
                 if len(ext_links_list) < 300:  # cap payload
                     # Capture rel + target for the External Links report.
-                    # rel is multi-token ("nofollow ugc sponsored noopener") —
+                    # rel is multi-token ("nofollow ugc sponsored noopener") -
                     # join with spaces and lowercase for cheap substring checks.
                     rel_attr = a.get('rel') or []
                     if isinstance(rel_attr, list):
@@ -2616,13 +2616,13 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         result['external_link_urls'] = ext_links_list
         result['external_links'] = ext_count
 
-        # Issues detection — skip content/SEO checks for noindex or pagination pages
+        # Issues detection - skip content/SEO checks for noindex or pagination pages
         # (noindex = Google won't rank it; pagination = archive duplicate, not a canonical page)
         # Also skip URLs that redirected: the resolved target is crawled separately and
         # any content issues belong on that row, not on the 301 source.
         # When ignore_noindex is set, treat noindex pages like indexable ones for
         # the audit so the user sees the full warning/info list, not just the flag.
-        # ALSO skip canonicalised pages — they're declared duplicates so any
+        # ALSO skip canonicalised pages - they're declared duplicates so any
         # 'Missing meta' / 'Missing title' / 'Thin content' on them is noise;
         # those issues are real on the canonical page and would surface there.
         # The page itself still appears under the 'Canonicalised' report.
@@ -2648,7 +2648,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             elif result['meta_len'] < 70:
                 result['issues'].append(f'Meta desc too short ({result["meta_len"]})')
 
-            # "Missing H1" only fires when no H1 tag has any text — an
+            # "Missing H1" only fires when no H1 tag has any text - an
             # <h1></h1> wrapping a logo image doesn't make the page
             # "missing" if a populated H1 sits below it.
             h1_count = len(result['h1_list'])
@@ -2679,28 +2679,28 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             if not soup.find('meta', attrs={'name': _re.compile(r'^viewport$', _re.I)}):
                 result['issues'].append('Missing viewport')
 
-            # Open Graph — any indexable page should have at least og:title + og:image for social sharing
+            # Open Graph - any indexable page should have at least og:title + og:image for social sharing
             og = result['og_tags']
             if not og.get('title') and not og.get('image'):
                 result['issues'].append('Missing Open Graph tags')
             elif not og.get('image'):
                 result['issues'].append('Missing og:image')
 
-            # Twitter Card — not critical but worth flagging
+            # Twitter Card - not critical but worth flagging
             if not result['twitter_tags']:
                 result['issues'].append('Missing Twitter Card')
 
-            # Analytics — flag pages with no tracking at all. But if the site
+            # Analytics - flag pages with no tracking at all. But if the site
             # is clearly JS-rendered (Wix, Shopify, Squarespace, Webflow, or
             # client-side React/Vue/Next) and we crawled without JS rendering,
-            # the HTML we scanned was the unhydrated shell — so "No analytics
+            # the HTML we scanned was the unhydrated shell - so "No analytics
             # detected" is a false negative. Emit a more actionable warning
             # instead so the user knows to re-run with Render JS enabled.
             if not result['analytics']:
                 platform = _detect_js_platform(raw_html) if not result.get('js_rendered') else None
                 if platform:
                     result['js_platform'] = platform
-                    result['issues'].append(f'Analytics unknown — {platform} site needs Render JS')
+                    result['issues'].append(f'Analytics unknown - {platform} site needs Render JS')
                 else:
                     result['issues'].append('No analytics detected')
 
@@ -2726,7 +2726,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
             result.setdefault('render_errors', []).append(f'page_checks: {str(e)[:120]}')
 
         # --- Issues that apply regardless of indexability ---
-        # Canonicalised flag — surfaced even when content checks are skipped
+        # Canonicalised flag - surfaced even when content checks are skipped
         # so the page still appears under the Canonicalised report.
         if is_canonicalised:
             result['issues'].append('Canonicalised (points elsewhere)')
@@ -2741,7 +2741,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         if result['mixed_content']:
             result['issues'].append(f'Mixed content ({len(result["mixed_content"])} resources)')
 
-        # Security headers — we still capture their presence in result['security']
+        # Security headers - we still capture their presence in result['security']
         # for the page-detail panel, but we don't flag missing HSTS / X-Content-Type-Options
         # / X-Frame-Options / CSP / Referrer-Policy as issues (low signal-to-noise for SEO).
         sec = result.get('security', {})
@@ -2776,7 +2776,7 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         result['error'] = 'SSL certificate error'
         _m = str(e)
         if 'CERTIFICATE_VERIFY_FAILED' in _m or 'unable to get local issuer' in _m or 'self signed' in _m.lower():
-            result['issues'].append('SSL certificate verification failed (incomplete chain or untrusted/self-signed cert) — loads in browsers but blocks crawlers')
+            result['issues'].append('SSL certificate verification failed (incomplete chain or untrusted/self-signed cert) - loads in browsers but blocks crawlers')
         else:
             result['issues'].append('SSL error: ' + str(e)[:90])
     except requests.exceptions.ConnectionError as e:
@@ -2785,11 +2785,11 @@ def _crawl_page(url, session, domain, pw_renderer=None, ignore_noindex=False, ca
         result['error'] = 'Connection error'
         _m = str(e).lower()
         if 'name or service not known' in _m or 'failed to resolve' in _m or 'nodename nor servname' in _m:
-            result['issues'].append('Connection error — DNS lookup failed (domain not resolving)')
+            result['issues'].append('Connection error - DNS lookup failed (domain not resolving)')
         elif 'refused' in _m:
-            result['issues'].append('Connection error — connection refused (server not accepting connections)')
+            result['issues'].append('Connection error - connection refused (server not accepting connections)')
         elif 'reset' in _m:
-            result['issues'].append('Connection error — connection reset (often bot/WAF blocking non-browser clients)')
+            result['issues'].append('Connection error - connection reset (often bot/WAF blocking non-browser clients)')
         else:
             result['issues'].append('Connection error')
     except Exception as e:
@@ -2808,7 +2808,7 @@ def _teardown_pw(pw_renderer):
 
 # -------- Sitemap analysis ---------------------------------------------------
 # Discovers a site's XML sitemap(s), parses every URL, and diffs them against a
-# crawl. Mirrors the Screaming Frog Sitemaps tab. No external API or LLM —
+# crawl. Mirrors the Screaming Frog Sitemaps tab. No external API or LLM -
 # pure XML parsing + set diffs.
 _SITEMAP_DEFAULT_PATHS = (
     '/sitemap.xml', '/sitemap_index.xml', '/sitemap-index.xml',
@@ -2854,7 +2854,7 @@ def _discover_sitemaps(domain):
                         warnings.append(
                             f"robots.txt declares sitemap on a different host ({sm_host}) "
                             f"than the site being analysed ({analysed_host}). "
-                            f"Likely multisite misconfiguration — also probing default paths."
+                            f"Likely multisite misconfiguration - also probing default paths."
                         )
                     _add(sm_url, src)
     except Exception:
@@ -2950,7 +2950,7 @@ def _fetch_sitemap_recursive(seed_urls, max_depth=5):
     return urls, sitemaps_meta, errors
 
 
-# File extensions that are NOT HTML pages — sitemaps shouldn't list them
+# File extensions that are NOT HTML pages - sitemaps shouldn't list them
 # and the missing-from-sitemap report should skip them entirely.
 _NON_HTML_EXTS = (
     '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.ico', '.bmp', '.tiff', '.avif',
@@ -2978,7 +2978,7 @@ def _norm_url(u):
     Collapses http vs https, www vs non-www, and trailing slash so the
     sitemap-vs-crawl comparison doesn't flag http variants as "missing from
     sitemap" when the sitemap only lists https URLs. Also strips trailing
-    whitespace / %20 — Shopify and other CMSs serve the same page at /foo
+    whitespace / %20 - Shopify and other CMSs serve the same page at /foo
     and /foo%20 when an internal <a href> has a trailing space.
     """
     if not u:
@@ -3047,7 +3047,7 @@ def _same_host_sitemap_urls(sm_urls, domain):
 
     robots.txt on multisite setups frequently points at a *sibling* subdomain's
     sitemap (e.g. shop.example.com → blog.example.com). Those
-    URLs belong to a different site and must NOT be diffed against this crawl —
+    URLs belong to a different site and must NOT be diffed against this crawl -
     otherwise every uncrawled foreign URL floods the "in sitemap, not crawled"
     orphan report. Returns (kept_entries, foreign_host_counts) so the caller can
     tell the user exactly what was excluded instead of silently dropping it.
@@ -3072,7 +3072,7 @@ def _foreign_host_warning(foreign_hosts, domain):
         return None
     total = sum(foreign_hosts.values())
     detail = ', '.join(f"{h} ({n})" for h, n in sorted(foreign_hosts.items(), key=lambda x: -x[1]))
-    return (f"Excluded {total} sitemap URL(s) on a different host — {detail} — from the "
+    return (f"Excluded {total} sitemap URL(s) on a different host - {detail} - from the "
             f"orphan / coverage diff. They belong to another site, not {_bare_host(domain)}, "
             f"so they are not orphans of this crawl.")
 
@@ -3158,7 +3158,7 @@ def sitemap_analyse():
             continue
         if _is_non_html_url(r.get('url')):
             continue
-        # Skip pages whose <link rel=canonical> points elsewhere — they're
+        # Skip pages whose <link rel=canonical> points elsewhere - they're
         # not the canonical version, so they shouldn't be in the sitemap.
         # Critical on Shopify where /collections/X/products/Y
         # canonicalises to /products/Y.
@@ -3189,7 +3189,7 @@ def sitemap_analyse():
         # Only flag a "redirect in sitemap" when the redirect lands somewhere
         # OTHER than the sitemap URL. Trailing-slash / case / scheme normalization
         # often makes a crawled URL redirect to the canonical version that the
-        # sitemap already lists — that's not a sitemap problem, that's the sitemap
+        # sitemap already lists - that's not a sitemap problem, that's the sitemap
         # being correct. _norm_url strips trailing slashes, so this catches it.
         _rdest = crawled.get('redirect_url')
         if _rdest and _norm_url(_rdest) != nrm:
@@ -3212,7 +3212,7 @@ def sitemap_analyse():
         warnings.append('At least one sitemap is served over HTTP, not HTTPS.')
     for sm in sitemaps_meta:
         if (sm.get('url_count') or 0) > 50000:
-            warnings.append(f"{sm['url']} contains {sm['url_count']} URLs — over the 50,000 sitemap limit.")
+            warnings.append(f"{sm['url']} contains {sm['url_count']} URLs - over the 50,000 sitemap limit.")
     no_lastmod = sum(1 for u in sm_urls if not u.get('lastmod'))
     if sm_urls and no_lastmod / len(sm_urls) > 0.5:
         warnings.append(f"{no_lastmod}/{len(sm_urls)} URLs in sitemap are missing <lastmod>.")
@@ -3389,9 +3389,9 @@ def recrawl_url():
 def _probe_url_traps(base, results, session):
     """Post-crawl soft-404 / infinite-URL-trap probe (max 2 extra requests).
 
-    Probe A (root): GET /<random-token>/ — a 200 means the server never 404s,
+    Probe A (root): GET /<random-token>/ - a 200 means the server never 404s,
     so every mistyped or bot-invented URL becomes an indexable duplicate.
-    Probe B (nested): GET <real crawled page>/<random-token>/ — a 200 here is
+    Probe B (nested): GET <real crawled page>/<random-token>/ - a 200 here is
     worse: the served page's relative links resolve one level deeper, minting
     an INFINITE URL space. Scrapers/bots walk it forever, which bloats the
     index, wastes crawl budget, and can burn unlimited bandwidth on a
@@ -3402,7 +3402,7 @@ def _probe_url_traps(base, results, session):
     token = f"url-trap-probe-{_uuid.uuid4().hex[:10]}"
     out = {'checked': True, 'soft_404': False, 'nested_trap': False, 'probes': []}
     # Nested-probe parent: prefer a single-segment page (cleanest signal),
-    # else any non-homepage 200 page — the trap behaviour is the same.
+    # else any non-homepage 200 page - the trap behaviour is the same.
     parent = fallback = None
     from urllib.parse import urlparse as _up
     for r in results:
@@ -3485,7 +3485,7 @@ def crawl_site():
         render_js = bool(data.get('render_js', False))
         ignore_robots = bool(data.get('ignore_robots', False))
         ignore_noindex = bool(data.get('ignore_noindex', False))
-        # JS vs non-JS compare. Gated on render_js — only meaningful when
+        # JS vs non-JS compare. Gated on render_js - only meaningful when
         # we have something to compare against.
         compare_no_js = bool(data.get('compare_no_js', False)) and render_js
         # Crawl identity. Accepts a preset key ('googlebot', 'bingbot', ...) or
@@ -3495,14 +3495,14 @@ def crawl_site():
         # default: it only launches if a challenge is actually encountered.
         solve_challenges = bool(data.get('solve_challenges', True))
     # Concurrent workers. Default 5 matches Screaming Frog. Clamped to [1, 20].
-    # When render_js is on, Playwright can't share a single page across threads —
+    # When render_js is on, Playwright can't share a single page across threads -
     # force single-worker mode so page state stays consistent.
     max_workers = int(data.get('max_workers', 5) or 5)
     max_workers = max(1, min(20, max_workers))
     if render_js:
         max_workers = 1
 
-    # URL include/exclude patterns — robots.txt syntax (Google's spec):
+    # URL include/exclude patterns - robots.txt syntax (Google's spec):
     #   *       matches any sequence
     #   $       at end anchors end of URL
     #   ?, .    are LITERAL (no fnmatch single-char wildcard surprise)
@@ -3530,7 +3530,7 @@ def crawl_site():
     def _current_max():
         return (ACTIVE_CRAWL_LIMITS.get(crawl_id) or {}).get('max_pages', max_pages)
 
-    # /cdn-cgi/ — Cloudflare infra paths injected by the proxy. The most
+    # /cdn-cgi/ - Cloudflare infra paths injected by the proxy. The most
     # common is /cdn-cgi/l/email-protection (the obfuscated-email endpoint
     # Cloudflare auto-injects) which returns 404 when fetched directly
     # because it's only meant to be loaded as a script via the email
@@ -3562,12 +3562,12 @@ def crawl_site():
         # Page-builder AJAX pagination/filter traps. Elementor Pro's Posts/Loop
         # widget paginates via ?e-page-<widgetid>=N (and filters via
         # ?e-filter-<id>=...), so a single listing page exposes hundreds of
-        # query-string variants — /commentary/ on a real site linked
-        # ?e-page-...=854 — each a rel=canonical duplicate of the base page.
+        # query-string variants - /commentary/ on a real site linked
+        # ?e-page-...=854 - each a rel=canonical duplicate of the base page.
         # A link-following crawler chases every one, AND each variant re-exposes
         # the next, so the queue explodes combinatorially toward infinity (the
         # classic "26k queued on a 9k-page site" blow-up). These are never
-        # content you want indexed, so we skip them by default — matched on the
+        # content you want indexed, so we skip them by default - matched on the
         # query-param KEY so it's widget-id- and page-number-agnostic. Jetpack
         # Infinite Scroll (?infinity) gets the same treatment.
         if query_lower:
@@ -3626,15 +3626,15 @@ def crawl_site():
                 robots_rules = resp.text.count('Disallow')
                 robots_status = 'ignored' if ignore_robots else 'respecting'
                 robots_issues = _analyze_robots_txt(resp.text)
-                yield f"data: {json.dumps({'type':'info','msg':f'Downloaded robots.txt ({robots_rules} Disallow rules) — {robots_status}'})}\n\n"
+                yield f"data: {json.dumps({'type':'info','msg':f'Downloaded robots.txt ({robots_rules} Disallow rules) - {robots_status}'})}\n\n"
                 if robots_issues:
                     yield f"data: {json.dumps({'type':'info','msg':'robots.txt: ' + '; '.join(robots_issues)})}\n\n"
             else:
                 robots_status = 'not found'
-                yield f"data: {json.dumps({'type':'info','msg':f'robots.txt returned HTTP {resp.status_code} — no rules to enforce'})}\n\n"
+                yield f"data: {json.dumps({'type':'info','msg':f'robots.txt returned HTTP {resp.status_code} - no rules to enforce'})}\n\n"
         except Exception as e:
             robots_status = 'error'
-            yield f"data: {json.dumps({'type':'info','msg':f'robots.txt unreachable ({str(e)[:80]}) — continuing without'})}\n\n"
+            yield f"data: {json.dumps({'type':'info','msg':f'robots.txt unreachable ({str(e)[:80]}) - continuing without'})}\n\n"
 
         session = requests.Session()
         # Realistic Chrome header set. Default python-requests UA + empty
@@ -3679,7 +3679,7 @@ def crawl_site():
 
         # Headed-browser fallback for bot challenges. Constructed eagerly but
         # launches lazily on the first challenge, so a normal crawl never pays
-        # for it. Runs on its own virtual display — no window is ever shown.
+        # for it. Runs on its own virtual display - no window is ever shown.
         challenge_browser = None
         if solve_challenges:
             try:
@@ -3809,17 +3809,17 @@ def crawl_site():
                     hint = float(page_data.get('_retry_hint') or 0)
                     existing = host_pause_until.get(host, 0) - time.time()
                     if waf:
-                        # WAF tripped — 30s won't help (Wordfence default block is 5-60min).
+                        # WAF tripped - 30s won't help (Wordfence default block is 5-60min).
                         # Pause 5 min minimum and jump backoff to 20× so any resume crawls
                         # at a crawl.
                         pause_secs = max(hint, 300.0, existing)
                         host_backoff[host] = max(cur * 5, 20.0) if cur < 20.0 else min(cur * 2, 40.0)
                     else:
-                        # Plain transient 503 (host briefly down, not WAF) — short pause.
+                        # Plain transient 503 (host briefly down, not WAF) - short pause.
                         pause_secs = max(hint, 30.0, existing)
                     host_pause_until[host] = time.time() + pause_secs
                 elif status == 403:
-                    # 403 = Cloudflare/Shopify bot block. Treat like 429 — pause
+                    # 403 = Cloudflare/Shopify bot block. Treat like 429 - pause
                     # the host so all workers stop hammering, and escalate backoff
                     # hard so when we resume we're an order of magnitude slower.
                     host_backoff[host] = max(cur * 3, 10.0) if cur < 10.0 else min(cur * 2, 30.0)
@@ -3831,7 +3831,7 @@ def crawl_site():
                         pause_secs = max(60.0, existing)
                     host_pause_until[host] = time.time() + pause_secs
                 elif status == 0 or page_data.get('error'):
-                    # Transient connection/network error — bump backoff lightly,
+                    # Transient connection/network error - bump backoff lightly,
                     # don't pause the host (other URLs may still work fine).
                     host_backoff[host] = min(cur * 1.5, 20.0)
                 else:
@@ -3860,7 +3860,7 @@ def crawl_site():
             """Pop the next URL that passes filters + robots. Returns (url, depth) or None.
             URLs are added to `visited` at enqueue time now (to prevent the same URL
             from being queued N times when N pages link to it), so we don't gate on
-            visited here — it would skip every URL since they're all in visited."""
+            visited here - it would skip every URL since they're all in visited."""
             while queue:
                 url, depth = queue.popleft()
                 if depth > max_depth:
@@ -3906,15 +3906,15 @@ def crawl_site():
                         status = page_data.get('status_code', 0)
                         _waf_kind = page_data.get('_waf_block')
                         if _waf_kind:
-                            # WAF block — surface it immediately, regardless of streak count.
+                            # WAF block - surface it immediately, regardless of streak count.
                             # 5-min pause is already applied via _adjust_host_backoff.
                             _pause = max(0, host_pause_until.get(_up(url).netloc, 0) - time.time())
-                            yield f"data: {json.dumps({'type': 'speed_adjusted', 'reason': f'{_waf_kind.title()} blocked us — host paused {int(_pause)}s, backoff escalated'})}\n\n"
+                            yield f"data: {json.dumps({'type': 'speed_adjusted', 'reason': f'{_waf_kind.title()} blocked us - host paused {int(_pause)}s, backoff escalated'})}\n\n"
                         if status in (429, 503, 403) or status == 0 or page_data.get('error'):
                             consecutive_errors += 1
                             if consecutive_errors in (3, 6, 12):
                                 _reason_code = status if status else 'conn'
-                                yield f"data: {json.dumps({'type': 'speed_adjusted', 'reason': f'HTTP {_reason_code} — per-host back-off active'})}\n\n"
+                                yield f"data: {json.dumps({'type': 'speed_adjusted', 'reason': f'HTTP {_reason_code} - per-host back-off active'})}\n\n"
                         else:
                             consecutive_errors = max(0, consecutive_errors - 1)
 
@@ -3968,12 +3968,12 @@ def crawl_site():
                                     visited.add(alt)
                                 queue.append((link, depth + 1))
 
-                        # Hreflang discovery — region/language alternates are often
+                        # Hreflang discovery - region/language alternates are often
                         # NOT hyperlinked anywhere (JS-only country switchers), so
                         # without this whole region subtrees never get crawled and
                         # flood the sitemap "not crawled" report. Mirror Screaming
                         # Frog: enqueue same-host alternates as discovery-only URLs
-                        # — deliberately NOT recorded in inlinks_map, so orphan
+                        # - deliberately NOT recorded in inlinks_map, so orphan
                         # reports still show pages that have no real inbound
                         # hyperlinks.
                         for _hl in page_data.get('hreflang') or []:
@@ -4014,7 +4014,7 @@ def crawl_site():
                 if _state.get('finalize') or not queue:
                     break
 
-                # Hit the cap with URLs still queued — surface a prompt and
+                # Hit the cap with URLs still queued - surface a prompt and
                 # wait for the user to either bump the cap or finalize.
                 from itertools import islice as _islice
                 queue_sample = [u for u, _d in _islice(queue, 100)]
@@ -4032,7 +4032,7 @@ def crawl_site():
 
         except GeneratorExit:
             # Re-enqueue any in-flight URLs so resume picks them up. URL stays
-            # in `visited` (it's been seen) — dequeue doesn't gate on visited.
+            # in `visited` (it's been seen) - dequeue doesn't gate on visited.
             for _fut, _submitted in list(in_flight.items()):
                 if not _submitted:
                     continue
@@ -4075,7 +4075,7 @@ def crawl_site():
             return
         finally:
             # The challenge browser owns an Xvfb display and a Chrome process.
-            # Close it on every exit path — an unhandled error here would
+            # Close it on every exit path - an unhandled error here would
             # otherwise leak both for the lifetime of the app. close() is
             # idempotent, so the explicit calls below stay harmless.
             if challenge_browser is not None:
@@ -4121,7 +4121,7 @@ def crawl_site():
             # A redirected row's url is the FINAL destination, but inbound links
             # were recorded against the originally-linked (redirecting) URL.
             # Emit under both keys so the Redirects view can show "pages linking
-            # to the redirecting URL — update these" instead of an empty list.
+            # to the redirecting URL - update these" instead of an empty list.
             keys = [u]
             ou = r.get('original_url')
             if ou and ou != u:
@@ -4137,7 +4137,7 @@ def crawl_site():
 
         # Duplicate titles / metas / H1s / body
         # Skip redirected URLs (http/https/www variants that 301 to the canonical)
-        # and non-200 responses — those aren't unique content, just transit stops.
+        # and non-200 responses - those aren't unique content, just transit stops.
         # Dedupe within each group by normalised URL so pagination (/page/2/)
         # and tracking/ecommerce params (?add-to-cart=, ?utm_*, ?replytocom=)
         # don't fragment a single canonical page across its variants.
@@ -4150,7 +4150,7 @@ def crawl_site():
                     continue
                 if r.get('status_code') and r['status_code'] >= 300:
                     continue
-                # Skip canonicalised-elsewhere pages — rel=canonical already
+                # Skip canonicalised-elsewhere pages - rel=canonical already
                 # declares them duplicates of another URL, so flagging here
                 # is double-counting. Critical on Shopify where the same
                 # product is reachable via /products/X and
@@ -4182,7 +4182,7 @@ def crawl_site():
             elif 500 <= sc < 600: rc_buckets['5xx'] += 1
             else: rc_buckets['other'] += 1
 
-        # Redirect chains (2+ hops) — surfaced distinctly from single redirects
+        # Redirect chains (2+ hops) - surfaced distinctly from single redirects
         redirect_chains = [
             {'url': r['url'], 'chain': r['redirect_chain'], 'hops': r['redirect_hops']}
             for r in results if r.get('redirect_hops', 0) >= 2
@@ -4211,7 +4211,7 @@ def crawl_site():
                         if loc.text:
                             _fetch_sitemap(loc.text.strip(), depth + 1, seen)
                 else:
-                    # urlset — collect page URLs
+                    # urlset - collect page URLs
                     for loc in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}loc'):
                         if loc.text:
                             sitemap_urls_set.add(loc.text.strip().rstrip('/'))
@@ -4228,8 +4228,8 @@ def crawl_site():
 
         # Crawl depth distribution (depth tracking needs to be added in BFS queue,
         # stored on page_data via tuple queue; for now derive via shortest inlink path
-        # approximation — homepage=0, pages linked from homepage=1, etc.)
-        # Simpler: use what we have — each page's 'depth' is set by BFS via queue tuple.
+        # approximation - homepage=0, pages linked from homepage=1, etc.)
+        # Simpler: use what we have - each page's 'depth' is set by BFS via queue tuple.
         depth_dist = _dd(int)
         for r in results:
             depth_dist[r.get('depth', 0)] += 1
@@ -4282,10 +4282,10 @@ def crawl_site():
         if len(results) <= 1:
             seed_row = results[0] if results else None
             if not seed_row:
-                stop_reason = 'No pages could be crawled — the start URL could not be fetched.'
+                stop_reason = 'No pages could be crawled - the start URL could not be fetched.'
             elif seed_row.get('error'):
                 extra = '; '.join((seed_row.get('issues') or [])[:2])
-                stop_reason = (f"Crawl stopped at the start page — it returned an error "
+                stop_reason = (f"Crawl stopped at the start page - it returned an error "
                                f"({seed_row.get('error')}). {extra}").strip()
             elif not (seed_row.get('internal_link_urls') or []):
                 if render_js and js_unavailable:
@@ -4300,10 +4300,10 @@ def crawl_site():
                     stop_reason = ("Crawl stopped at the start page. Render JS is on, but the page did not render"
                                    + (f" ({_rerr})" if _rerr else '') + ", so only plain HTML was read and it has no links.")
                 else:
-                    stop_reason = ("Crawl stopped at the start page — it loaded but no internal links were found. "
+                    stop_reason = ("Crawl stopped at the start page - it loaded but no internal links were found. "
                                    "If the site builds its navigation with JavaScript, turn on 'Render JS' and retry.")
             else:
-                stop_reason = ("Crawl stopped at the start page — links were found but none were crawlable "
+                stop_reason = ("Crawl stopped at the start page - links were found but none were crawlable "
                                "(blocked by robots.txt, removed by your URL include/exclude filters, or pointing "
                                "to other domains). Adjust the filters or enable 'Ignore robots.txt' and retry.")
 
@@ -4329,14 +4329,14 @@ def crawl_site():
 
 
 # =============================================================================
-# Saved crawls — store / list / load / delete / compare
+# Saved crawls - store / list / load / delete / compare
 # Storage: ~/.site-crawler-crawls/  (LOCAL ONLY, never pushed to git).
-# Open to all users on this instance — saved crawls are shared.
+# Open to all users on this instance - saved crawls are shared.
 # Note: this is pure file I/O + diff math. No AI / LLM involved.
 # =============================================================================
 
 _CRAWL_FOLDER = os.path.expanduser('~/.site-crawler-crawls')
-# Optional extra crawl dirs (colon-separated env var) — crawls saved there
+# Optional extra crawl dirs (colon-separated env var) - crawls saved there
 # by other local tools appear in the Load saved list too. Writes still go
 # to _CRAWL_FOLDER so we don't fight over ownership; this is a read-only
 # union.
@@ -4348,7 +4348,7 @@ _CRAWL_FOLDERS_RO = [os.path.expanduser(p) for p in
 # Permanent, append-only title history. Lives inside the crawl folder as a
 # .jsonl (skipped by the .json-only 30-day cleanup), so even after a full crawl
 # JSON is purged, every page's title + meta description on each crawl date
-# survives forever — the searchable "what was this page's title on date X"
+# survives forever - the searchable "what was this page's title on date X"
 # archive for catching title/meta regressions. One JSON line per page.
 _CRAWL_TITLE_HISTORY_PATH = os.path.join(_CRAWL_FOLDER, 'crawl-titles.jsonl')
 
@@ -4406,7 +4406,7 @@ def crawl_save():
             }, f)
     except Exception as e:
         return jsonify({'error': f'Save failed: {str(e)[:200]}'}), 500
-    # Permanent title history — append BEFORE the 30-day cleanup so purged
+    # Permanent title history - append BEFORE the 30-day cleanup so purged
     # crawls still leave their titles on record forever.
     _append_crawl_title_history(name, int(time.time()), results)
     # 30-day cleanup
@@ -4600,7 +4600,7 @@ def crawl_compare():
                 diffs[f] = {'old': av, 'new': bv}
         sa = _norm_list(ar.get('schema_types')); sb = _norm_list(br.get('schema_types'))
         if sa != sb:
-            diffs['schema_types'] = {'old': sa or '—', 'new': sb or '—'}
+            diffs['schema_types'] = {'old': sa or '-', 'new': sb or '-'}
         if diffs:
             changed.append({'url': ar.get('url') or br.get('url'), 'diffs': diffs})
 
@@ -4715,7 +4715,7 @@ def crawl_update_rules():
     """Apply new include/exclude patterns AND/OR per-host delay to a crawl
     that's already running.
 
-    Merges into the existing entry — fields not present in the payload keep
+    Merges into the existing entry - fields not present in the payload keep
     their current value. The slider can push only `crawl_delay` without
     blowing away the patterns; the patterns Apply button can push only
     include/exclude without resetting the delay.
@@ -4916,7 +4916,7 @@ def export_crawl_xlsx():
     ws2.column_dimensions['B'].width = 8
     ws2.column_dimensions['C'].width = 80
 
-    # Sheets 3+ — whatever the client built. {name, header, rows}.
+    # Sheets 3+ - whatever the client built. {name, header, rows}.
     extra = data.get('extra_sheets') or []
     used_names = {ws.title, ws2.title}
     def _safe_sheet_name(n):

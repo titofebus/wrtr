@@ -60,7 +60,7 @@ def used_images(repo, content_dirs):
     # Scan content collections (frontmatter + markdown references).
     scan_dirs = [os.path.join(repo, d) for d in content_dirs
                  if os.path.isdir(os.path.join(repo, d))]
-    # Plus site-wide code/data (photos.ts, components) — images referenced
+    # Plus site-wide code/data (photos.ts, components) - images referenced
     # there count as used too.
     for extra in ("src/data", "src/components"):
         full = os.path.join(repo, extra)
@@ -144,7 +144,7 @@ def main():
 
     unused_left = len(pool) - len(picked)
     print(f"\n# {len(picked)} assigned ({unused_left} still unused"
-          f"{'; pool recycled — all images were used once' if recycled else ''})")
+          f"{'; pool recycled - all images were used once' if recycled else ''})")
     return 0
 
 

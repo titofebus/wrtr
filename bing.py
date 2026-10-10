@@ -55,7 +55,7 @@ def _call(op, params=None, retries=2):
         last = r
         time.sleep(2 ** attempt)
     try:
-        last.raise_for_status()  # always raises — no return after this
+        last.raise_for_status()  # always raises - no return after this
     except requests.HTTPError as e:
         raise requests.HTTPError(_safe_error(e), response=e.response)
 
@@ -76,13 +76,13 @@ def _post_with_retry(op, payload, retries=2):
         last = r
         time.sleep(2 ** attempt)
     try:
-        last.raise_for_status()  # always raises — no return after this
+        last.raise_for_status()  # always raises - no return after this
     except requests.HTTPError as e:
         raise requests.HTTPError(_safe_error(e), response=e.response)
 
 
 def queries(limit=25, site=None):
-    """Top search queries (impressions, clicks) — Bing's keyword data."""
+    """Top search queries (impressions, clicks) - Bing's keyword data."""
     d = _call("GetQueryStats", {"siteUrl": _site(site)})
     rows = d.get("d", [])
     return rows[:limit]
@@ -117,19 +117,19 @@ if __name__ == "__main__":
             print(submit_url(args.url, args.site))
         else:
             if args.url:
-                print(f"Note: ignoring URL '{args.url}' — "
+                print(f"Note: ignoring URL '{args.url}' - "
                       f"'url' is only used with 'submit'.", file=sys.stderr)
             qs = queries(site=args.site)
             print(f"Bing: top queries: {len(qs)}")
             for q in qs[:10]:
                 print(f"- {q.get('Query', '')[:55]:55} | impr {q.get('Impressions', 0):6} | clicks {q.get('Clicks', 0)}")
     except FileNotFoundError:
-        print("BING_UNAVAILABLE: .bing-key is missing — regenerate the API key "
+        print("BING_UNAVAILABLE: .bing-key is missing - regenerate the API key "
               "in Bing Webmaster Tools and save it (0600).", file=sys.stderr)
         raise SystemExit(2)
     except requests.HTTPError as e:
         status = e.response.status_code if e.response is not None else "?"
-        hint = " — key revoked or expired?" if status in (401, 403) else ""
+        hint = " - key revoked or expired?" if status in (401, 403) else ""
         print(f"BING_UNAVAILABLE: Bing API error {status}{hint}",
               file=sys.stderr)
         raise SystemExit(2)

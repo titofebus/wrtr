@@ -3,7 +3,7 @@
 Run: .venv/bin/python -m unittest discover -s tests -v
 No network, no credentials, no real files (tmp files only).
 
-Note: fixtures use example.com URLs and queries — they exercise URL/query
+Note: fixtures use example.com URLs and queries - they exercise URL/query
 handling, not brand behavior.
 """
 import json
@@ -168,7 +168,7 @@ class TestLoadPick(unittest.TestCase):
         self.assertIsNone(scan._load_pick(self._write({"query": "q"})))
 
     def test_bool_position_rejected(self):
-        # True is an int subclass — must not pass as a position
+        # True is an int subclass - must not pass as a position
         p = self._write({"date": "d", "query": "q", "page": "u",
                          "position": True, "impressions": 1, "kind": "k"})
         self.assertIsNone(scan._load_pick(p))

@@ -137,7 +137,7 @@ words, Flesch ease ≥ 60.
   faux-conversational pivots, paired adjectives, bold-label bullets).
 - Contractions, burstiness (varied sentence lengths), human fingerprints
   (first person, specific numbers, named people/places).
-- **Em/en dashes are HARD failures.** Any `—` or `-` anywhere in the draft
+- **Em/en dashes are HARD failures.** Any em dash or en dash anywhere in the draft
   blocks publishing. Rewrite with commas, colons, periods, or hyphens.
   This is an owner rule (2026-10-07), not a suggestion.
 
@@ -215,7 +215,7 @@ too-generic-to-be-an-anchor word set.
 
 ## 8. Owner rules (never break these)
 
-1. **No em/en dashes, ever.** `—` and `-` are HARD gate failures in drafts.
+1. **No em/en dashes, ever.** Em dashes and en dashes are HARD gate failures in drafts.
    Keep them out of wrtr's own docs, briefs, and code comments too.
 2. **Score floor 80.** `draft_score_min` stays 80 unless the owner says
    otherwise, per site, explicitly.

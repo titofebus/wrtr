@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Open SEO Crawler — macOS installer
+# Open SEO Crawler - macOS installer
 #   - preflight checks
 #   - launchd autostart on login + 2 min after boot
 #   - daily auto-update via launchd timer (git pull + restart if changed)
@@ -48,7 +48,7 @@ fi
 
 # ---------- Preflight ----------
 echo "=============================================="
-echo " Open SEO Crawler — macOS preflight checks"
+echo " Open SEO Crawler - macOS preflight checks"
 [ "$MODE" = "check" ] && echo " (--check mode: no changes will be made)"
 echo "=============================================="
 
@@ -66,15 +66,15 @@ ok "Architecture: $ARCH"
 ok "Running as non-root user: $RUN_USER"
 
 # Internet
-curl -fsSL --max-time 5 https://github.com >/dev/null 2>&1 || fail "Cannot reach github.com — check internet."
+curl -fsSL --max-time 5 https://github.com >/dev/null 2>&1 || fail "Cannot reach github.com - check internet."
 ok "Internet reachable (github.com)"
 
 # Homebrew (will install Python if needed)
 if ! command -v brew >/dev/null 2>&1; then
   if [ "$MODE" = "check" ]; then
-    warn "Homebrew not installed — will be installed during real run."
+    warn "Homebrew not installed - will be installed during real run."
   else
-    yellow "Homebrew not installed — installing now (you'll be prompted for your password)..."
+    yellow "Homebrew not installed - installing now (you'll be prompted for your password)..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     # Refresh shell environment so brew is on PATH
     if [ "$ARCH" = "arm64" ]; then
@@ -100,21 +100,21 @@ done
 
 if [ -n "$PYTHON_BIN" ]; then
   PY_VER=$("$PYTHON_BIN" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-  ok "Python $PY_VER ($PYTHON_BIN) — meets ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+ requirement"
+  ok "Python $PY_VER ($PYTHON_BIN) - meets ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+ requirement"
 else
-  warn "Python ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+ not found — will install python@3.12 via Homebrew."
+  warn "Python ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+ not found - will install python@3.12 via Homebrew."
 fi
 
 # Git
 if ! command -v git >/dev/null 2>&1; then
-  warn "git not found — will install via Homebrew (or Xcode Command Line Tools)."
+  warn "git not found - will install via Homebrew (or Xcode Command Line Tools)."
 else
   ok "git available ($(git --version | awk '{print $3}'))"
 fi
 
 # Disk space
 FREE_MB=$(df -m "$HOME" | awk 'NR==2 {print $4}')
-[ "$FREE_MB" -lt "$MIN_DISK_MB" ] && fail "Only ${FREE_MB}MB free in \$HOME — need at least ${MIN_DISK_MB}MB."
+[ "$FREE_MB" -lt "$MIN_DISK_MB" ] && fail "Only ${FREE_MB}MB free in \$HOME - need at least ${MIN_DISK_MB}MB."
 ok "Disk space: ${FREE_MB}MB free in \$HOME"
 
 # Port free
@@ -128,7 +128,7 @@ if [ -d "$INSTALL_DIR" ] && [ ! -d "$INSTALL_DIR/.git" ]; then
   fail "$INSTALL_DIR exists but is not a git checkout. Remove or rename it first."
 fi
 if [ -f "$APP_PLIST" ]; then
-  warn "LaunchAgent ${LABEL} already exists — will be overwritten + reloaded."
+  warn "LaunchAgent ${LABEL} already exists - will be overwritten + reloaded."
 fi
 
 green "All preflight checks passed."
@@ -149,7 +149,7 @@ if [ -z "$PYTHON_BIN" ] || ! command -v git >/dev/null 2>&1; then
   for candidate in python3 python3.13 python3.12 python3.11 python3.10; do
     if python_ok "$candidate"; then PYTHON_BIN="$candidate"; break; fi
   done
-  [ -n "$PYTHON_BIN" ] || fail "Python install via Homebrew didn't land — install manually from python.org."
+  [ -n "$PYTHON_BIN" ] || fail "Python install via Homebrew didn't land - install manually from python.org."
 fi
 ok "Using $PYTHON_BIN for the venv"
 
@@ -221,19 +221,19 @@ fi
 
 REQ_AFTER=$(shasum -a 1 requirements.txt | awk '{print $1}')
 if [ "$REQ_BEFORE" != "$REQ_AFTER" ]; then
-  log "requirements.txt changed — reinstalling deps"
+  log "requirements.txt changed - reinstalling deps"
   "$INSTALL_DIR/venv/bin/pip" install --quiet --upgrade pip
   "$INSTALL_DIR/venv/bin/pip" install --quiet -r requirements.txt
 fi
 
 log "smoke test"
 if ! "$INSTALL_DIR/venv/bin/python3" -c "import flask, requests, bs4, lxml, openpyxl" 2>>"$LOG_DIR/update.log"; then
-  log "imports broke — rolling back"
+  log "imports broke - rolling back"
   git reset --hard "$LOCAL"
   exit 1
 fi
 if ! "$INSTALL_DIR/venv/bin/python3" -m py_compile app.py 2>>"$LOG_DIR/update.log"; then
-  log "py_compile failed — rolling back"
+  log "py_compile failed - rolling back"
   git reset --hard "$LOCAL"
   exit 1
 fi
@@ -311,7 +311,7 @@ launchctl bootstrap "gui/$(id -u)" "$UPDATE_PLIST"
 # ---------- Verify ----------
 sleep 3
 if ! curl -fsSL --max-time 5 "http://localhost:$PORT/" >/dev/null; then
-  warn "Service is starting but http://localhost:$PORT/ not responding yet — give it a few seconds."
+  warn "Service is starting but http://localhost:$PORT/ not responding yet - give it a few seconds."
 fi
 
 # Collect LAN IPs
@@ -346,7 +346,7 @@ green "============================================================"
 
 # Save URLs
 {
-  echo "Open SEO Crawler — access URLs"
+  echo "Open SEO Crawler - access URLs"
   echo "Installed: $(date)"
   echo ""
   echo "On this computer:"

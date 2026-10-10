@@ -1,4 +1,4 @@
-# Start here — wrtr for first-time agents
+# Start here - wrtr for first-time agents
 
 If you've never touched this repo before, read this page first. It takes
 about 15 minutes and leaves you able to run the whole loop yourself.
@@ -11,9 +11,9 @@ terms, it does two jobs:
 1. **Finds what to write.** It reads your site's Google Search Console data,
    spots queries where you almost rank (page 2, rising impressions), and
    turns the best opportunity into a content brief.
-2. **Makes sure it's good before it publishes.** Every draft is scored 0–100
+2. **Makes sure it's good before it publishes.** Every draft is scored 0-100
    on readability, on-page SEO, and human-voice signals. Below 80 (or any
-   hard failure like a missing H1), it **cannot publish** — the repo's
+   hard failure like a missing H1), it **cannot publish** - the repo's
    validation enforces this mechanically, not as a suggestion.
 
 Everything runs locally. No subscriptions, no hosted APIs in the core loop.
@@ -39,16 +39,16 @@ cd wrtr
 
 What `setup.sh` does, step by step:
 
-1. **Creates `.venv`** — a Python virtual environment, so wrtr's dependencies
+1. **Creates `.venv`** - a Python virtual environment, so wrtr's dependencies
    never touch your system Python.
-2. **Installs pinned dependencies** — `requests`, `pyyaml`, `textstat`,
+2. **Installs pinned dependencies** - `requests`, `pyyaml`, `textstat`,
    `scikit-learn`, and friends. If this fails, the script aborts loudly
    (a half-installed venv is worse than no venv).
-3. **Fetches the syllable dictionary** — `draft_score.py` needs it for
+3. **Fetches the syllable dictionary** - `draft_score.py` needs it for
    readability scoring. Stored once in `~/nltk_data`.
-4. **Clones SlopTotal** (pinned commit) — the local AI-text detector used by
+4. **Clones SlopTotal** (pinned commit) - the local AI-text detector used by
    `ai_check.py`. This is optional; everything else works without it.
-5. **Runs the test suite** — 122 tests. If they don't all pass, stop and
+5. **Runs the test suite** - 122 tests. If they don't all pass, stop and
    investigate before using the tools.
 
 Expected end state: `setup.sh` prints "Done" and the tests say `OK`.
@@ -63,13 +63,13 @@ cp skill/references/site-config-template.yaml sites/acme.yaml
 
 Open `sites/acme.yaml` and set at minimum:
 
-- `name` — the brand name, e.g. `Acme Plumbing`
-- `site_url` — `https://acme.example/`
-- `repo` — path to the website's git checkout
-- `content_dir` — where markdown entries live, relative to the repo
-- `geo_terms` — the markets you serve, e.g. `[orlando, "winter park"]`
-- `banned_terms` — words/phrases that must never appear
-- `voice_rules` — a few lines on how the brand sounds
+- `name` - the brand name, e.g. `Acme Plumbing`
+- `site_url` - `https://acme.example/`
+- `repo` - path to the website's git checkout
+- `content_dir` - where markdown entries live, relative to the repo
+- `geo_terms` - the markets you serve, e.g. `[orlando, "winter park"]`
+- `banned_terms` - words/phrases that must never appear
+- `voice_rules` - a few lines on how the brand sounds
 
 Verify it loads:
 
@@ -82,8 +82,8 @@ Every multi-site script takes `--site acme` (or set `SEO_SITE=acme` once in
 your shell and forget it). The shipped default site is `example`, which
 exists so you can try every command without real data.
 
-The full per-brand checklist — GSC service account, Bing key, cron jobs,
-content workflow doc — is in `skill/references/site-onboarding.md`. Do the
+The full per-brand checklist - GSC service account, Bing key, cron jobs,
+content workflow doc - is in `skill/references/site-onboarding.md`. Do the
 YAML first; the rest can come later.
 
 ## Your first run (no credentials needed)
@@ -103,30 +103,30 @@ These three commands work with zero API keys, using the `example` site:
 
 ## The quality gate, explained
 
-`draft_score.py` is the heart of the repo. It scores a markdown draft 0–100:
+`draft_score.py` is the heart of the repo. It scores a markdown draft 0-100:
 
 | Area | What it checks |
 |---|---|
 | Readability | Flesch reading ease, sentence/paragraph length |
-| On-page SEO | Keyword in title, H1, first 100 words, H2s, image alts; density 0.5–2.5% |
+| On-page SEO | Keyword in title, H1, first 100 words, H2s, image alts; density 0.5-2.5% |
 | Structure | Exactly one H1, sane heading hierarchy, enough length |
 | Voice | AI tics (87 patterns incl. 2026 Graphite-study tells), structural tells ("not just X, it's Y", "whether you're…", bold-label bullets), **em dashes prohibited (hard fail)**, sentence variety, contractions |
-| SEO | Keyword in title/H1/H2/alt, density 0.5–2.5%, H2 keyword variety, 2+ internal links, answer-first H2s (AI citation), search-intent classification in every brief |
-| AEO (advisory) | Question-shaped H2s, 40–80 word answer blocks under each H2, FAQ section, canonical brand name 2+ times, 3+ citable numbers, front-matter date within 12 months |
+| SEO | Keyword in title/H1/H2/alt, density 0.5-2.5%, H2 keyword variety, 2+ internal links, answer-first H2s (AI citation), search-intent classification in every brief |
+| AEO (advisory) | Question-shaped H2s, 40-80 word answer blocks under each H2, FAQ section, canonical brand name 2+ times, 3+ citable numbers, front-matter date within 12 months |
 | Human fingerprints | First-person experience, specific details, named places/people |
 | Hygiene | Banned terms, meta title/description lengths |
 
-**Hard failures** (score doesn't matter — the draft is blocked):
+**Hard failures** (score doesn't matter - the draft is blocked):
 
 - No H1, or more than one H1
 - Any banned term present
-- Any em dash (`—`) or en dash (`–`) — owner rule, rewrite with commas, colons, periods, or hyphens
+- Any em dash (`-`) or en dash (`-`) - owner rule, rewrite with commas, colons, periods, or hyphens
 
 **Exit codes:** `0` = pass, `1` = blocked, `2` = usage error (bad args,
 unreadable file, empty keyword).
 
 The site's `draft_score_min` (default 80) lives in its YAML. There is an
-owner-only `--min-score 0` override for emergencies — the repo's mechanical
+owner-only `--min-score 0` override for emergencies - the repo's mechanical
 gate never uses it.
 
 ### How to iterate a failing draft
@@ -135,21 +135,21 @@ Run the scorer, read the flagged items top to bottom, fix them, re-run.
 Typical fixes:
 
 - **Keyword density red** → you're stuffing or starving it; aim for natural
-  use, roughly once per 100–200 words.
+  use, roughly once per 100-200 words.
 - **AI voice tics** → rewrite the flagged sentences in your own words;
   add a concrete detail only you would know.
 - **Thin content** → the brief's H2 scaffolds tell you what's missing.
 - **Missing H1 / hierarchy** → one `#` title, then `##` sections.
 
-A strong real-world entry scores 87–97. If yours won't break 80, the draft
-needs more substance — don't game the metric.
+A strong real-world entry scores 87-97. If yours won't break 80, the draft
+needs more substance - don't game the metric.
 
 ## The advisory check, explained
 
 `ai_check.py` sends the draft to a **local** SlopTotal server
 (`http://localhost:8000/api/quick-score`) and prints an AI-likelihood score.
 
-- **Always exits 0.** It never blocks publishing — detectors false-positive
+- **Always exits 0.** It never blocks publishing - detectors false-positive
   on polished human writing, and we have the receipts to prove it.
 - **Elevated (≥55)** → prints a human-fingerprints checklist: add a real
   name, place, or moment only you could write, then re-run.
@@ -180,13 +180,13 @@ Start SlopTotal with `cd sloptotal && ./scripts/start.sh`. Full setup is in
   && ./scripts/start.sh`, wait ~30s, retry.
 - **`draft_score.py` crashes on NLTK** → run `./setup.sh` again; it fetches
   the syllable dictionary.
-- **Gate blocks a good draft at 78–79** → read the yellow items; usually one
+- **Gate blocks a good draft at 78-79** → read the yellow items; usually one
   more specific detail or a tightened intro gets it over the line. Don't
-  lower the bar — fix the draft.
+  lower the bar - fix the draft.
 
 ## Where to go next
 
-- `skill/SKILL.md` — the full agent workflow (the weekly loop in detail)
-- `skill/references/site-onboarding.md` — per-brand setup checklist
-- `docs/sloptotal-setup.md` — SlopTotal deep-dive
-- `ops/README.md` — machine maintenance scripts
+- `skill/SKILL.md` - the full agent workflow (the weekly loop in detail)
+- `skill/references/site-onboarding.md` - per-brand setup checklist
+- `docs/sloptotal-setup.md` - SlopTotal deep-dive
+- `ops/README.md` - machine maintenance scripts

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Open SEO Crawler — Linux Mint installer
+# Open SEO Crawler - Linux Mint installer
 #   - preflight checks
 #   - systemd autostart on boot
 #   - daily auto-update via systemd timer (git pull + restart if changed)
@@ -44,7 +44,7 @@ fi
 
 # ---------- Preflight ----------
 echo "=============================================="
-echo " Open SEO Crawler — preflight checks"
+echo " Open SEO Crawler - preflight checks"
 [ "$MODE" = "check" ] && echo " (--check mode: no changes will be made)"
 echo "=============================================="
 
@@ -57,7 +57,7 @@ if [ -r /etc/os-release ]; then
   ok "Detected OS: ${PRETTY_NAME:-unknown}"
   case "${ID:-}${ID_LIKE:-}" in
     *linuxmint*|*ubuntu*|*debian*) : ;;
-    *) warn "Not Mint/Ubuntu/Debian — script may still work but is untested." ;;
+    *) warn "Not Mint/Ubuntu/Debian - script may still work but is untested." ;;
   esac
 fi
 
@@ -65,10 +65,10 @@ command -v sudo >/dev/null 2>&1 || fail "sudo not installed. Install it first: s
 sudo -n true 2>/dev/null || yellow "sudo will prompt for your password during install."
 ok "sudo available"
 
-[ -d /run/systemd/system ] || fail "systemd not running — autostart cannot be configured."
+[ -d /run/systemd/system ] || fail "systemd not running - autostart cannot be configured."
 ok "systemd active"
 
-curl -fsSL --max-time 5 https://github.com >/dev/null 2>&1 || fail "Cannot reach github.com — check internet connection."
+curl -fsSL --max-time 5 https://github.com >/dev/null 2>&1 || fail "Cannot reach github.com - check internet connection."
 ok "Internet reachable (github.com)"
 
 # Helper: check whether a given python binary is >= MIN_PY_MAJOR.MIN_PY_MINOR
@@ -86,7 +86,7 @@ done
 
 if [ -n "$PYTHON_BIN" ]; then
   PY_VER=$("$PYTHON_BIN" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-  ok "Python $PY_VER ($PYTHON_BIN) — meets ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+ requirement"
+  ok "Python $PY_VER ($PYTHON_BIN) - meets ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+ requirement"
 else
   CUR_PY="(none)"
   if command -v python3 >/dev/null 2>&1; then
@@ -99,15 +99,15 @@ else
     if [ -r /etc/os-release ]; then
       . /etc/os-release
       case "${ID:-}${ID_LIKE:-}" in
-        *linuxmint*|*ubuntu*) ok "OS is Ubuntu-based — deadsnakes PPA will work" ;;
-        *) fail "Old Python and not on Ubuntu/Mint — deadsnakes PPA not available. Install python${MIN_PY_MAJOR}.${MIN_PY_MINOR} manually first." ;;
+        *linuxmint*|*ubuntu*) ok "OS is Ubuntu-based - deadsnakes PPA will work" ;;
+        *) fail "Old Python and not on Ubuntu/Mint - deadsnakes PPA not available. Install python${MIN_PY_MAJOR}.${MIN_PY_MINOR} manually first." ;;
       esac
     fi
   fi
 fi
 
 FREE_MB=$(df -Pm "$HOME" | awk 'NR==2 {print $4}')
-[ "$FREE_MB" -lt "$MIN_DISK_MB" ] && fail "Only ${FREE_MB}MB free in $HOME — need at least ${MIN_DISK_MB}MB."
+[ "$FREE_MB" -lt "$MIN_DISK_MB" ] && fail "Only ${FREE_MB}MB free in $HOME - need at least ${MIN_DISK_MB}MB."
 ok "Disk space: ${FREE_MB}MB free in \$HOME"
 
 if command -v ss >/dev/null 2>&1; then
@@ -121,7 +121,7 @@ if [ -d "$INSTALL_DIR" ] && [ ! -d "$INSTALL_DIR/.git" ]; then
   fail "$INSTALL_DIR exists but is not a git checkout. Remove or rename it first."
 fi
 if systemctl list-unit-files 2>/dev/null | grep -q "^${SERVICE_NAME}.service"; then
-  warn "Service ${SERVICE_NAME} already installed — will be overwritten + restarted."
+  warn "Service ${SERVICE_NAME} already installed - will be overwritten + restarted."
 fi
 
 green "All preflight checks passed."
@@ -142,7 +142,7 @@ sudo apt-get install -y python3 python3-venv python3-pip git curl software-prope
 # deadsnakes drops older Python builds on older Ubuntu releases over time, so we
 # fall back through versions until apt actually finds one.
 if [ -z "$PYTHON_BIN" ]; then
-  echo ">>> System Python is too old — installing a newer Python via deadsnakes PPA..."
+  echo ">>> System Python is too old - installing a newer Python via deadsnakes PPA..."
   if [ -r /etc/os-release ]; then
     . /etc/os-release
     case "${ID:-}${ID_LIKE:-}" in
@@ -165,7 +165,7 @@ if [ -z "$PYTHON_BIN" ]; then
     # Confirm the main package actually exists in the index before invoking apt-get
     # (avoids apt's "regex match" fallback that picks up libpython*, libqgis*, etc).
     if ! apt-cache show "python${ver}" >/dev/null 2>&1; then
-      yellow "python${ver} not in apt index — trying older version"
+      yellow "python${ver} not in apt index - trying older version"
       continue
     fi
     if sudo apt-get install -y $pkgs; then
@@ -175,16 +175,16 @@ if [ -z "$PYTHON_BIN" ]; then
         break
       fi
     fi
-    yellow "python${ver} install failed — falling back"
+    yellow "python${ver} install failed - falling back"
   done
 
   # Last-resort fallback: compile Python 3.10 from source.
-  # This runs when deadsnakes ships none of 3.10–3.13 cleanly for the host's
-  # Ubuntu/Mint release. Takes ~5–15 minutes depending on hardware.
+  # This runs when deadsnakes ships none of 3.10-3.13 cleanly for the host's
+  # Ubuntu/Mint release. Takes ~5-15 minutes depending on hardware.
   if [ -z "$PYTHON_BIN" ]; then
     PY_SRC_VER="3.10.14"
-    yellow "All deadsnakes options failed — falling back to compiling Python ${PY_SRC_VER} from source."
-    yellow "This takes 5–15 minutes. Grab a coffee."
+    yellow "All deadsnakes options failed - falling back to compiling Python ${PY_SRC_VER} from source."
+    yellow "This takes 5-15 minutes. Grab a coffee."
 
     echo ">>> Installing build deps..."
     sudo apt-get install -y \
@@ -295,19 +295,19 @@ fi
 
 REQ_AFTER=$(sha1sum requirements.txt | awk '{print $1}')
 if [ "$REQ_BEFORE" != "$REQ_AFTER" ]; then
-  log "requirements.txt changed — reinstalling deps"
+  log "requirements.txt changed - reinstalling deps"
   "$INSTALL_DIR/venv/bin/pip" install --quiet --upgrade pip
   "$INSTALL_DIR/venv/bin/pip" install --quiet -r requirements.txt
 fi
 
 log "smoke test"
 if ! "$INSTALL_DIR/venv/bin/python3" -c "import flask, requests, bs4, lxml, openpyxl" 2>&1; then
-  log "import smoke test failed — rolling back"
+  log "import smoke test failed - rolling back"
   git reset --hard "$LOCAL"
   exit 1
 fi
 if ! "$INSTALL_DIR/venv/bin/python3" -m py_compile app.py 2>&1; then
-  log "py_compile failed — rolling back"
+  log "py_compile failed - rolling back"
   git reset --hard "$LOCAL"
   exit 1
 fi
@@ -317,7 +317,7 @@ sudo /bin/systemctl restart "${SERVICE_NAME}.service"
 
 sleep 3
 if ! systemctl is-active --quiet "${SERVICE_NAME}.service"; then
-  log "service failed to start after update — rolling back"
+  log "service failed to start after update - rolling back"
   git reset --hard "$LOCAL"
   "$INSTALL_DIR/venv/bin/pip" install --quiet -r requirements.txt || true
   sudo /bin/systemctl restart "${SERVICE_NAME}.service" || true
@@ -337,7 +337,7 @@ sudo tee "$SUDO_FILE" >/dev/null <<EOF
 $RUN_USER ALL=(root) NOPASSWD: /bin/systemctl restart ${SERVICE_NAME}.service
 EOF
 sudo chmod 0440 "$SUDO_FILE"
-sudo visudo -cf "$SUDO_FILE" >/dev/null || fail "sudoers file failed validation — removing."
+sudo visudo -cf "$SUDO_FILE" >/dev/null || fail "sudoers file failed validation - removing."
 
 # ---------- systemd: main service ----------
 echo ">>> Writing systemd service unit..."
@@ -408,7 +408,7 @@ if ! systemctl is-active --quiet ${SERVICE_NAME}.service; then
   exit 1
 fi
 if ! curl -fsSL --max-time 5 "http://localhost:$PORT/" >/dev/null; then
-  warn "Service is running but http://localhost:$PORT/ not responding yet — give it a few seconds."
+  warn "Service is running but http://localhost:$PORT/ not responding yet - give it a few seconds."
 fi
 
 # Collect LAN IPs (non-loopback, IPv4) for "open from another device" URLs
@@ -443,7 +443,7 @@ green "============================================================"
 
 # Save URLs to a file in the install dir so the user can find them later
 {
-  echo "Open SEO Crawler — access URLs"
+  echo "Open SEO Crawler - access URLs"
   echo "Installed: $(date)"
   echo ""
   echo "On this computer:"

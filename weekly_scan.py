@@ -1,10 +1,10 @@
 """Weekly content-opportunity scan (the engine's discovery step).
 
 Mines Google Search Console query data and produces a markdown brief:
-1. Striking distance — positions 8-20, optimize the existing page
-2. High impressions + low CTR — rewrite title/meta
-3. Venue-intent queries with no dedicated hub page — new hub candidate
-4. Declining queries — diagnose
+1. Striking distance - positions 8-20, optimize the existing page
+2. High impressions + low CTR - rewrite title/meta
+3. Venue-intent queries with no dedicated hub page - new hub candidate
+4. Declining queries - diagnose
 5. One recommended pick for the week, labeled by kind with the correct
    action (striking->refresh, venue->brief a new hub/entry,
    declining->diagnose, lowctr->rewrite). The pick's URL is liveness-checked:
@@ -49,7 +49,7 @@ def _has_venue_intent(query, venue_words):
 def _looks_like_hub(query, page, content_route="/journal/"):
     """True if the page URL already looks like a dedicated hub for the query.
 
-    Content entries (under content_route) are never hubs — the hub strategy
+    Content entries (under content_route) are never hubs - the hub strategy
     wants dedicated pages distinct from entries, so an entry whose slug
     happens to match the query must NOT suppress the hub candidate.
     """
@@ -61,7 +61,7 @@ def _looks_like_hub(query, page, content_route="/journal/"):
     terms = [w.strip("-,.") for w in query.lower().split()
              if w.strip("-,.") not in _HUB_GENERIC]
     if not terms:
-        return True  # nothing distinctive — assume covered
+        return True  # nothing distinctive - assume covered
     hits = sum(1 for w in terms if w in slug)
     return hits >= 2 or "-".join(terms) in slug
 
@@ -89,7 +89,7 @@ def _gsc_call(fn, *args, **kwargs):
     """Run a GSC API call with a clean failure message.
 
     A traceback can't tell the cron worker "Google is down, retry next
-    week" from "our key is dead, needs the owner" — this prints GSC_UNAVAILABLE
+    week" from "our key is dead, needs the owner" - this prints GSC_UNAVAILABLE
     with a one-line reason, flagging auth failures as owner action.
     """
     try:
@@ -100,8 +100,8 @@ def _gsc_call(fn, *args, **kwargs):
         auth = any(k in name or k in msg for k in
                    ("refresh", "credential", "auth", "permission", "forbidden",
                     "unauthorized", "invalid_grant"))
-        owner = (" — owner action: check the service-account grant/key"
-                 if auth else " — likely transient; retry next run")
+        owner = (" - owner action: check the service-account grant/key"
+                 if auth else " - likely transient; retry next run")
         print(f"GSC_UNAVAILABLE: {type(e).__name__}: {e}{owner}")
         raise SystemExit(2)
 
@@ -110,7 +110,7 @@ def classify_pick(kind_pick, page):
     """Liveness-check the pick's page and reclassify if needed.
 
     Returns (kind, status, final_url, redirected). A striking pick whose
-    URL is now a redirect becomes a venue pick — there is no page left to
+    URL is now a redirect becomes a venue pick - there is no page left to
     refresh, so the cron briefs the dedicated hub instead.
     """
     status, final_url = _liveness(page)
@@ -199,7 +199,7 @@ def main(site_slug=None, save_pick=True):
     # Declining, part 2: (query, page) pairs that vanished entirely.
     # The loop above only sees current-window rows, so a full drop-off
     # (deindexed page, broken redirect) or a page change (redirect added,
-    # slug renamed) would otherwise be invisible — the current (query,
+    # slug renamed) would otherwise be invisible - the current (query,
     # new_page) row has no prev match to compare against.
     cur_keys = {(d["query"], d["page"]) for d in cur}
     cur_pages_by_query = {}
@@ -219,9 +219,9 @@ def main(site_slug=None, save_pick=True):
         if now_pages:
             note = f"now ranks {now_pages[0]}"
         elif valuable:
-            note = "gone from the index — valuable query, diagnose if still gone next week"
+            note = "gone from the index - valuable query, diagnose if still gone next week"
         else:
-            note = "legacy off-topic spillover — let go"
+            note = "legacy off-topic spillover - let go"
         d = {"query": q, "page": page, "position": 0.0, "impressions": 0,
              "ctr": 0.0, "disappeared_note": note,
              "disappeared_valuable": valuable}
@@ -241,29 +241,29 @@ def main(site_slug=None, save_pick=True):
     def _mark(q):
         return " ← this week's pick" if q == pick_query else ""
 
-    L = [f"# {kind} opportunity scan — {site} — {cur_s} to {cur_e}", ""]
+    L = [f"# {kind} opportunity scan - {site} - {cur_s} to {cur_e}", ""]
     L.append(f"Non-brand queries analyzed: {len(nb)}")
     L.append("")
-    L.append(f"## 1. Striking distance (positions {s_lo}-{s_hi}) — optimize the page")
+    L.append(f"## 1. Striking distance (positions {s_lo}-{s_hi}) - optimize the page")
     for d in striking[:10]:
-        L.append(f"- `{_q(d['query'])}` — pos {d['position']:.1f}, {d['impressions']:.0f} impr "
+        L.append(f"- `{_q(d['query'])}` - pos {d['position']:.1f}, {d['impressions']:.0f} impr "
                  f"-> {d['page']}{_mark(d['query'])}")
     if not striking:
         L.append("- (none this week)")
     L.append("")
-    L.append("## 2. High impressions, low CTR — rewrite title/meta")
+    L.append("## 2. High impressions, low CTR - rewrite title/meta")
     for d in lowctr[:10]:
-        L.append(f"- `{_q(d['query'])}` — pos {d['position']:.1f}, {d['impressions']:.0f} impr, "
+        L.append(f"- `{_q(d['query'])}` - pos {d['position']:.1f}, {d['impressions']:.0f} impr, "
                  f"CTR {d['ctr']*100:.1f}% -> {d['page']}{_mark(d['query'])}")
     if not lowctr:
         L.append("- (none this week)")
     L.append("")
-    L.append("## 3. Venue-intent queries with no dedicated hub page — venue page candidates")
+    L.append("## 3. Venue-intent queries with no dedicated hub page - venue page candidates")
     for d in venue[:10]:
-        lock = (" — LOCK IN: named venue at page 1, a dedicated page secures it"
+        lock = (" - LOCK IN: named venue at page 1, a dedicated page secures it"
                 if d["position"] <= 10 and _looks_named_venue(d["query"], geo_terms)
                 else "")
-        L.append(f"- `{_q(d['query'])}` — {d['impressions']:.0f} impr -> {d['page']}{_mark(d['query'])}{lock}")
+        L.append(f"- `{_q(d['query'])}` - {d['impressions']:.0f} impr -> {d['page']}{_mark(d['query'])}{lock}")
     if not venue:
         L.append("- (none this week)")
     L.append("")
@@ -275,19 +275,19 @@ def main(site_slug=None, save_pick=True):
                        max(t[1]["impressions"], 1))[0]["query"]
     for d, p in declining[:10]:
         pct = (p["impressions"] - d["impressions"]) / max(p["impressions"], 1) * 100
-        # Tripwire: a ≥90% wipeout to near-zero is not a "watch" — it needs
+        # Tripwire: a ≥90% wipeout to near-zero is not a "watch" - it needs
         # a diagnosis or a hub brief next week, not passive monitoring.
         # Skipped for disappeared rows classified "let go" (expected
         # off-topic spillover); uses the flag, not the note prose.
         valuable = d.get("disappeared_valuable", True)
         if pct >= 90 and d["impressions"] <= 5 and valuable:
-            flag = " — TRIPWIRE: diagnose next week or brief the hub, don't just watch"
+            flag = " - TRIPWIRE: diagnose next week or brief the hub, don't just watch"
         elif d["query"] == steepest:
-            flag = " — steepest drop, watch"
+            flag = " - steepest drop, watch"
         else:
             flag = ""
-        note = f" — {d['disappeared_note']}" if d.get("disappeared_note") else ""
-        L.append(f"- `{_q(d['query'])}` — {p['impressions']:.0f} -> {d['impressions']:.0f} impr "
+        note = f" - {d['disappeared_note']}" if d.get("disappeared_note") else ""
+        L.append(f"- `{_q(d['query'])}` - {p['impressions']:.0f} -> {d['impressions']:.0f} impr "
                  f"(-{pct:.0f}%) ({d['page']}){_mark(d['query'])}{flag}{note}")
     if not declining:
         L.append("- (none this week)")
@@ -295,14 +295,14 @@ def main(site_slug=None, save_pick=True):
     L.append("## 5. This week's pick")
     # Pick order: striking (refresh page) > venue (new hub/entry) >
     # declining (diagnose) > lowctr (rewrite title/meta). A striking-distance
-    # pick must NOT become a new entry brief — that would cannibalize the
+    # pick must NOT become a new entry brief - that would cannibalize the
     # page already ranking.
     brief_type = cfg.get("venue_pick_brief_type") or next(iter(cfg.get("type_category_map", {}) or {}), "venue-guide")
     brief_cmd = (f"`.venv/bin/python content_brief.py "
                  f"\"{{q}}\" --type={brief_type} --site {cfg['slug']}`")
     ACTIONS = {
         "striking": "REFRESH the existing page for this query (do not brief a new entry).",
-        "venue": f"NEW hub page or entry — run {brief_cmd.format(q=ranked[0][1]['query']) if ranked else brief_cmd}.",
+        "venue": f"NEW hub page or entry - run {brief_cmd.format(q=ranked[0][1]['query']) if ranked else brief_cmd}.",
         "declining": "DIAGNOSE the drop (competition? content decay? SERP change?), then fix.",
         "lowctr": "REWRITE the title/meta of the existing page.",
     }
@@ -315,7 +315,7 @@ def main(site_slug=None, save_pick=True):
         kind_pick, status, final_url, redirected = classify_pick(kind_pick,
                                                                 d["page"])
         if redirected and orig_kind == "striking":
-            L.append("Kind: venue (redirected — was striking)")
+            L.append("Kind: venue (redirected - was striking)")
         else:
             L.append(f"Kind: {kind_pick}")
         L.append(f"Target: `{_q(d['query'])}` (pos {d['position']:.1f}, "
@@ -325,17 +325,17 @@ def main(site_slug=None, save_pick=True):
         else:
             L.append(f"Page: {d['page']}")
         if status in (404, 410, "LOOP"):
-            L.append(f"Action: RESTORE-OR-REDIRECT — this URL returns HTTP "
+            L.append(f"Action: RESTORE-OR-REDIRECT - this URL returns HTTP "
                      f"{status} but still earns impressions. 301-redirect it "
                      f"to the closest live equivalent (or restore the content), "
                      f"then request reindexing in GSC.")
         elif redirected:
-            L.append(f"Action: REDIRECTED — this URL 301s to {final_url}, so "
+            L.append(f"Action: REDIRECTED - this URL 301s to {final_url}, so "
                      f"there is no page to refresh. Brief the dedicated hub: "
                      f"run {brief_cmd.format(q=d['query'])}.")
             L.append("Note: you're capturing demand currently attributed to a "
-                     "redirecting legacy URL — expect position volatility for "
-                     "2–4 weeks post-publish as Google consolidates. Build at "
+                     "redirecting legacy URL - expect position volatility for "
+                     "2-4 weeks post-publish as Google consolidates. Build at "
                      "the brief's clean slug; do NOT resurrect the legacy slug.")
         else:
             L.append(f"Action: {ACTIONS[kind_pick]}")
@@ -349,12 +349,12 @@ def main(site_slug=None, save_pick=True):
                      f"{d['impressions']:.0f} ({di:+.0f})")
             L.append(trend)
             if prev_pick.get("kind") in (orig_kind, kind_pick):
-                L.append(f"Note: same pick as last week — if the action was "
+                L.append(f"Note: same pick as last week - if the action was "
                          f"already taken, keep tracking the trend; if not, "
                          f"say so explicitly in the chat report so the owner can decide.")
         elif prev_pick:
             L.append(f"Last week's pick was `{prev_pick['query']}` "
-                     f"(pos {prev_pick['position']:.1f} on {prev_pick['date']}) — "
+                     f"(pos {prev_pick['position']:.1f} on {prev_pick['date']}) - "
                      f"rotated to a new target this week.")
         if save_pick:
             _save_pick(state_path, {"date": cur_e, "query": d["query"],
@@ -363,12 +363,12 @@ def main(site_slug=None, save_pick=True):
                                     "http_status": status,
                                     "final_url": final_url if redirected else None})
     else:
-        L.append("Not enough non-brand data yet — check again next week.")
+        L.append("Not enough non-brand data yet - check again next week.")
     # Proactive bucket: miner suggestions with zero GSC presence. Every other
     # bucket is reactive (it optimizes queries that already have impressions);
     # this one finds net-new hub/entry topics the site doesn't rank for at all.
     L.append("")
-    L.append("## 6. Proactive opportunities (zero GSC presence — net-new topics)")
+    L.append("## 6. Proactive opportunities (zero GSC presence - net-new topics)")
     seeds = cfg.get("proactive_seeds", [])
     if seeds:
         import keyword_miner
@@ -395,11 +395,11 @@ def main(site_slug=None, save_pick=True):
                      if not any(b in re.sub(r"[^a-z0-9]", "", k.lower())
                                 for b in banned_flat)]
         for kw in fresh[:8]:
-            L.append(f"- `{_q(kw)}` — no GSC presence; candidate for a new entry/hub")
+            L.append(f"- `{_q(kw)}` - no GSC presence; candidate for a new entry/hub")
         if not fresh:
             L.append("- (miner found nothing new this week)")
     else:
-        L.append("- (no proactive_seeds in site config — add 2-3 seed queries to enable)")
+        L.append("- (no proactive_seeds in site config - add 2-3 seed queries to enable)")
     print("\n".join(L))
 
 
@@ -482,7 +482,7 @@ def _load_pick(path):
     except (OSError, ValueError):
         return None
     # Guard against valid JSON with the wrong shape OR wrong value types
-    # (hand-edited / partially-written state) — "no prior pick", never crash.
+    # (hand-edited / partially-written state) - "no prior pick", never crash.
     if not isinstance(data, dict):
         return None
     req = {"date": str, "query": str, "page": str, "kind": str,

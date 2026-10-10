@@ -1,7 +1,7 @@
 """Cluster a keyword list into topic groups (TF-IDF + agglomerative clustering).
 
 Turns the flat output of keyword_miner.py (or GSC queries) into themed
-clusters — each cluster is one content entry / page angle.
+clusters - each cluster is one content entry / page angle.
 
 Usage:
   .venv/bin/python keyword_miner.py "best running shoes" | grep '^- ' | sed 's/^- //' > kws.txt
@@ -21,7 +21,7 @@ def clean(kw):
 
 def main():
     if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
-        print("Usage: cluster_keywords.py <keywords-file> [--n K] — TF-IDF topic clusters.")
+        print("Usage: cluster_keywords.py <keywords-file> [--n K] - TF-IDF topic clusters.")
         print("  <keywords-file>: one keyword per line (e.g. mined output).")
         raise SystemExit(0 if len(sys.argv) > 1 else 2)
     path = sys.argv[1]

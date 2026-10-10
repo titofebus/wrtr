@@ -78,12 +78,12 @@ def psi_score(url):
 
 def main():
     out = ["# CWV check", ""]
-    # CrUX is a nicety — a 429/500 here must not nuke the PSI lab scores.
+    # CrUX is a nicety - a 429/500 here must not nuke the PSI lab scores.
     try:
         m = crux_origin()
     except Exception as e:  # noqa: BLE001
         m = None
-        out.append(f"_CrUX unavailable ({type(e).__name__}) — lab scores only._")
+        out.append(f"_CrUX unavailable ({type(e).__name__}) - lab scores only._")
         out.append("")
     if m:
         out.append("## CrUX field data (real users, 28d)")
@@ -94,7 +94,7 @@ def main():
                 out.append(f"- {k}: p75 = {p75}")
         out.append("")
     else:
-        out.append("_CrUX: not enough traffic for field data — using lab scores only._\n")
+        out.append("_CrUX: not enough traffic for field data - using lab scores only._\n")
     out.append("## PSI lab (mobile)")
     out.append("| page | perf | LCP | INP | CLS |")
     out.append("|---|---|---|---|---|")

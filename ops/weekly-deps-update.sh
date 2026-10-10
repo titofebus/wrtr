@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# weekly-deps-update.sh — update ALL dependencies on the whole machine.
+# weekly-deps-update.sh - update ALL dependencies on the whole machine.
 # Runs from the weekly cron (Sundays ~6:44am ET). Prints a summary for chat.
 # If the SEO toolkit tests fail after pip upgrades, the report says so
-# loudly — that's the signal to pin/revert, not to skip updates.
+# loudly - that's the signal to pin/revert, not to skip updates.
 #
 # Rollback info: before/after snapshots go to
 # ~/workspace/bin/.deps-update-last/ (pip freeze per venv, apt upgradable
@@ -28,12 +28,12 @@ apt list --upgradable 2>/dev/null | tail -n +2 > "$SNAP/apt-upgradable-before.tx
 UPGRADABLE=$(wc -l < "$SNAP/apt-upgradable-before.txt")
 echo "packages with upgrades available: $UPGRADABLE"
 if apt-get update 2>&1 | grep -iE "err|fail" | head -3; then
-  echo "APT_UPDATE_FAILED — see above; continuing with the rest"
+  echo "APT_UPDATE_FAILED - see above; continuing with the rest"
 else
   echo "apt update ok"
 fi
 if ! apt-get upgrade -y --with-new-pkgs 2>&1 | tail -2; then
-  echo "APT_UPGRADE_FAILED — continuing with the rest"
+  echo "APT_UPGRADE_FAILED - continuing with the rest"
 fi
 if [ -f /var/run/reboot-required ]; then
   echo "REBOOT REQUIRED: $(cat /var/run/reboot-required.pkgs 2>/dev/null | tr '\n' ' ')"
@@ -90,7 +90,7 @@ SMOKE=$(curl -s -m 15 -X POST $SLOPTOTAL_URL/api/quick-score \
 if echo "$SMOKE" | grep -q "score"; then
   echo "SLOPTOTAL_OK"
 else
-  echo "SLOPTOTAL_BROKEN — attempting restart"
+  echo "SLOPTOTAL_BROKEN - attempting restart"
   (cd "$WRTR_DIR/sloptotal" && SLOPTOTAL_PORT="$SLOPTOTAL_PORT" nohup ./scripts/start.sh > /tmp/sloptotal.log 2>&1 &) 2>/dev/null
   sleep 45
   SMOKE2=$(curl -s -m 15 -X POST $SLOPTOTAL_URL/api/quick-score \
@@ -99,7 +99,7 @@ else
   if echo "$SMOKE2" | grep -q "score"; then
     echo "SLOPTOTAL_RESTARTED_OK"
   else
-    echo "SLOPTOTAL_STILL_DOWN — ai_check.py will print SKIPPED until it's restarted (see sloptotal/SETUP.md)"
+    echo "SLOPTOTAL_STILL_DOWN - ai_check.py will print SKIPPED until it's restarted (see sloptotal/SETUP.md)"
   fi
 fi
 
@@ -108,4 +108,4 @@ say "post-update verification"
 cd "$WRTR_DIR" || exit 1
 .venv/bin/python -m unittest discover -s tests 2>&1 | tail -3
 
-say "done — snapshots in $SNAP"
+say "done - snapshots in $SNAP"

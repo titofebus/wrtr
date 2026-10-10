@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# setup.sh — one-command wrtr install.
+# setup.sh - one-command wrtr install.
 # Creates .venv, installs pinned deps, fetches textstat's syllable dictionary,
 # and clones SlopTotal (pinned commit) for the advisory AI check.
 set -u
@@ -7,14 +7,14 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 cd "$HERE"
 
-# pip stages wheels in $TMPDIR — /tmp is a tiny tmpfs on some machines.
+# pip stages wheels in $TMPDIR - /tmp is a tiny tmpfs on some machines.
 export TMPDIR="$HERE/.tmp"
 mkdir -p "$TMPDIR"
 trap 'rm -rf "$TMPDIR"' EXIT
 
 echo "== python"
 if ! command -v python3 >/dev/null; then
-  echo "setup.sh: python3 not found — install Python 3.10+ first." >&2
+  echo "setup.sh: python3 not found - install Python 3.10+ first." >&2
   exit 1
 fi
 python3 --version
@@ -22,9 +22,9 @@ python3 --version
 echo "== venv"
 [ -d .venv ] || python3 -m venv .venv
 .venv/bin/pip install -q --upgrade pip || {
-  echo "setup.sh: pip upgrade failed — aborting." >&2; exit 1; }
+  echo "setup.sh: pip upgrade failed - aborting." >&2; exit 1; }
 .venv/bin/pip install -q -r requirements.txt || {
-  echo "setup.sh: dependency install failed — aborting. Check disk space and network." >&2; exit 1; }
+  echo "setup.sh: dependency install failed - aborting. Check disk space and network." >&2; exit 1; }
 echo "dependencies installed"
 
 echo "== textstat syllable dictionary"
@@ -49,7 +49,7 @@ if [ ! -d sloptotal ]; then
     sloptotal/.venv/bin/pip install -q --upgrade pip
     sloptotal/.venv/bin/pip install -q -r sloptotal/requirements.txt
   fi
-  echo "SlopTotal cloned — see docs/sloptotal-setup.md to start the API"
+  echo "SlopTotal cloned - see docs/sloptotal-setup.md to start the API"
 else
   echo "sloptotal/ already present"
 fi
