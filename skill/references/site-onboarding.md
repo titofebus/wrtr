@@ -128,3 +128,22 @@ name/address/phone/domain/licenses).
 Run the scan + brief manually once to prove the pipeline end to end, then
 let the cron take over. Note the new site in the daily log
 (`~/memory/YYYY-MM-DD.md`) under the brand's section.
+
+
+## Local SEO setup (for local businesses; follow references/local-seo-playbook.md)
+1. Decide the operating model with the owner (storefront, service_area, hybrid)
+   and fill the `local_seo` block. A service-area business hides its address:
+   no street address, map pin or geo on the site or in schema.
+2. Canonical NAP record: one exact name, phone, website and email used everywhere
+   (site, schema, GBP, Bing, Apple, citations). Never invent a phone or address.
+3. GBP website link uses `gbp_utm` so GBP traffic is separable in GA4.
+4. Check schema after every deploy:
+   `.venv/bin/python local_schema_check.py https://<site>/ --site <slug>`
+   (phone present and matching, SAB has no address/geo, areaServed present).
+5. Area/city pages: content_brief adds a doorway guard when the target names
+   a place. No mass city or ZIP pages.
+6. Review asks: draft_score HARD-fails incentivized, star-conditioned, gated or
+   Yelp review solicitations (FTC rule, Google and Yelp policy).
+7. First wave order: GBP, site and domain, GSC, GA4/GTM, Bing Places, Apple
+   Business, core citations, review system, Central Florida orgs. Report each
+   item as done, gap, or needs the owner.

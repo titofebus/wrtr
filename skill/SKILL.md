@@ -96,3 +96,6 @@ needs Google brand verification).
 6. Onboarding a new brand: follow `references/site-onboarding.md`; copy
    `references/site-config-template.yaml`; drop
    `references/content-workflow-template.md` into the site repo's docs.
+7. Local businesses: follow `references/local-seo-playbook.md` (operating
+   model, canonical NAP, GBP/Bing/Apple, schema, reviews, citations). Fill the
+   `local_seo` config block and run `local_schema_check.py` after deploys.

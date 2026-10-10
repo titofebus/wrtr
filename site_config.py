@@ -57,7 +57,54 @@ def load(slug=None):
     # onto different properties by accident.
     cfg.setdefault("gsc_property", cfg["site_url"])
     cfg.setdefault("type_category_map", DEFAULT_TYPE_CATEGORY_MAP)
+    errs = validate_local_seo(cfg.get("local_seo"))
+    if errs:
+        raise SystemExit(f"Site config '{slug}' local_seo: " + "; ".join(errs))
     return cfg
+
+
+OPERATING_MODELS = ("storefront", "service_area", "hybrid")
+MAX_SERVICE_AREAS = 20  # Google Business Profile limit
+
+
+def validate_local_seo(ls):
+    """Validate the optional local_seo block (Central Florida local SEO
+    playbook, skill/references/local-seo-playbook.md). Returns error strings."""
+    if ls is None:
+        return []
+    if not isinstance(ls, dict):
+        return ["must be a mapping"]
+    errs = []
+    model = ls.get("operating_model")
+    if model not in OPERATING_MODELS:
+        errs.append(f"operating_model must be one of {', '.join(OPERATING_MODELS)}")
+    areas = ls.get("service_areas", []) or []
+    if not isinstance(areas, list):
+        errs.append("service_areas must be a list")
+    else:
+        if len(areas) > MAX_SERVICE_AREAS:
+            errs.append(f"{len(areas)} service_areas; GBP allows at most {MAX_SERVICE_AREAS}")
+        if len({str(a).lower() for a in areas}) != len(areas):
+            errs.append("service_areas has duplicates")
+    if model == "service_area":
+        if ls.get("hide_address") is False:
+            errs.append("a service-area business must hide its address (hide_address: true)")
+        if not areas:
+            errs.append("a service-area business needs at least one service area")
+    if model in ("storefront", "hybrid") and ls.get("hide_address"):
+        errs.append(f"a {model} shows its staffed address (hide_address: false)")
+    nap = ls.get("nap", {}) or {}
+    if not isinstance(nap, dict):
+        errs.append("nap must be a mapping")
+    utm = ls.get("gbp_utm", "")
+    if utm and "utm_source" not in str(utm):
+        errs.append("gbp_utm should contain utm_source (e.g. ?utm_source=google&utm_medium=organic&utm_campaign=gbp)")
+    return errs
+
+
+def hides_address(cfg):
+    ls = cfg.get("local_seo") or {}
+    return ls.get("operating_model") == "service_area" or bool(ls.get("hide_address"))
 
 
 def list_sites():

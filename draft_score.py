@@ -329,7 +329,11 @@ def check_seo(fm, text, body, heads, keyword, cfg):
     # to the site's own domain.
     site_url = str(cfg.get("site_url", "")).rstrip("/").lower()
     domain = re.sub(r"^https?://", "", site_url).split("/")[0] if site_url else ""
-    md_links = re.findall(r"\[[^\]]*\]\(([^)]+)\)", text)
+    # Extract from the raw markdown body: `text` is plain_text() output,
+    # which has already stripped link URLs (bug: relative links never counted).
+    md_links = [u.strip().split()[0] for u in
+                re.findall(r"(?<!!)\[[^\]]*\]\(([^)]+)\)", body or text)
+                if u.strip()]
     internal = [u for u in md_links
                 if u.startswith("/") or (domain and domain in u.lower())]
     # Exclude image links and anchors.
@@ -577,6 +581,38 @@ def check_voice(text):
     return out
 
 
+# Review-solicitation compliance (FTC Consumer Reviews and Testimonials Rule,
+# Google Maps content policy, Yelp solicitation policy). HARD: copy offering
+# an incentive for a review, or gating reviews by sentiment, never ships.
+REVIEW_COMPLIANCE_PATTERNS = [
+    ("incentive for review",
+     r"\b(?:discount|coupon|gift ?card|free\w*|cash|\$\d+|% off|raffle|"
+     r"contest|giveaway|reward|prize)\b[^.\n]{0,60}\b(?:for|in exchange for|"
+     r"when you (?:leave|write|post))\b[^.\n]{0,30}\b(?:a |an |your )?"
+     r"(?:5[- ]star |five[- ]star |positive |google |yelp )?reviews?\b"),
+    ("incentive for review",
+     r"\b(?:leave|write|post)\b[^.\n]{0,30}\breviews?\b[^.\n]{0,40}\b(?:get|"
+     r"receive|earn|win)\b[^.\n]{0,30}\b(?:discount|coupon|gift|free|cash|"
+     r"% off|reward|prize|entry)"),
+    ("star-conditioned ask",
+     r"\b(?:leave|give|write|post) us (?:a )?(?:5|five)[- ]star\b"),
+    ("review gating",
+     r"\bif you (?:were|are) (?:happy|satisfied)\b[^.\n]{0,40}\breview"),
+    ("Yelp solicitation", r"\b(?:review us|leave (?:us )?a review) on yelp\b"),
+]
+
+
+def check_review_compliance(text):
+    tl = text.lower()
+    hits = sorted({name for name, pat in REVIEW_COMPLIANCE_PATTERNS
+                   if re.search(pat, tl, re.I)})
+    if hits:
+        return [("review compliance", "red",
+                 f"HARD: {', '.join(hits)} - never offer incentives, ask for "
+                 "stars, gate by sentiment, or solicit Yelp reviews")]
+    return [("review compliance", "green", "no incentivized or gated review asks")]
+
+
 def score(checks):
     """0–100 from Yoast-style traffic lights: green=full, yellow=half, red=0."""
     if not checks:
@@ -626,6 +662,7 @@ def main():
     checks += check_seo(fm, text, body, heads, args.keyword, cfg)
     checks += check_aeo(fm, body, heads, cfg)
     checks += check_voice(text)
+    checks += check_review_compliance(text)
 
     total = score(checks)
     hard = [c for c in checks if c[1] == "red" and "HARD" in c[2]]

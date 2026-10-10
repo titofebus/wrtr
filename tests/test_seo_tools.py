@@ -1027,3 +1027,73 @@ class TestAssignImages(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PlaybookUpdatesTest(unittest.TestCase):
+    CFG = {"name": "acme", "site_url": "https://acme.com/", "geo_terms": ["Orlando"],
+           "local_seo": {"operating_model": "service_area", "hide_address": True,
+                         "nap": {"name": "acme", "phone": "(407) 555-0100"},
+                         "service_areas": ["Orlando", "Kissimmee"]}}
+
+    def test_internal_links_counted_from_body(self):
+        body = "See [services](/services/) and [contact](/contact/) and [x](https://acme.com/faq)."
+        text = draft_score.plain_text(body)
+        res = {c[0]: c for c in draft_score.check_seo({}, text, body, [], "kw", self.CFG)}
+        self.assertEqual(res["internal links"][1], "green")
+        self.assertIn("3 internal", res["internal links"][2])
+
+    def test_image_links_not_internal(self):
+        body = "![a](/img/a.jpg) [one](/one/)"
+        res = {c[0]: c for c in draft_score.check_seo({}, "", body, [], "kw", self.CFG)}
+        self.assertIn("only 1", res["internal links"][2])
+
+    def test_review_compliance(self):
+        for bad in ["Get 10% off your next visit for a five-star review.",
+                    "Leave us a 5-star review on Google!",
+                    "If you were happy, please leave a review.",
+                    "Leave a review on Yelp to help us."]:
+            self.assertEqual(draft_score.check_review_compliance(bad)[0][1], "red", bad)
+        ok = "Would you be willing to share an honest review of your experience?"
+        self.assertEqual(draft_score.check_review_compliance(ok)[0][1], "green")
+
+    def test_validate_local_seo(self):
+        v = site_config.validate_local_seo
+        self.assertEqual(v(None), [])
+        self.assertEqual(v(self.CFG["local_seo"]), [])
+        self.assertTrue(v({"operating_model": "office"}))
+        self.assertTrue(v({"operating_model": "service_area", "hide_address": True,
+                           "service_areas": [f"c{i}" for i in range(21)]}))
+        self.assertTrue(v({"operating_model": "service_area", "hide_address": False,
+                           "service_areas": ["a"]}))
+        self.assertTrue(v({"operating_model": "storefront", "hide_address": True}))
+
+    def test_shipped_configs_valid_and_dashless(self):
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        for slug in site_config.list_sites():
+            site_config.load(slug)
+        for p in ("sites/example.yaml", "skill/references/site-config-template.yaml",
+                  "sites/febuslabs.yaml"):
+            if not os.path.isfile(os.path.join(root, p)):
+                continue  # febuslabs.yaml is gitignored (local only)
+            with open(os.path.join(root, p)) as f:
+                s = f.read()
+            self.assertNotIn("\u2014", s, p)
+            self.assertNotIn("\u2013", s, p)
+
+    def test_doorway_guard(self):
+        self.assertTrue(brief.local_page_guard(self.CFG, "plumber websites kissimmee"))
+        self.assertEqual(brief.local_page_guard(self.CFG, "plumber website cost"), [])
+        self.assertTrue(any("geo" in l for l in brief.local_page_guard(self.CFG, "orlando plumber")))
+
+    def test_local_schema_check(self):
+        import local_schema_check as lsc
+        html = ('<script type="application/ld+json">{"@type":"ProfessionalService","name":"acme",'
+                '"telephone":"+1-407-555-0100","address":{"streetAddress":"1 Main St"},'
+                '"geo":{"latitude":1}}</script>')
+        res = {c[0]: c[1] for c in lsc.check(lsc.extract_jsonld(html), self.CFG)}
+        self.assertEqual(res["telephone"], "green")
+        self.assertEqual(res["hidden address (SAB)"], "red")
+        html2 = '<script type="application/ld+json">{"@graph":[{"@type":"Organization","name":"acme","areaServed":"Orlando"}]}</script>'
+        res2 = {c[0]: c[1] for c in lsc.check(lsc.extract_jsonld(html2), self.CFG)}
+        self.assertEqual(res2["telephone"], "red")
+        self.assertEqual(res2["hidden address (SAB)"], "green")

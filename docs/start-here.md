@@ -155,7 +155,7 @@ needs more substance — don't game the metric.
   name, place, or moment only you could write, then re-run.
 - **Server down or text too short** → prints SKIPPED and exits 0.
 
-Start SlopTotal with `cd sloptotal && ./start.sh`. Full setup is in
+Start SlopTotal with `cd sloptotal && ./scripts/start.sh`. Full setup is in
 `docs/sloptotal-setup.md`.
 
 ## The weekly rhythm
@@ -177,7 +177,7 @@ Start SlopTotal with `cd sloptotal && ./start.sh`. Full setup is in
 - **Tests fail after `pip install`** → a dependency moved; pin it in
   `requirements.txt` from the before-snapshot and re-run.
 - **`ai_check.py` prints SKIPPED** → SlopTotal isn't running. `cd sloptotal
-  && ./start.sh`, wait ~30s, retry.
+  && ./scripts/start.sh`, wait ~30s, retry.
 - **`draft_score.py` crashes on NLTK** → run `./setup.sh` again; it fetches
   the syllable dictionary.
 - **Gate blocks a good draft at 78–79** → read the yellow items; usually one
