@@ -7,13 +7,13 @@ Machine-operations scripts for a wrtr install.
 Updates ALL dependencies on the machine, weekly: apt packages, npm global
 packages, deno, and pip in both venvs (`.venv` and `sloptotal/.venv`), then
 re-runs the test suite as post-update verification. Also smoke-tests the
-local SlopTotal API and auto-restarts it via `sloptotal/start.sh` if down.
+local SlopTotal API and auto-restarts it via `sloptotal/scripts/start.sh` if down.
 
 ```bash
 WRTR_DIR=/path/to/wrtr ./ops/weekly-deps-update.sh
 ```
 
-`WRTR_DIR` defaults to `~/workspace/seo-tools`. Before/after snapshots
+`WRTR_DIR` defaults to the repo containing the script. Before/after snapshots
 (`pip freeze`, apt upgradable list) go to `$WRTR_DIR/.deps-update-last/`
 for pin/revert. The script prints explicit `APT_UPDATE_FAILED`,
 `REBOOT REQUIRED`, and `SLOPTOTAL_BROKEN`/`SLOPTOTAL_STILL_DOWN` signals —

@@ -12,8 +12,10 @@ set -u
 export DEBIAN_FRONTEND=noninteractive
 export PATH="$HOME/.npm-global/bin:$HOME/.deno/bin:/opt/hatch-image/bin:$PATH"
 
-# Location of the wrtr checkout. Defaults to ~/workspace/seo-tools.
-WRTR_DIR="${WRTR_DIR:-$HOME/workspace/seo-tools}"
+# Location of the wrtr checkout. Defaults to the repo this script lives in.
+WRTR_DIR="${WRTR_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
+SLOPTOTAL_URL="${SLOPTOTAL_URL:-http://localhost:8000}"
+SLOPTOTAL_PORT="${SLOPTOTAL_PORT:-${SLOPTOTAL_URL##*:}}"
 
 SNAP="$WRTR_DIR/.deps-update-last"
 mkdir -p "$SNAP"
@@ -81,7 +83,7 @@ done
 
 # --- SlopTotal smoke test (its venv was just upgraded) ---
 say "slopTotal smoke test"
-SMOKE=$(curl -s -m 15 -X POST http://localhost:8000/api/quick-score \
+SMOKE=$(curl -s -m 15 -X POST $SLOPTOTAL_URL/api/quick-score \
   -H "Content-Type: application/json" \
   -d '{"text":"The garden was quiet that morning. I remember the light coming through the kitchen window while we waited for the coffee to brew, and thinking this was exactly the kind of ordinary moment worth keeping."}' \
   2>/dev/null)
@@ -89,9 +91,9 @@ if echo "$SMOKE" | grep -q "score"; then
   echo "SLOPTOTAL_OK"
 else
   echo "SLOPTOTAL_BROKEN — attempting restart"
-  (cd "$WRTR_DIR/sloptotal" && ./start.sh) 2>/dev/null
+  (cd "$WRTR_DIR/sloptotal" && SLOPTOTAL_PORT="$SLOPTOTAL_PORT" nohup ./scripts/start.sh > /tmp/sloptotal.log 2>&1 &) 2>/dev/null
   sleep 45
-  SMOKE2=$(curl -s -m 15 -X POST http://localhost:8000/api/quick-score \
+  SMOKE2=$(curl -s -m 15 -X POST $SLOPTOTAL_URL/api/quick-score \
     -H "Content-Type: application/json" \
     -d '{"text":"The garden was quiet that morning."}' 2>/dev/null)
   if echo "$SMOKE2" | grep -q "score"; then

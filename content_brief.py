@@ -554,7 +554,7 @@ def build_brief(cfg, target, kind=None, collection="journal"):
           f"- [ ] Write the entry to `{draft_path}` (one H1 from the title; "
           "body starts at H2)",
           f"- [ ] Quality gate (HARD — must pass to publish; also enforced by "
-          f"`{gate_cmd}` in the repo): from `~/workspace/seo-tools`, "
+          f"`{gate_cmd}` in the repo): from the wrtr repo root, "
           f"`.venv/bin/python draft_score.py <draft.md> --site {site_slug} "
           f"--keyword \"{target}\"` — fix the 🟡/🔴 items and re-run until PASS",
           "- [ ] AI-sounding check (advisory only, never blocks): "
@@ -564,7 +564,35 @@ def build_brief(cfg, target, kind=None, collection="journal"):
           f"- [ ] Submit URL to Bing: `.venv/bin/python bing.py submit {entry_url} --site {site_slug}`",
           "- [ ] Owner: request GSC indexing (URL Inspection in the web UI)",
           "- [ ] Next weekly scan watches the target query's position"]
+    L += local_page_guard(cfg, target)
     return "\n".join(L)
+
+
+def local_page_guard(cfg, target):
+    """Doorway-page guard: when the target names a place (a service area or
+    geo term), the brief must demand real local substance, not a city swap.
+    Google's spam policies treat near-duplicate city pages as doorways."""
+    ls = cfg.get("local_seo") or {}
+    places = [str(p) for p in (ls.get("service_areas") or [])] + \
+             [str(g) for g in cfg.get("geo_terms", [])]
+    tl = f" {target.lower()} "
+    hit = [p for p in places if len(p) > 2 and f" {p.lower()} " in tl]
+    if not hit:
+        return []
+    L = ["", "## Local page guard (doorway check)",
+         f"Target names a place ({hit[0]}). Before drafting, confirm this "
+         "page has substance only a business really working there could write:",
+         "- [ ] Real local specifics (service boundaries, permits, seasons, "
+         "neighborhoods, logistics), not the city name swapped into a template",
+         "- [ ] At least one real proof item for this area (job, photo, partner); "
+         "never invent clients, reviews or locations",
+         "- [ ] Body is materially different from every other area page "
+         "(no mass city or ZIP pages)",
+         "- [ ] Links to the relevant trade/service pages and back to the hub"]
+    if ls.get("operating_model") == "service_area":
+        L.append("- [ ] Service-area business: no street address, map pin or "
+                 "geo coordinates on the page or in its schema")
+    return L
 
 
 def main():

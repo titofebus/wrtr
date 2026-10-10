@@ -9,10 +9,10 @@ Self-hosted AI-text detection ("VirusTotal for AI slop"), used by
 ## Quick setup
 
 ```bash
-cd ~/workspace/seo-tools
+cd <wrtr repo root>
 ./setup.sh              # clones SlopTotal at the pinned commit, builds its venv
 cd sloptotal
-./start.sh              # detached; logs to /tmp/sloptotal.log
+./scripts/start.sh              # detached; logs to /tmp/sloptotal.log
 curl -s http://localhost:8000/   # 200 when up (~30s: classifiers preload)
 ```
 
@@ -28,8 +28,8 @@ To stop: `pkill -f "sloptotal/.venv/bin/python"`.
   `/api/quick-score`; downloaded once, cached)
 - **Hardware:** CPU-only. 4 GB RAM is enough for the lite profile.
 - **Persistence:** the weekly dependency-update script smoke-tests the API
-  and auto-restarts it via `start.sh` if it's down. If the VM was just
-  replaced, run `./start.sh` manually — `ai_check.py` prints SKIPPED
+  and auto-restarts it via `scripts/start.sh` if it's down. If the VM was just
+  replaced, run `./scripts/start.sh` manually — `ai_check.py` prints SKIPPED
   (exit 0) until the server is back.
 
 ## API (used by ai_check.py)
@@ -50,10 +50,18 @@ To stop: `pkill -f "sloptotal/.venv/bin/python"`.
 2. **Proxy quirk:** a stock `no_proxy` containing bracketed IPv6 literals
    (`[::1]`) crashes httpx inside `huggingface_hub`
    (`InvalidURL: Invalid port: ':1]'`), breaking model downloads.
-   `start.sh` exports a cleaned `no_proxy` without brackets.
+   `scripts/start.sh` exports a cleaned `no_proxy` without brackets.
 
 ## Notes
 
 - Scores are advisory, never a publish gate: detectors false-positive on
   polished human prose. See `../ai_check.py`.
 - `ai_check.py` uses a 120 s timeout — full drafts are slow on small CPUs.
+
+
+## Port and SLOPTOTAL_URL
+`ai_check.py` reads `SLOPTOTAL_URL` (default `http://localhost:8000`).
+`scripts/start.sh` reads `SLOPTOTAL_PORT` (default 8000). If 8000 is taken on
+the machine, start with `SLOPTOTAL_PORT=8001 ./scripts/start.sh` and export
+`SLOPTOTAL_URL=http://localhost:8001`. A 405 from ai_check means another app
+owns the port. The ops script derives the port from `SLOPTOTAL_URL`.
