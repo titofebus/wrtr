@@ -1,4 +1,4 @@
-"""nap_audit.py — canonical NAP consistency audit for a site.
+"""nap_audit.py - canonical NAP consistency audit for a site.
 
 The local SEO playbook's first rule: one canonical business identity, and
 every public surface must match it exactly. This tool checks the site's
@@ -7,7 +7,7 @@ against the canonical `nap:` block in sites/<slug>.yaml and reports
 field-by-field mismatches.
 
 Usage: .venv/bin/python nap_audit.py --site <slug>
-Exit code is always 0 — this is an audit, not a gate.
+Exit code is always 0 - this is an audit, not a gate.
 """
 
 import argparse
@@ -239,7 +239,7 @@ def main(argv=None):
         pages["contact"] = contact_html
 
     nap = cfg.get("nap") or {}
-    print(f"NAP audit — {cfg.get('name')} ({base})")
+    print(f"NAP audit - {cfg.get('name')} ({base})")
     print(f"canonical: phone={nap.get('phone') or '-'} "
           f"email={nap.get('email') or '-'} "
           f"address={'hidden (SAB)' if nap.get('address_hidden') else (nap.get('address') or '-')}")
@@ -253,7 +253,7 @@ def main(argv=None):
         print(f"[{tag}] {field}: {detail}")
     print()
     print(f"SUMMARY: {len(results) - warns}/{len(results)} checks ok"
-          + ("" if warns == 0 else f" — {warns} need attention"))
+          + ("" if warns == 0 else f" - {warns} need attention"))
     return 0
 
 
