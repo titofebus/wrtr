@@ -1170,3 +1170,73 @@ class PlaybookUpdatesTest(unittest.TestCase):
         res2 = {c[0]: c[1] for c in lsc.check(lsc.extract_jsonld(html2), self.CFG)}
         self.assertEqual(res2["telephone"], "red")
         self.assertEqual(res2["hidden address (SAB)"], "green")
+
+
+def _brief_front_matter(cfg, target="wedding inquiry reply time", kind=None):
+    """Build a brief offline and return its front-matter block, parsed."""
+    import yaml
+    import keyword_miner
+    orig = keyword_miner.mine
+    keyword_miner.mine = lambda t: []
+    try:
+        out = brief.build_brief(cfg, target, kind or next(iter(
+            cfg["type_category_map"])))
+    finally:
+        keyword_miner.mine = orig
+    block = out.split("## Front matter\n```md\n---\n", 1)[1].split(
+        "\n---\n```", 1)[0]
+    return yaml.safe_load(block)
+
+
+class TestFrontMatterTemplate(unittest.TestCase):
+    CFG = {"name": "T", "slug": "t", "site_url": "https://x.com/",
+           "content_route": "/blog/", "repo": tempfile.gettempdir(),
+           "content_dir": "nope", "type_category_map": {"guide": "Pricing"},
+           "title_templates": ["{title}"], "categories": {"Pricing": "p"}}
+
+    def test_default_keeps_keywords_and_category(self):
+        fm = _brief_front_matter(dict(self.CFG))
+        self.assertEqual(fm["categorySlug"], "Pricing")
+        self.assertEqual(fm["keywords"], ["wedding inquiry reply time"])
+
+    def test_site_template_replaces_fields(self):
+        cfg = dict(self.CFG, front_matter_template=(
+            'title: "{title}"\ndate: "{date}"\n'
+            "image: /blog/{slug}/cover.webp\n"
+            'imageAlt: "{image_alt}"\ntags: [{category}]'))
+        fm = _brief_front_matter(cfg)
+        self.assertEqual(set(fm), {"title", "date", "image", "imageAlt",
+                                   "tags"})
+        self.assertEqual(fm["image"],
+                         "/blog/wedding-inquiry-reply-time/cover.webp")
+        self.assertEqual(fm["tags"], ["Pricing"])
+
+    def test_bad_placeholder_names_the_key(self):
+        cfg = dict(self.CFG, front_matter_template="x: {nope}")
+        with self.assertRaises(SystemExit) as cm:
+            _brief_front_matter(cfg)
+        self.assertIn("front_matter_template", str(cm.exception))
+
+
+class TestExistingEntries(unittest.TestCase):
+    def test_readme_is_not_an_entry(self):
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d)
+        for name in ("README.md", "a-post.md"):
+            open(os.path.join(d, name), "w").close()
+        cfg = {"repo": d, "content_dir": "."}
+        self.assertEqual(brief.existing_entries(cfg), ["a-post"])
+
+
+class TestFrontMatterFaq(unittest.TestCase):
+    def test_faq_list_in_front_matter_counts(self):
+        path = os.path.join(tempfile.mkdtemp(), "d.md")
+        self.addCleanup(shutil.rmtree, os.path.dirname(path))
+        with open(path, "w") as f:
+            f.write("---\ntitle: T\nfaq:\n  - question: Why?\n"
+                    "    answer: Because.\n---\n\n## Intro\n\nText.\n")
+        fm, body = draft_score.parse_draft(path)
+        checks = dict((c[0], c[1]) for c in draft_score.check_aeo(
+            fm, body, draft_score.headings(body), {"name": "T"}))
+        self.assertEqual(checks["FAQ section"], "green")
+

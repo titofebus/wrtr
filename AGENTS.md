@@ -37,7 +37,7 @@ Multi-site scripts take `--site <slug>` (or the `SEO_SITE` env var).
 Default site is `example`.
 
 ```bash
-.venv/bin/python -m unittest discover -s tests   # 144 tests, must all pass
+.venv/bin/python -m unittest discover -s tests   # 149 tests, must all pass
 ```
 
 ## 3. The weekly content loop (the job)
@@ -189,6 +189,9 @@ in a script; put them in the YAML. Copy `sites/example.yaml` to onboard.
 - `categories`, `type_category_map`, `type_slug_suffix`, `type_angles` -
   brief types → categories, slug suffixes, one-line angles.
 - `title_templates`, `image_alt_template` - `{title}`/`{name}` placeholders.
+- `front_matter_template` - optional: the brief's front matter block, for
+  sites whose content schema differs from the default fields (see the config
+  template for placeholders).
 - `brand_terms` - brand queries excluded from scans; force NAVIGATIONAL intent.
 - `venue_intent_words` - hub-page candidate signals for the scan.
 - `scan_thresholds` - striking/lowctr/venue/declining cutoffs. Small sites

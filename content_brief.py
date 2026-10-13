@@ -52,12 +52,41 @@ def _render_template(template, label, **kwargs):
             f"Available placeholders: {', '.join(sorted(kwargs))}.")
 
 
+def _front_matter(cfg, *, title, slug, category, image_alt, keywords):
+    """Front-matter lines for the brief. A site whose content schema differs
+    from the default sets `front_matter_template` in its YAML."""
+    today = datetime.date.today()
+    library = cfg.get("image_library", "the image library")
+    # Quoted: an unquoted keyword containing ":" parses as a dict and breaks
+    # list-of-strings validation (e.g. Astro's z.array(z.string())).
+    keyword_lines = "\n".join(
+        f'  - "{k.replace(chr(34), chr(92) + chr(34))}"' for k in keywords)
+    template = cfg.get("front_matter_template")
+    if template is None:
+        return [
+            f'title: "{title}"',
+            f'date: "{today}"',
+            f'updated: "{today}"  # refresh the entry quarterly; AI favors recently updated pages',
+            f"categorySlug: {category}",
+            f'image: "<chosen hero filename - must exist in {library}>"',
+            f'imageAlt: "{image_alt}"',
+            "keywords:",
+            keyword_lines,
+        ]
+    rendered = _render_template(
+        template, "front_matter_template", title=title, date=today,
+        slug=slug, category=category, image_alt=image_alt,
+        image_library=library, keywords=keyword_lines)
+    return rendered.strip("\n").split("\n")
+
+
 def existing_entries(cfg):
     out = []
     content_dir = os.path.join(os.path.expanduser(cfg["repo"]), cfg["content_dir"])
     if os.path.isdir(content_dir):
         for f in sorted(os.listdir(content_dir)):
-            if f.endswith(".md"):
+            # A README documents the folder; it is not an entry.
+            if f.endswith(".md") and f.lower() != "readme.md":
                 out.append(f[:-3])
     return out
 
@@ -523,17 +552,8 @@ def build_brief(cfg, target, kind=None, collection="main"):
           "- Alt text: descriptive, includes the primary keyword once.",
           "", "## Front matter",
           "```md", "---",
-          f'title: "{titles[0]}"',
-          f"date: \"{datetime.date.today()}\"",
-          f"updated: \"{datetime.date.today()}\"  # refresh the entry quarterly; AI favors recently updated pages",
-          f"categorySlug: {category}",
-          f'image: "<chosen hero filename - must exist in {cfg.get("image_library", "the image library")}>\"',
-          f'imageAlt: "{image_alt}"',
-          "keywords:",
-          # Quoted: an unquoted keyword containing ":" parses as a dict and
-          # breaks Astro's z.array(z.string()) validation.
-          *[f'  - "{k.replace(chr(34), chr(92) + chr(34))}"'
-            for k in [target] + usable],
+          *_front_matter(cfg, title=titles[0], slug=slug, category=category,
+                         image_alt=image_alt, keywords=[target] + usable),
           "---", "```",
           "", "## Brand voice (non-negotiable)"]
     if services_note:
