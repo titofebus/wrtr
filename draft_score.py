@@ -448,7 +448,9 @@ def check_aeo(fm, body, heads, cfg):
                     "self-contained answer - that's the quotable chunk"))
 
     # FAQ section: explicit Q&A is the most liftable format for AI answers.
-    has_faq = bool(re.search(
+    # Either a FAQ heading in the body, or a `faq:` list in the front matter
+    # for sites whose layout renders the FAQ (and its schema) from there.
+    has_faq = bool(fm.get("faq")) or bool(re.search(
         r"^#{2,4}\s+.*\b(faq|frequently asked questions)\b", body,
         re.I | re.M))
     if has_faq:

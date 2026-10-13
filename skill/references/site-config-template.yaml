@@ -60,6 +60,20 @@ title_templates:
 # targets, prefer a pattern that doesn't duplicate the brand name.
 image_alt_template: "{title}, {name}"
 
+# Optional: the front matter block the brief hands the writer. Omit it to get
+# the default (title, date, updated, categorySlug, image, imageAlt, keywords).
+# Set it when the site's content schema has different fields, since a field
+# the site does not know can fail its build. Placeholders: {title} {date}
+# {slug} {category} {image_alt} {image_library} {keywords} (the target and
+# secondary keywords as indented "  - " list lines). Write a literal brace as
+# {{ or }}.
+# front_matter_template: |
+#   title: "{title}"
+#   date: {date}
+#   image: /images/{slug}/cover.webp
+#   imageAlt: "{image_alt}"
+#   tags: [{category}]
+
 # Queries containing these are brand queries (excluded from opportunity scans).
 # Matching is case-insensitive SUBSTRING: use distinctive terms only, a
 # generic term like "tours" would nuke legitimate queries like
