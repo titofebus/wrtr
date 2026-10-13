@@ -284,6 +284,13 @@ content-workflow template. Onboard a brand by following
 `skill/references/site-onboarding.md`; the config template is
 `skill/references/site-config-template.yaml`.
 
+**Installing the skill for an agent:** the SKILL.md frontmatter (name +
+description) is the standard agent-skill format - no build step. Copy
+the folder into the agent's skills directory under the skill's name,
+e.g. `cp -r skill ~/.claude/skills/seo-content-engine` for Claude Code,
+or the equivalent skills folder for your runtime. The skill drives the
+scripts in this repo, so the agent also needs a wrtr checkout (see §2).
+
 ## 13. Docs map
 
 - `AGENTS.md` (this file) - the operator manual.
