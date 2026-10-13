@@ -123,7 +123,7 @@ def main():
                  {"who", "what", "where", "when", "why", "how", "which", "can",
                   "should", "do", "is", "are"}]
     print(f"# {len(kws)} keyword ideas for '{seed}'\n")
-    print("## Questions (Journal entry fuel)")
+    print("## Questions (entry fuel)")
     for k in questions[:30]:
         print(f"- {k}")
     print(f"\n## All non-question ideas ({len(kws) - len(questions)})")

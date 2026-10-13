@@ -13,14 +13,14 @@ against the site's existing entries:
 2. Search Console - the site's own question queries from the last 28 days
    (degrades gracefully when GSC is unavailable).
 
-Each question is then matched against existing journal/resources entries
+Each question is then matched against existing content entries
 by content-word overlap. Questions with no covering entry are citation
 gaps: brief them (content_brief.py) with the AEO section and they become
 quotable answers.
 
 Usage:
     .venv/bin/python aeo_map.py --site <slug> [--seeds "seed one,seed two"]
-    .venv/bin/python aeo_map.py --site febusfilms --no-gsc
+    .venv/bin/python aeo_map.py --site example --no-gsc
 
 Seeds default to the site's proactive_seeds. No network beyond what
 keyword_miner and gsc already use.
@@ -93,7 +93,7 @@ def gsc_questions(cfg):
 
 
 def existing_entries(cfg):
-    """(slug, title-words) for every journal/resources entry on disk."""
+    """(slug, title-words) for every content entry on disk."""
     out = []
     repo = os.path.expanduser(cfg.get("repo", ""))
     for key in ("content_dir", "resources_dir"):

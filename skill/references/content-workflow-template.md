@@ -113,9 +113,8 @@ Google recrawls them promptly.
 ### 8. Monitor - automated
 
 The next weekly scan watches the target query's position/impressions.
-`psi_check.py` tracks Core Web Vitals (Febus-only - clone and adapt the URL
-list per brand, or use PageSpeed Insights manually until a multi-site version
-exists). Refresh or extend the entry when the
+`psi_check.py` tracks Core Web Vitals (point `PSI_URLS` at the brand's key
+pages, or use PageSpeed Insights manually). Refresh or extend the entry when the
 scan flags it as striking-distance or declining.
 
 ## Monthly layer
@@ -124,7 +123,7 @@ scan flags it as striking-distance or declining.
   `open-seo-crawler`; feed gaps into the brief backlog.
 - **Hub pages**: propose the hub page (URL, target query, why it wins) -
   owner approves before any build.
-- **Vitals + data freshness**: `psi_check.py` vitals (Febus-only - see §8);
+- **Vitals + data freshness**: `psi_check.py` vitals (see §8);
   GSC→BigQuery bulk export is optional per brand - if enabled, name the
   dataset (`<gcp-project>.<dataset>`) here and mirror the freshness check
   (latest `data_date` + `ExportLog` completeness).

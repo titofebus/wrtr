@@ -4,7 +4,7 @@ Open-source, Google-native SEO stack. No subscriptions, no hosted APIs for
 the core loop: weekly opportunity scans from your own Search Console data,
 content briefs, a hard pre-publish quality gate, and monitoring.
 
-Built 2026-10-07. Extracted from a production wedding-photography site's
+Built 2026-10-07. Extracted from a production site's
 SEO program.
 
 > **New here?** Start with [`docs/start-here.md`](docs/start-here.md) -

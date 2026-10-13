@@ -20,8 +20,9 @@ Perplexity, Gemini, Copilot, Claude, and Google AI Overviews/Mode. SEO gets
 you ranked; AEO gets you quoted. wrtr does both.
 
 Public repo: `https://github.com/titofebus/wrtr`
-Reference brand: Febus Films (`sites/febusfilms.yaml`), a wedding photography
-studio. Any new brand onboards by copying a YAML file. No code changes.
+Reference config: `sites/example.yaml`. Production sites are just more
+YAML files in `sites/`. Any new brand onboards by copying a YAML file.
+No code changes.
 
 ## 2. Setup (first 15 minutes)
 
@@ -36,7 +37,7 @@ Multi-site scripts take `--site <slug>` (or the `SEO_SITE` env var).
 Default site is `example`.
 
 ```bash
-.venv/bin/python -m unittest discover -s tests   # 122 tests, must all pass
+.venv/bin/python -m unittest discover -s tests   # 144 tests, must all pass
 ```
 
 ## 3. The weekly content loop (the job)
@@ -83,7 +84,7 @@ Default site is `example`.
 | Script | What it does | Command |
 |---|---|---|
 | `weekly_scan.py` | Weekly opportunity scan → one labeled pick | `.venv/bin/python weekly_scan.py --site <slug>` |
-| `content_brief.py` | Query → full drafting brief | `.venv/bin/python content_brief.py "<query>" --type=<type> --site <slug> [--collection journal\|resources]` |
+| `content_brief.py` | Query → full drafting brief | `.venv/bin/python content_brief.py "<query>" --type=<type> --site <slug> [--collection main\|resources]` |
 | `draft_score.py` | Pre-publish quality gate (HARD) | `.venv/bin/python draft_score.py <draft.md> --site <slug> --keyword "<kw>" [--min-score N]` |
 | `ai_check.py` | Advisory AI-sounding check (never blocks) | `.venv/bin/python ai_check.py <draft.md> [--heatmap]` |
 | `aeo_map.py` | Answer engine question map: what buyers ask AI assistants vs what the site can cite | `.venv/bin/python aeo_map.py --site <slug> [--seeds "a,b"] [--no-gsc]` |
@@ -180,10 +181,10 @@ in a script; put them in the YAML. Copy `sites/example.yaml` to onboard.
   `nap_audit.py` and `local_schema_check.py` verify the site publishes
   exactly this.
 - `site_url`, `repo` (local path), `content_dir`, `content_route`,
-  `content_kind` - main collection (e.g. Journal at `/journal/`).
+  `content_kind` - main collection (its public kind name and route).
 - `resources_dir`, `resources_route`, `resources_kind` - optional second
-  collection for SEO-generated content (Febus: Resources at `/resources/`,
-  kept out of nav; `--collection resources` in the brief).
+  collection for SEO-generated content (a second collection kept out of
+  nav; `--collection resources` in the brief).
 - `banned_terms` - HARD gate failures (also blocks them as brief keywords).
 - `categories`, `type_category_map`, `type_slug_suffix`, `type_angles` -
   brief types → categories, slug suffixes, one-line angles.
@@ -193,8 +194,8 @@ in a script; put them in the YAML. Copy `sites/example.yaml` to onboard.
 - `scan_thresholds` - striking/lowctr/venue/declining cutoffs. Small sites
   need lower impression minimums or every bucket comes back empty.
 - `hub_strategy` - one paragraph: how hubs and spokes relate for this brand.
-- `services_note` - hard service boundaries (e.g. "photography only, never
-  imply video").
+- `services_note` - hard service boundaries (e.g. "guided tours only,
+  never imply rentals").
 - `voice_rules` - non-negotiable brand voice, baked into every brief.
 - `proof_points` - authorized experience claims (doubles as AEO citable facts).
 - `preferred_phrases` - the brand's own texture/vocabulary.
@@ -205,13 +206,20 @@ in a script; put them in the YAML. Copy `sites/example.yaml` to onboard.
 - `proactive_seeds` - 2-3 broad seeds for net-new topic mining and aeo_map.
 - `geo_terms` - the brand's markets; filters out-of-market keyword leaks.
 - `image_library` - where real brand photos live for briefs.
+- `niche_generic_words` - the niche's too-generic-to-anchor words,
+  merged over the universal base by `site_config.generic_words`.
+- `image_scan_dirs`, `image_number_map`, `image_number_pattern`,
+  `image_scan_skip_files` - optional `assign_images.py` wiring for sites
+  whose source references images indirectly (extra scanned trees, a
+  number-to-filename map, the by-number reference regex). Off by default.
 - `draft_score_min` - publish bar (default 80).
 - `repo_gate` - the site repo's mechanical gate command, named in briefs.
 - `venue_pick_brief_type` - which `--type` a `venue` scan pick gets.
 
 Helpers: `site_config.need_dict`, `need_list`, `need_str` fail loud with
-the key name on bad config. `NICHE_GENERIC_WORDS` is the shared
-too-generic-to-be-an-anchor word set.
+the key name on bad config. `site_config.generic_words(cfg)` is the
+shared too-generic-to-be-an-anchor word set (universal base + the
+site's `niche_generic_words`).
 
 ## 8. Owner rules (never break these)
 
@@ -221,8 +229,9 @@ too-generic-to-be-an-anchor word set.
    otherwise, per site, explicitly.
 3. **AI detection never blocks.** `ai_check.py` is advisory-only by design
    (detectors false-positive on polished human writing).
-4. **Public-copy terminology is per-brand and lint-enforced.** Febus:
-   "Journal", never "blog". The gate enforces it via `banned_terms`.
+4. **Public-copy terminology is per-brand and lint-enforced.** Each brand
+   declares its own terminology (e.g. a collection called "Journal",
+   never "blog"). The gate enforces it via `banned_terms`.
 5. **Most effective things only; don't overload the project.** Every new
    check must earn its place: deterministic, high-leverage, cheap to run.
    When in doubt, leave it out or make it advisory.

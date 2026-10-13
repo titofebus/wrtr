@@ -7,8 +7,8 @@ derived from entry frontmatter (`image:`) and markdown image references,
 so there's no state file to lose.
 
 Usage:
-    .venv/bin/python assign_images.py --site febusfilms \\
-        --topic "lake nona wedding venues" --count 3
+    .venv/bin/python assign_images.py --site example \\
+        --topic "austin bike tours" --count 3
 
 Prints the assigned image paths (site-relative URLs) plus suggested alt
 text derived from the keyword-rich filenames. The agent writes the first
@@ -27,10 +27,19 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import site_config
 
 IMG_EXTS = (".webp", ".jpg", ".jpeg", ".png", ".avif")
-STOPWORDS = {
-    "orlando", "wedding", "photography", "photographer", "photographers",
-    "the", "a", "an", "and", "of", "in", "for", "with", "to",
-}
+# Universal filler only. The site's own ubiquitous terms (its niche
+# words and geo terms) are merged in from the site config at runtime -
+# they are what make topic words too common to be distinctive THERE.
+BASE_STOPWORDS = {"the", "a", "an", "and", "of", "in", "for", "with", "to"}
+
+
+def stopwords_for(cfg):
+    """Topic-matching stopwords for a site: universal filler + the
+    site's generic words + the words of its geo terms."""
+    words = set(BASE_STOPWORDS) | site_config.generic_words(cfg)
+    for g in cfg.get("geo_terms", []) or []:
+        words |= set(re.findall(r"[a-z]+", str(g).lower()))
+    return words
 
 
 def library_images(lib_dir):
@@ -42,27 +51,40 @@ def library_images(lib_dir):
     return out
 
 
-def used_images(repo, content_dirs):
-    """Filenames (basenames) already referenced anywhere on the site."""
+def used_images(repo, content_dirs, cfg=None):
+    """Filenames (basenames) already referenced anywhere on the site.
+
+    Site-specific reference schemes are config-driven: `image_scan_dirs`
+    lists extra repo dirs to scan (e.g. a data/components tree),
+    `image_number_map` is a repo-relative JSON file mapping numbers to
+    filenames, and `image_number_pattern` is the regex (one capture
+    group: the number) that references an image by number in source
+    files. All optional; unset means plain markdown/frontmatter refs.
+    """
+    cfg = cfg or {}
     used = set()
     img_ref = re.compile(r"[\"'\(](/[^\"'\)]*?\.(?:webp|jpg|jpeg|png|avif))", re.I)
-    # Photo-number references: websitePhoto(47) / highFidelityWebsitePhoto(67)
-    # resolve via src/data/website-photo-files.json (number -> filename).
-    num_ref = re.compile(r"(?:highFidelityW|w)ebsitePhoto\((\d+)\)")
+    num_ref = None
     num_to_file = {}
-    num_map = os.path.join(repo, "src", "data", "website-photo-files.json")
-    try:
-        import json
-        with open(num_map, encoding="utf-8") as f:
-            num_to_file = json.load(f)
-    except (OSError, ValueError):
-        pass
+    map_rel = cfg.get("image_number_map")
+    pattern = cfg.get("image_number_pattern")
+    if map_rel and pattern:
+        num_ref = re.compile(pattern)
+        try:
+            import json
+            with open(os.path.join(repo, map_rel), encoding="utf-8") as f:
+                num_to_file = json.load(f)
+        except (OSError, ValueError):
+            pass
+    skip_files = set(cfg.get("image_scan_skip_files", []) or [])
+    if map_rel:
+        skip_files.add(os.path.basename(map_rel))
     # Scan content collections (frontmatter + markdown references).
     scan_dirs = [os.path.join(repo, d) for d in content_dirs
                  if os.path.isdir(os.path.join(repo, d))]
-    # Plus site-wide code/data (photos.ts, components) - images referenced
-    # there count as used too.
-    for extra in ("src/data", "src/components"):
+    # Plus any site-configured extra trees (data/components and the like) -
+    # images referenced there count as used too.
+    for extra in cfg.get("image_scan_dirs", []) or []:
         full = os.path.join(repo, extra)
         if os.path.isdir(full):
             scan_dirs.append(full)
@@ -71,8 +93,7 @@ def used_images(repo, content_dirs):
             for f in files:
                 if not f.endswith((".md", ".ts", ".astro", ".tsx")):
                     continue
-                if f in ("website-photo-files.json", "og-image-files.json",
-                          "high-fidelity-photo-numbers.json"):
+                if f in skip_files:
                     continue
                 try:
                     text = open(os.path.join(root, f), encoding="utf-8").read()
@@ -80,16 +101,18 @@ def used_images(repo, content_dirs):
                     continue
                 for m in img_ref.finditer(text):
                     used.add(os.path.basename(m.group(1)))
-                for m in num_ref.finditer(text):
-                    fn = num_to_file.get(m.group(1))
-                    if fn:
-                        used.add(os.path.basename(fn))
+                if num_ref is not None:
+                    for m in num_ref.finditer(text):
+                        fn = num_to_file.get(m.group(1))
+                        if fn:
+                            used.add(os.path.basename(fn))
     return used
 
 
-def topic_words(topic):
+def topic_words(topic, stopwords=None):
+    stops = stopwords if stopwords is not None else BASE_STOPWORDS
     return {w for w in re.findall(r"[a-z]+", topic.lower())
-            if w not in STOPWORDS and len(w) > 2}
+            if w not in stops and len(w) > 2}
 
 
 def relevance(path, words):
@@ -111,7 +134,7 @@ def main():
         print(f"assign_images: image library not found: {lib}", file=sys.stderr)
         return 2
 
-    content_dirs = [cfg.get("content_dir", "src/content/journal")]
+    content_dirs = [cfg["content_dir"]]
     # Also scan secondary collections (SEO hub etc.) for used images.
     for key in ("guides_dir", "resources_dir"):
         extra = cfg.get(key)
@@ -123,14 +146,14 @@ def main():
         print("assign_images: no images in library", file=sys.stderr)
         return 2
 
-    used = used_images(repo, content_dirs)
+    used = used_images(repo, content_dirs, cfg)
     pool = [p for p in all_imgs if os.path.basename(p) not in used]
     recycled = False
     if not pool:
         pool = all_imgs
         recycled = True
 
-    words = topic_words(args.topic)
+    words = topic_words(args.topic, stopwords_for(cfg))
     ranked = sorted(pool, key=lambda p: (-relevance(p, words), p))
     picked = ranked[:args.count]
 

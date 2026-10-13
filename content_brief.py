@@ -54,19 +54,24 @@ def _render_template(template, label, **kwargs):
 
 def existing_entries(cfg):
     out = []
-    journal_dir = os.path.join(os.path.expanduser(cfg["repo"]), cfg["content_dir"])
-    if os.path.isdir(journal_dir):
-        for f in sorted(os.listdir(journal_dir)):
+    content_dir = os.path.join(os.path.expanduser(cfg["repo"]), cfg["content_dir"])
+    if os.path.isdir(content_dir):
+        for f in sorted(os.listdir(content_dir)):
             if f.endswith(".md"):
                 out.append(f[:-3])
     return out
 
 
-def _venue_named_queries(related, target, geo_terms, brand_terms=()):
-    """GSC queries that name a specific venue (demand signal for guides)."""
-    generic = set(target.lower().split()) | {"wedding", "weddings", "venue",
-                                             "venues", "photographer",
-                                             "photography", "photo", "photos"}
+def _venue_named_queries(related, target, geo_terms, brand_terms=(),
+                         generic_words=None):
+    """GSC queries that name a specific place/entity (demand signal).
+
+    generic_words defaults to the universal set; production callers pass
+    the site's full set (site_config.generic_words).
+    """
+    generic = set(target.lower().split()) | (
+        generic_words if generic_words is not None
+        else site_config.UNIVERSAL_GENERIC_WORDS)
     brand_lc = [b.lower() for b in brand_terms]
     out = []
     for r in related:
@@ -74,10 +79,11 @@ def _venue_named_queries(related, target, geo_terms, brand_terms=()):
         if q == target.lower() or r["query"].startswith("(GSC"):
             continue
         if any(b in q for b in brand_lc):
-            continue  # brand query, not a venue
+            continue  # brand query, not a named entity
         words = [w for w in q.split() if w not in generic]
-        # A named venue: geo-adjacent and has 2+ distinctive words left
-        # (e.g. "lake nona wave hotel weddings" -> wave, hotel).
+        # A named entity: geo-adjacent and has 2+ distinctive words left
+        # (e.g. "austin riverwalk hill country bike tours" -> riverwalk,
+        # hill, country).
         if len(q.split()) >= 4 and len(words) >= 2 and any(
                 g in q for g in [t.lower() for t in geo_terms]):
             out.append(r)
@@ -93,7 +99,7 @@ def gsc_related(cfg, target):
         rows = gsc.search_analytics(cfg["gsc_property"],
                                     start, end.isoformat(), ("query",))
         core = {w for w in target.lower().split() if w not in STOP_WORDS}
-        anchors = _anchors(target)
+        anchors = _anchors(target, site_config.generic_words(cfg))
         hits = []
         for r in rows:
             q = r["keys"][0].lower()
@@ -123,9 +129,9 @@ def overlap(entries, target):
 # modifiers.
 QUESTION_WORDS = set(keyword_miner.QUESTION_PREFIXES) - {"best", "top"}
 
-# Words too generic to count as topical "anchors" for relevance scoring.
-# (Single source of truth: site_config.NICHE_GENERIC_WORDS.)
-GENERIC_WORDS = site_config.NICHE_GENERIC_WORDS
+# Words too generic to count as topical "anchors" for relevance scoring
+# come from the site config (site_config.generic_words); helpers take
+# them as a parameter so no niche vocabulary lives in this module.
 
 # Search-intent signals. Transactional = the searcher is ready to book/buy -
 # the intent that pays. Commercial investigation ("best", "top", "reviews")
@@ -163,10 +169,12 @@ def classify_intent(target, brand_terms=()):
             "no strong signal - confirm intent from the SERP before drafting")
 
 
-def _anchors(target):
+def _anchors(target, generic_words=None):
     """The target's distinctive words - what makes it *this* topic."""
+    generic = (generic_words if generic_words is not None
+               else site_config.UNIVERSAL_GENERIC_WORDS)
     return {w for w in target.lower().split()
-            if w not in STOP_WORDS and w not in GENERIC_WORDS}
+            if w not in STOP_WORDS and w not in generic}
 
 
 _US_STATES = [
@@ -267,13 +275,13 @@ def filter_secondaries(secondaries, target, geo_terms):
     return out
 
 
-def related_entries(entries, target, n=2):
+def related_entries(entries, target, n=2, generic_words=None):
     """The n existing entries most topically related to the target.
 
     Anchor words (the target's distinctive terms) score 3x; entries with
     no anchor overlap aren't named - generic matches are worse than none.
     """
-    anchors = _anchors(target)
+    anchors = _anchors(target, generic_words)
     core = {w for w in target.lower().split() if w not in STOP_WORDS}
     scored = []
     for e in entries:
@@ -305,7 +313,7 @@ def _as_dict(cfg, key):
     return v if isinstance(v, dict) else {}
 
 
-def build_brief(cfg, target, kind=None, collection="journal"):
+def build_brief(cfg, target, kind=None, collection="main"):
     mined = keyword_miner.mine(target)
     geo_terms = cfg.get("geo_terms", [])
     questions = [k for k in mined
@@ -327,7 +335,9 @@ def build_brief(cfg, target, kind=None, collection="journal"):
     related = gsc_related(cfg, target)
     entries = existing_entries(cfg)
     dupes = overlap(entries, target)
-    link_targets = [e for e in related_entries(entries, target)
+    link_targets = [e for e in related_entries(
+                        entries, target,
+                        generic_words=site_config.generic_words(cfg))
                     if e not in dupes][:2]
     categories = cfg.get("categories", {})
     type_map = site_config.need_dict(cfg, "type_category_map")
@@ -336,7 +346,7 @@ def build_brief(cfg, target, kind=None, collection="journal"):
     # Collection resolution: resources_* keys when --collection resources and
     # the site defines them; otherwise the main collection keys.
     dir_key, route_key = "content_dir", "content_route"
-    kind_name = cfg.get("content_kind", "Journal")
+    kind_name = cfg.get("content_kind", "Content")
     collection_note = ""
     if collection == "resources":
         if cfg.get("resources_dir"):
@@ -426,8 +436,8 @@ def build_brief(cfg, target, kind=None, collection="journal"):
     core_words = {w for w in target.lower().split() if w not in STOP_WORDS}
     # Strictly tighter than filter_secondaries' own >=2 gate (which these
     # already passed): a secondary must share 3+ content words or name the
-    # brand's geo, otherwise it's a neighboring-topic leak (e.g. Lake Mary
-    # keywords in a Lake Nona brief).
+    # brand's geo, otherwise it's a neighboring-topic leak (e.g. Round Rock
+    # keywords in an Austin brief).
     usable = [k for k in secondaries
               if len(core_words & {w for w in k.lower().split()
                                    if w not in STOP_WORDS}) >= 3
@@ -471,21 +481,26 @@ def build_brief(cfg, target, kind=None, collection="journal"):
         L.append(f"- {failed}" if failed else
                  "- (no matching queries in the last 28d)")
     named = _venue_named_queries(related, target, geo_terms,
-                                 cfg.get("brand_terms", []))
+                                 cfg.get("brand_terms", []),
+                                 site_config.generic_words(cfg))
     shot = _as_list(cfg, "shot_venues")
-    if named or shot or kind == "venue-guide":
-        L += ["", "## Venues to cover"]
+    if named or shot or kind == cfg.get("venue_pick_brief_type"):
+        L += ["", "## Named entities to cover"]
         if named:
-            L.append("Real demand from GSC - cover the ones you've actually shot:")
+            L.append("Real demand from GSC - cover only the ones you have "
+                     "first-hand experience with:")
             L += [f"- `{r['query']}` - {r['impressions']:.0f} impr, "
                   f"pos {r['position']:.1f}" for r in named]
         if shot:
-            L.append("Venues the studio has shot (safe to recommend by name):")
+            L.append("Covered first-hand by the brand (safe to recommend "
+                     "by name):")
             L += [f"- {v}" for v in shot]
         if not named and not shot:
-            L.append("- (no venue-named queries in GSC yet - research the area's "
-                     "venues and list the ones you've shot before drafting)")
-        L.append("- Never present a venue you haven't shot as a recommendation.")
+            L.append("- (no entity-named queries in GSC yet - research the "
+                     "area and list the ones you have first-hand experience "
+                     "with before drafting)")
+        L.append("- Never present a place or business you have no "
+                 "first-hand experience with as a recommendation.")
     L += ["", "## Internal links to include"]
     if hub_strategy:
         L.append(f"- Hub strategy: {hub_strategy}")
@@ -602,9 +617,9 @@ def main():
                     help="one of the site's type_category_map keys "
                          "(default: the first key)")
     ap.add_argument("--site", default=None, help="site slug from sites/ (default: example)")
-    ap.add_argument("--collection", default="journal",
-                    choices=["journal", "resources"],
-                    help="target content collection (default: journal)")
+    ap.add_argument("--collection", default="main",
+                    choices=["main", "resources"],
+                    help="target content collection (default: main)")
     args = ap.parse_args()
     if not args.target:
         print(__doc__)

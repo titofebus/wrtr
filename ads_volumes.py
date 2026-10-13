@@ -5,7 +5,8 @@ ranges (buckets) rather than exact numbers - still the only legit volume data.
 
 Usage: .venv/bin/python ads_volumes.py "best running shoes" "running shoes near me" [--geo 1023652]
 Config: .google-ads.yaml (0600). Default geo: US (2840); pass --geo with a
-Google geo-target ID for metro-level volumes (e.g. 1023652 = Orlando, FL).
+Google geo-target ID for metro-level volumes (look the ID up in the
+Google Ads geo target table for your market).
 """
 import os
 import sys

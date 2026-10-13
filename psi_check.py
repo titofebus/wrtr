@@ -25,8 +25,8 @@ TEMPLATES = [u.strip() for u in
     "https://www.example.com/services/",
     "https://www.example.com/work/",
     "https://www.example.com/contact/",
-    "https://www.example.com/journal/",
-    "https://www.example.com/journal/hello-world/",
+    "https://www.example.com/guide/",
+    "https://www.example.com/guide/hello-world/",
 ]
 
 

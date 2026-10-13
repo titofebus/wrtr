@@ -27,8 +27,8 @@ import assign_images
 
 class TestVenueIntent(unittest.TestCase):
     def test_venue_word_matches(self):
-        self.assertTrue(scan._has_venue_intent("lake nona wedding venues",
-                                               ["venue", "venues"]))
+        self.assertTrue(scan._has_venue_intent("austin bike tour locations",
+                                               ["location", "locations"]))
 
     def test_avenue_trap(self):
         # "avenue" must NOT match venue-word "venue" (word-boundary bug)
@@ -36,37 +36,37 @@ class TestVenueIntent(unittest.TestCase):
                                                 ["venue"]))
 
     def test_plural_stemming(self):
-        self.assertTrue(scan._has_venue_intent("orlando wedding venues",
-                                               ["venue"]))
+        self.assertTrue(scan._has_venue_intent("austin bike tours",
+                                               ["tour"]))
 
     def test_empty_venue_words(self):
-        self.assertFalse(scan._has_venue_intent("lake nona wedding venues",
+        self.assertFalse(scan._has_venue_intent("austin bike tour locations",
                                                 []))
 
 
 class TestLooksLikeHub(unittest.TestCase):
     def test_entry_under_content_route_is_not_hub(self):
         self.assertFalse(scan._looks_like_hub(
-            "lake nona wedding venues",
-            "https://www.example.com/journal/lake-nona-wedding-venues/",
+            "austin bike tours",
+            "https://www.example.com/journal/austin-bike-tours/",
             "/journal/"))
 
     def test_dedicated_hub_page(self):
         self.assertTrue(scan._looks_like_hub(
-            "lake nona wedding venues",
-            "https://www.example.com/venues/lake-nona-wedding-venues/",
+            "austin bike tours",
+            "https://www.example.com/tours/austin-bike-tours/",
             "/journal/"))
 
     def test_query_string_stripped(self):
         self.assertTrue(scan._looks_like_hub(
-            "lake nona wedding venues",
-            "https://www.example.com/venues/lake-nona-wedding-venues/?x=1",
+            "austin bike tours",
+            "https://www.example.com/tours/austin-bike-tours/?x=1",
             "/journal/"))
 
     def test_all_generic_query_assumes_covered(self):
         self.assertTrue(scan._looks_like_hub(
-            "wedding venues", "https://www.example.com/about/",
-            "/journal/"))
+            "bike tours", "https://www.example.com/about/",
+            "/journal/", generic_words={"bike", "tours"}))
 
 
 class TestStem(unittest.TestCase):
@@ -96,7 +96,7 @@ class TestNormUrl(unittest.TestCase):
 
 class TestSlugify(unittest.TestCase):
     def test_punctuation(self):
-        self.assertEqual(brief.slugify("Lake Nona: Top Venues!"), "lake-nona-top-venues")
+        self.assertEqual(brief.slugify("Austin: Top Bike Tours!"), "austin-top-bike-tours")
 
     def test_collection_resources(self):
         cfg = {
@@ -104,19 +104,19 @@ class TestSlugify(unittest.TestCase):
             "slug": "test",
             "repo": "/tmp/x",
             "site_url": "https://test.example/",
-            "content_dir": "src/content/journal",
-            "content_route": "/journal/",
-            "content_kind": "Journal",
-            "resources_dir": "src/content/resources",
-            "resources_route": "/resources/",
-            "resources_kind": "Resources",
+            "content_dir": "src/content/guide",
+            "content_route": "/guide/",
+            "content_kind": "Guide",
+            "resources_dir": "src/content/handbook",
+            "resources_route": "/handbook/",
+            "resources_kind": "Handbook",
             "type_category_map": {"guide": "tips"},
             "categories": {"tips": "Tips"},
         }
-        out = brief.build_brief(cfg, "lake nona venues", "guide", "resources")
-        self.assertIn("# Resources brief:", out)
-        self.assertIn("src/content/resources/lake-nona-venues.md", out)
-        self.assertIn("https://test.example/resources/lake-nona-venues/", out)
+        out = brief.build_brief(cfg, "austin bike tours", "guide", "resources")
+        self.assertIn("# Handbook brief:", out)
+        self.assertIn("src/content/handbook/austin-bike-tours.md", out)
+        self.assertIn("https://test.example/handbook/austin-bike-tours/", out)
 
     def test_collection_fallback(self):
         cfg = {
@@ -124,15 +124,15 @@ class TestSlugify(unittest.TestCase):
             "slug": "test",
             "repo": "/tmp/x",
             "site_url": "https://test.example/",
-            "content_dir": "src/content/journal",
-            "content_route": "/journal/",
-            "content_kind": "Journal",
+            "content_dir": "src/content/guide",
+            "content_route": "/guide/",
+            "content_kind": "Guide",
             "type_category_map": {"guide": "tips"},
             "categories": {"tips": "Tips"},
         }
-        out = brief.build_brief(cfg, "lake nona venues", "guide", "resources")
+        out = brief.build_brief(cfg, "austin bike tours", "guide", "resources")
         self.assertIn("falling back to the main collection", out)
-        self.assertIn("src/content/journal/lake-nona-venues.md", out)
+        self.assertIn("src/content/guide/austin-bike-tours.md", out)
 
     def test_length_cap(self):
         self.assertLessEqual(len(brief.slugify("x" * 200)), 70)
@@ -201,9 +201,9 @@ class TestValidateScanConfig(unittest.TestCase):
                 scan._validate_scan_config(self._cfg(content_route=bad))
 
     def test_bare_string_list_ok(self):
-        cfg = self._cfg(brand_terms="febus")
+        cfg = self._cfg(brand_terms="acme")
         scan._validate_scan_config(cfg)
-        self.assertEqual(cfg["brand_terms"], ["febus"])
+        self.assertEqual(cfg["brand_terms"], ["acme"])
 
 
 class TestRenderTemplate(unittest.TestCase):
@@ -328,78 +328,80 @@ class TestNeedHelpers(unittest.TestCase):
 
 
 class TestFilterSecondaries(unittest.TestCase):
-    GEO = ["orlando", "lake nona", "central florida", "florida",
-           "winter park"]
-    TARGET = "lake nona wedding venues"
+    GEO = ["austin", "texas", "round rock"]
+    TARGET = "austin bike tours"
 
     def test_drops_primary_itself(self):
-        out = brief.filter_secondaries([self.TARGET, "orlando wedding venues"],
+        out = brief.filter_secondaries([self.TARGET, "texas bike tours"],
                                        self.TARGET, self.GEO)
         self.assertNotIn(self.TARGET, out)
 
     def test_collapses_near_dupes(self):
-        cands = ["lake mary fl wedding venues",
-                 "lake mary wedding venue florida",
-                 "lake mary wedding venues"]
+        cands = ["round rock tx bike tours",
+                 "round rock bike tour texas",
+                 "round rock bike tours"]
         out = brief.filter_secondaries(cands, self.TARGET, self.GEO)
         self.assertEqual(len(out), 1)
 
     def test_rejects_out_of_state(self):
-        cands = ["best northern ca wedding venues", "lake nona va address",
-                 "lakes region wedding venues"]
+        cands = ["best northern ca bike tours", "austin va address",
+                 "lakes region bike tours"]
         out = brief.filter_secondaries(cands, self.TARGET, self.GEO)
         self.assertEqual(out, [])
 
     def test_rejects_multiword_state_abbr(self):
-        out = brief.filter_secondaries(["lake george wedding venues ny"],
+        out = brief.filter_secondaries(["lake travis bike tours ny"],
                                        self.TARGET, self.GEO)
         self.assertEqual(out, [])
 
     def test_keeps_in_geo(self):
-        out = brief.filter_secondaries(["lake nona wave hotel weddings"],
+        out = brief.filter_secondaries(["austin riverwalk bike tours"],
                                        self.TARGET, self.GEO)
-        self.assertEqual(out, ["lake nona wave hotel weddings"])
+        self.assertEqual(out, ["austin riverwalk bike tours"])
 
     def test_conservative_without_brand_states(self):
         # No state in geo_terms -> any state mention is dropped.
-        out = brief.filter_secondaries(["austin tx wedding venues"],
+        out = brief.filter_secondaries(["austin tx bike tours"],
                                        self.TARGET, ["austin"])
         self.assertEqual(out, [])
 
     def test_caps_at_eight(self):
-        cands = [f"lake nona wedding venue option {i}" for i in range(20)]
+        cands = [f"austin bike tour option {i}" for i in range(20)]
         out = brief.filter_secondaries(cands, self.TARGET, self.GEO)
         self.assertLessEqual(len(out), 8)
 
 
 class TestStatesIn(unittest.TestCase):
     def test_single_word_abbr(self):
-        self.assertEqual(brief._states_in("venues ca"), {"california"})
+        self.assertEqual(brief._states_in("tours ca"), {"california"})
 
     def test_multiword_abbr(self):
         # Regression: abbreviations of multi-word states were never matched.
-        self.assertEqual(brief._states_in("venues nh"), {"new hampshire"})
-        self.assertEqual(brief._states_in("venues ny"), {"new york"})
+        self.assertEqual(brief._states_in("tours nh"), {"new hampshire"})
+        self.assertEqual(brief._states_in("tours ny"), {"new york"})
 
     def test_ambiguous_abbr_ignored(self):
-        self.assertEqual(brief._states_in("wedding venues in orlando"), set())
+        self.assertEqual(brief._states_in("bike tours in austin"), set())
 
     def test_brand_states(self):
-        self.assertEqual(brief._brand_states(["orlando", "florida"]),
-                         {"florida"})
+        self.assertEqual(brief._brand_states(["austin", "texas"]),
+                         {"texas"})
 
 
 class TestRelatedEntries(unittest.TestCase):
-    ENTRIES = ["lake-nona-country-club-wedding",
-               "finding-the-right-wedding-photographer-for-you",
-               "a-wedding-timeline-that-lets-you-enjoy-the-day"]
+    ENTRIES = ["austin-zilker-park-bike-tour",
+               "finding-the-right-bike-tour-for-you",
+               "a-bike-tour-checklist-that-helps-you-enjoy-the-ride"]
+    GENERIC = {"bike", "tour", "tours"}
 
     def test_names_anchor_match(self):
-        out = brief.related_entries(self.ENTRIES, "lake nona wedding venues")
-        self.assertEqual(out, ["lake-nona-country-club-wedding"])
+        out = brief.related_entries(self.ENTRIES, "austin bike tours",
+                                    generic_words=self.GENERIC)
+        self.assertEqual(out, ["austin-zilker-park-bike-tour"])
 
     def test_no_anchor_no_names(self):
-        out = brief.related_entries(self.ENTRIES, "miami wedding venues")
+        out = brief.related_entries(self.ENTRIES, "denver bike tours",
+                                    generic_words=self.GENERIC)
         self.assertEqual(out, [])
 
 
@@ -494,84 +496,87 @@ class TestGscPagination(unittest.TestCase):
 
 
 class TestQuestionScope(unittest.TestCase):
-    GEO = ["orlando", "florida"]
+    GEO = ["austin", "texas"]
 
     def test_other_market_dropped(self):
         self.assertFalse(brief._question_in_scope(
-            "is atlanta bike friendly?", "orlando bike tours", self.GEO))
+            "is atlanta bike friendly?", "austin bike tours", self.GEO))
 
     def test_geo_question_kept(self):
         self.assertTrue(brief._question_in_scope(
-            "where can i rent a bike in orlando?", "orlando bike tours",
+            "where can i rent a bike in austin?", "austin bike tours",
             self.GEO))
 
     def test_topical_question_kept(self):
         self.assertTrue(brief._question_in_scope(
-            "where is lake nona?", "lake nona wedding venues",
-            ["orlando", "lake nona", "florida"]))
+            "where do austin bike tours start?", "austin bike tours",
+            ["austin", "texas"]))
 
 
 class TestSecondariesBanned(unittest.TestCase):
     def test_banned_term_filtered(self):
         cfg = {"name": "T", "slug": "t", "site_url": "https://x.com/",
-               "content_route": "/journal/",
+               "content_route": "/guide/",
                "repo": tempfile.gettempdir(), "content_dir": "nope",
                "type_category_map": {"guide": "tips"},
                "title_templates": ["{title}"],
-               "geo_terms": ["orlando", "florida"],
+               "geo_terms": ["austin", "texas"],
                "banned_terms": ["ebike", "e-bike"],
                "categories": {"tips": "tips"}}
         import keyword_miner
         orig = keyword_miner.mine
-        keyword_miner.mine = lambda t: ["orlando e bike rideout",
-                                        "orlando bike tours",
-                                        "best orlando bike trails"]
+        keyword_miner.mine = lambda t: ["austin e bike rideout",
+                                        "austin bike tours",
+                                        "best austin bike trails"]
         try:
-            out = brief.build_brief(cfg, "orlando bike tours", "guide")
+            out = brief.build_brief(cfg, "austin bike tours", "guide")
         finally:
             keyword_miner.mine = orig
         self.assertNotIn("e bike rideout", out)
 
 
 class TestLooksNamedVenue(unittest.TestCase):
-    GEO = ["orlando", "lake nona", "florida"]
+    GEO = ["austin", "texas"]
+    GENERIC = {"bike", "tour", "tours"}
 
     def test_named_venue(self):
         self.assertTrue(scan._looks_named_venue(
-            "lake nona wave hotel weddings", self.GEO))
+            "austin riverwalk hill country bike tours", self.GEO,
+            self.GENERIC))
 
     def test_generic_topic(self):
         self.assertFalse(scan._looks_named_venue(
-            "lake nona wedding venues", self.GEO))
+            "austin bike tours", self.GEO, self.GENERIC))
 
     def test_no_geo(self):
         self.assertFalse(scan._looks_named_venue(
-            "wave hotel weddings", self.GEO))
+            "riverwalk hill country bike tours", self.GEO, self.GENERIC))
 
 
 class TestVenueNamedQueries(unittest.TestCase):
-    GEO = ["orlando", "lake nona", "florida"]
-    BRAND = ["febus films", "febus"]
+    GEO = ["austin", "texas"]
+    BRAND = ["acme bike tours", "acme"]
+    GENERIC = {"bike", "tour", "tours", "rental", "rentals"}
 
     def _r(self, q, imp=5, pos=8.0):
         return {"query": q, "impressions": imp, "position": pos}
 
     def test_names_venue(self):
         out = brief._venue_named_queries(
-            [self._r("lake nona wave hotel weddings")],
-            "lake nona wedding venues", self.GEO, self.BRAND)
+            [self._r("austin riverwalk hill country bike tours")],
+            "austin bike tours", self.GEO, self.BRAND, self.GENERIC)
         self.assertEqual(len(out), 1)
 
     def test_brand_query_excluded(self):
         out = brief._venue_named_queries(
-            [self._r("febus films wedding photos lake nona")],
-            "lake nona wedding venues", self.GEO, self.BRAND)
+            [self._r("acme bike tours austin rides")],
+            "austin bike tours", self.GEO, self.BRAND, self.GENERIC)
         self.assertEqual(out, [])
 
     def test_target_itself_excluded(self):
         out = brief._venue_named_queries(
-            [self._r("lake nona wedding venues")],
-            "lake nona wedding venues", self.GEO, self.BRAND)
+            [self._r("austin bike tours")],
+            "austin bike tours", self.GEO, self.BRAND, self.GENERIC)
         self.assertEqual(out, [])
 
 
@@ -579,17 +584,17 @@ class TestKeywordsYaml(unittest.TestCase):
     def test_keywords_render_valid_yaml_list(self):
         import yaml
         cfg = {"name": "T", "slug": "t", "site_url": "https://x.com/",
-               "content_route": "/journal/",
+               "content_route": "/guide/",
                "repo": tempfile.gettempdir(), "content_dir": "nope",
                "type_category_map": {"guide": "tips"},
                "title_templates": ["{title}"],
-               "geo_terms": ["orlando"],
+               "geo_terms": ["austin"],
                "categories": {"tips": "tips"}}
         import keyword_miner
         orig = keyword_miner.mine
         keyword_miner.mine = lambda t: []
         try:
-            out = brief.build_brief(cfg, "best venues: lake nona", "guide")
+            out = brief.build_brief(cfg, "best tours: austin", "guide")
         finally:
             keyword_miner.mine = orig
         m = None
@@ -604,7 +609,7 @@ class TestKeywordsYaml(unittest.TestCase):
                 m = "\n".join(block)
         self.assertIsNotNone(m)
         parsed = yaml.safe_load(m)
-        self.assertEqual(parsed, {"keywords": ["best venues: lake nona"]})
+        self.assertEqual(parsed, {"keywords": ["best tours: austin"]})
 
 
 class TestBingSubmitUrl(unittest.TestCase):
@@ -614,7 +619,7 @@ class TestBingSubmitUrl(unittest.TestCase):
                 "repo": tempfile.gettempdir(), "content_dir": "nope",
                 "type_category_map": {"guide": "tips"},
                 "title_templates": ["{title}"],
-                "geo_terms": ["orlando"],
+                "geo_terms": ["austin"],
                 "categories": {"tips": "tips"}}
 
     def _url_line(self, cfg):
@@ -622,19 +627,19 @@ class TestBingSubmitUrl(unittest.TestCase):
         orig = keyword_miner.mine
         keyword_miner.mine = lambda t: []
         try:
-            out = brief.build_brief(cfg, "orlando bike tours", "guide")
+            out = brief.build_brief(cfg, "austin bike tours", "guide")
         finally:
             keyword_miner.mine = orig
         return next(l for l in out.split("\n") if "bing.py submit" in l)
 
-    def test_journal_route(self):
-        self.assertIn("https://x.com/journal/orlando-bike-tours/",
-                      self._url_line(self._cfg("/journal/")))
+    def test_guide_route(self):
+        self.assertIn("https://x.com/guide/austin-bike-tours/",
+                      self._url_line(self._cfg("/guide/")))
 
     def test_root_route_no_double_slash(self):
         line = self._url_line(self._cfg("/"))
-        self.assertIn("https://x.com/orlando-bike-tours/", line)
-        self.assertNotIn("//orlando", line)
+        self.assertIn("https://x.com/austin-bike-tours/", line)
+        self.assertNotIn("//austin", line)
 
 
 class TestDraftScore(unittest.TestCase):
@@ -659,10 +664,10 @@ class TestDraftScore(unittest.TestCase):
 
     def test_keyword_hits_word_boundary(self):
         self.assertEqual(draft_score.keyword_hits(
-            "orlando wedding photographer", "orlando wedding"), 1)
-        # "orlando weddings" should NOT match "orlando wedding"
+            "austin bike tour guide", "austin bike tour"), 1)
+        # "austin bike tours" should NOT match "austin bike tour"
         self.assertEqual(draft_score.keyword_hits(
-            "best orlando weddings", "orlando wedding"), 0)
+            "best austin bike tours", "austin bike tour"), 0)
 
     def test_banned_term_blocks(self):
         cfg = {"slug": "t", "banned_terms": ["blog"], "draft_score_min": 70}
@@ -670,7 +675,7 @@ class TestDraftScore(unittest.TestCase):
         fm, body = draft_score.parse_draft(p)
         checks = draft_score.check_seo(
             fm, draft_score.plain_text(body), body,
-            draft_score.headings(body), "wedding", cfg)
+            draft_score.headings(body), "bike tour", cfg)
         banned = [c for c in checks if c[0] == "banned terms"][0]
         self.assertEqual(banned[1], "red")
         self.assertIn("HARD", banned[2])
@@ -715,7 +720,7 @@ class TestDraftScore(unittest.TestCase):
         self.assertEqual(checks["em dashes"][0], "green")
 
     def test_structural_tells_flagged(self):
-        text = "It is not just a venue, it is an experience. " * 3 + "Word " * 300
+        text = "It is not just a tour, it is an experience. " * 3 + "Word " * 300
         checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
         self.assertEqual(checks["AI structural patterns"][0], "yellow")
         self.assertIn("negative parallelism", checks["AI structural patterns"][1])
@@ -732,64 +737,64 @@ class TestDraftScore(unittest.TestCase):
             self.assertIn(tic, draft_score.VOICE_TICS, tic)
 
     def test_h2_keyword_variety(self):
-        heads = [(2, "Lake Nona wedding venues guide"),
-                 (2, "Lake Nona wedding venues pricing"),
-                 (2, "Lake Nona wedding venues photos")]
+        heads = [(2, "Austin bike tours guide"),
+                 (2, "Austin bike tours pricing"),
+                 (2, "Austin bike tours photos")]
         checks = dict((c[0], c[1:]) for c in
                       draft_score.check_seo({}, "x " * 500, "x " * 500, heads,
-                                            "lake nona wedding venues", {}))
+                                            "austin bike tours", {}))
         self.assertEqual(checks["H2 keyword variety"][0], "yellow")
 
     def test_h2_keyword_variety_ok(self):
-        heads = [(2, "Lake Nona wedding venues guide"),
+        heads = [(2, "Austin bike tours guide"),
                  (2, "Best photo spots at sunset")]
         checks = dict((c[0], c[1:]) for c in
                       draft_score.check_seo({}, "x " * 500, "x " * 500, heads,
-                                            "lake nona wedding venues", {}))
+                                            "austin bike tours", {}))
         self.assertEqual(checks["H2 keyword variety"][0], "green")
 
     def test_intent_transactional(self):
         from content_brief import classify_intent
-        label, _ = classify_intent("best wedding photographer orlando")
+        label, _ = classify_intent("best bike tour austin")
         self.assertEqual(label, "TRANSACTIONAL")
-        label, _ = classify_intent("orlando wedding photographer pricing")
+        label, _ = classify_intent("austin bike tour pricing")
         self.assertEqual(label, "TRANSACTIONAL")
 
     def test_intent_informational(self):
         from content_brief import classify_intent
-        label, _ = classify_intent("how to plan a wedding timeline")
+        label, _ = classify_intent("how to plan a bike tour route")
         self.assertEqual(label, "INFORMATIONAL")
 
     def test_intent_navigational(self):
         from content_brief import classify_intent
-        label, _ = classify_intent("febus films reviews", ["febus films"])
+        label, _ = classify_intent("acme bike tours reviews", ["acme bike tours"])
         self.assertEqual(label, "NAVIGATIONAL")
 
     def test_internal_links(self):
-        text = ("See [venues](/venues/) and [journal](/journal/). " * 60)
+        text = ("See [tours](/tours/) and [stories](/stories/). " * 60)
         checks = dict((c[0], c[1:]) for c in
-                      draft_score.check_seo({}, text, text, [], "venues", {}))
+                      draft_score.check_seo({}, text, text, [], "tours", {}))
         self.assertEqual(checks["internal links"][0], "green")
 
     def test_internal_links_missing(self):
         checks = dict((c[0], c[1:]) for c in
-                      draft_score.check_seo({}, "Word " * 500, "Word " * 500, [], "venues", {}))
+                      draft_score.check_seo({}, "Word " * 500, "Word " * 500, [], "tours", {}))
         self.assertEqual(checks["internal links"][0], "yellow")
 
     def test_answer_first_h2s(self):
         text = ("## Best sunset photo spots\n"
-                "The best sunset photo spots in Orlando are Lake Eola and Leu Gardens. More text here.\n"
+                "The best sunset photo spots in Austin are Zilker Park and Mount Bonnell. More text here.\n"
                 "## What to wear\n"
                 "Completely unrelated opening sentence about something else entirely.\n") + "Word " * 400
         heads = [(2, "Best sunset photo spots"), (2, "What to wear")]
         checks = dict((c[0], c[1:]) for c in
-                      draft_score.check_seo({}, text, text, heads, "orlando", {}))
+                      draft_score.check_seo({}, text, text, heads, "austin", {}))
         # 1 of 2 direct -> 50% meets the bar
         self.assertEqual(checks["answer-first H2s"][0], "green")
 
     def test_bold_label_bullets_flagged(self):
         # Muse house style (leaked Jul 2026 prompt): "- **Label**: explanation"
-        text = ("- **Venue**: a lakeside estate.\n" * 3) + "Word " * 300
+        text = ("- **Guide**: a local expert.\n" * 3) + "Word " * 300
         checks = dict((c[0], c[1:]) for c in draft_score.check_voice(text))
         status, detail = checks["AI structural patterns"]
         self.assertEqual(status, "yellow")
@@ -806,7 +811,7 @@ class TestDraftScore(unittest.TestCase):
 
 class TestAEO(unittest.TestCase):
     def _aeo(self, fm, body, heads, cfg=None):
-        cfg = cfg if cfg is not None else {"name": "Febus Films"}
+        cfg = cfg if cfg is not None else {"name": "Acme Bike Tours"}
         return dict((c[0], c[1:]) for c in
                     draft_score.check_aeo(fm, body, heads, cfg))
 
@@ -847,22 +852,22 @@ class TestAEO(unittest.TestCase):
             "yellow")
 
     def test_brand_entity_green(self):
-        body = "Febus Films shot this. Febus Films again.\n"
+        body = "Acme Bike Tours led this ride. Acme Bike Tours again.\n"
         self.assertEqual(
             self._aeo({}, body, [])["brand entity"][0], "green")
 
     def test_brand_entity_missing(self):
-        body = "A studio shot this wedding.\n"
+        body = "A guide led this ride.\n"
         self.assertEqual(
             self._aeo({}, body, [])["brand entity"][0], "yellow")
 
     def test_citable_numbers_green(self):
-        body = "14 years, 400 weddings, 3 collections.\n"
+        body = "14 years, 400 tours, 3 routes.\n"
         self.assertEqual(
             self._aeo({}, body, [])["citable numbers"][0], "green")
 
     def test_citable_numbers_thin(self):
-        body = "One wedding was lovely.\n"
+        body = "One tour was lovely.\n"
         self.assertEqual(
             self._aeo({}, body, [])["citable numbers"][0], "yellow")
 
@@ -889,7 +894,7 @@ class TestAEO(unittest.TestCase):
         brief.gsc_related = lambda cfg, target: []
         try:
             cfg = {"name": "Test Brand", "repo": "/nonexistent",
-                   "content_dir": "x", "content_route": "/journal/",
+                   "content_dir": "x", "content_route": "/guide/",
                    "site_url": "https://example.com",
                    "type_category_map": {"guide": "tips"},
                    "categories": {"tips": "Tips"}}
@@ -905,24 +910,24 @@ class TestAEOMap(unittest.TestCase):
         import aeo_map
         self.assertTrue(aeo_map.is_question("how much does it cost"))
         self.assertTrue(aeo_map.is_question("what is included"))
-        self.assertFalse(aeo_map.is_question("best wedding venues"))
-        self.assertFalse(aeo_map.is_question("orlando wedding photographer"))
+        self.assertFalse(aeo_map.is_question("best bike tours"))
+        self.assertFalse(aeo_map.is_question("austin bike tour guide"))
 
     def test_covering_entry_found(self):
         import aeo_map
-        entries = [("lake-nona-wedding-venues",
-                    {"lake", "nona", "wedding", "venues"})]
+        entries = [("austin-bike-tours",
+                    {"austin", "bike", "tours"})]
         self.assertEqual(
             aeo_map.covering_entry(
-                "what are the best lake nona wedding venues?", entries),
-            "lake-nona-wedding-venues")
+                "what are the best austin bike tours?", entries),
+            "austin-bike-tours")
 
     def test_covering_entry_gap(self):
         import aeo_map
-        entries = [("lake-nona-wedding-venues",
-                    {"lake", "nona", "wedding", "venues"})]
+        entries = [("austin-bike-tours",
+                    {"austin", "bike", "tours"})]
         self.assertIsNone(
-            aeo_map.covering_entry("how to choose a florist?", entries))
+            aeo_map.covering_entry("how to choose a helmet?", entries))
 
 
 class TestNapAudit(unittest.TestCase):
@@ -1005,35 +1010,92 @@ class TestNapAudit(unittest.TestCase):
 
 
 class TestAssignImages(unittest.TestCase):
-    def test_photo_number_reference_counts_as_used(self):
+    CFG = {"image_scan_dirs": ["src/data"],
+           "image_number_map": "src/data/photo-files.json",
+           "image_number_pattern": r"photo\((\d+)\)"}
+
+    def _repo_with_number_ref(self):
         repo = tempfile.mkdtemp()
-        try:
-            os.makedirs(os.path.join(repo, "src", "data"))
-            os.makedirs(os.path.join(repo, "src", "content", "journal"))
-            with open(os.path.join(repo, "src", "data",
-                                   "website-photo-files.json"), "w") as f:
-                json.dump({"47": "orlando-wedding-photography-test.webp"}, f)
-            with open(os.path.join(repo, "src", "data", "photos.ts"), "w") as f:
-                f.write("hero: highFidelityWebsitePhoto(47),\n")
-            used = assign_images.used_images(
-                repo, ["src/content/journal", "src/content/resources"])
-            self.assertIn("orlando-wedding-photography-test.webp", used)
-        finally:
-            shutil.rmtree(repo)
+        self.addCleanup(shutil.rmtree, repo)
+        os.makedirs(os.path.join(repo, "src", "data"))
+        os.makedirs(os.path.join(repo, "src", "content", "guide"))
+        with open(os.path.join(repo, "src", "data",
+                               "photo-files.json"), "w") as f:
+            json.dump({"47": "austin-bike-tour-test.webp"}, f)
+        with open(os.path.join(repo, "src", "data", "photos.ts"), "w") as f:
+            f.write("hero: photo(47),\n")
+        return repo
+
+    def test_photo_number_reference_counts_as_used(self):
+        repo = self._repo_with_number_ref()
+        used = assign_images.used_images(repo, ["src/content/guide"],
+                                         self.CFG)
+        self.assertIn("austin-bike-tour-test.webp", used)
+
+    def test_number_refs_off_without_config(self):
+        # No image_number_* config: by-number references are a site
+        # opt-in, never a hardcoded scheme.
+        repo = self._repo_with_number_ref()
+        used = assign_images.used_images(repo, ["src/content/guide"])
+        self.assertNotIn("austin-bike-tour-test.webp", used)
 
     def test_frontmatter_image_counts_as_used(self):
         repo = tempfile.mkdtemp()
         try:
-            os.makedirs(os.path.join(repo, "src", "content", "journal"))
+            os.makedirs(os.path.join(repo, "src", "content", "guide"))
             with open(os.path.join(
-                    repo, "src", "content", "journal", "entry.md"), "w") as f:
-                f.write('---\nimage: "/images/febus/website-photos/'
-                        'orlando-wedding-photography-used.webp"\n---\n')
-            used = assign_images.used_images(
-                repo, ["src/content/journal", "src/content/resources"])
-            self.assertIn("orlando-wedding-photography-used.webp", used)
+                    repo, "src", "content", "guide", "entry.md"), "w") as f:
+                f.write('---\nimage: "/images/acme/website-photos/'
+                        'austin-bike-tour-used.webp"\n---\n')
+            used = assign_images.used_images(repo, ["src/content/guide"])
+            self.assertIn("austin-bike-tour-used.webp", used)
         finally:
             shutil.rmtree(repo)
+
+    def test_stopwords_come_from_config(self):
+        cfg = {"niche_generic_words": ["tour", "tours"],
+               "geo_terms": ["austin", "lake travis"]}
+        stops = assign_images.stopwords_for(cfg)
+        self.assertIn("austin", stops)       # geo term
+        self.assertIn("travis", stops)       # geo term word
+        self.assertIn("tours", stops)        # niche word
+        self.assertIn("the", stops)          # universal filler
+        self.assertNotIn("sunset", stops)
+        words = assign_images.topic_words("austin sunset bike tours", stops)
+        self.assertEqual(words, {"sunset", "bike"})
+
+
+class TestGenericWords(unittest.TestCase):
+    def test_universal_has_no_niche_words(self):
+        for w in ("wedding", "venue", "photographer", "plumber", "tour"):
+            self.assertNotIn(w, site_config.UNIVERSAL_GENERIC_WORDS)
+
+    def test_default_is_universal_only(self):
+        self.assertEqual(site_config.generic_words({}),
+                         site_config.UNIVERSAL_GENERIC_WORDS)
+
+    def test_site_words_merge_and_lowercase(self):
+        cfg = {"niche_generic_words": ["Plumber", "PLUMBING"]}
+        self.assertEqual(site_config.generic_words(cfg),
+                         site_config.UNIVERSAL_GENERIC_WORDS
+                         | {"plumber", "plumbing"})
+
+    def test_bad_type_fails_loud(self):
+        with self.assertRaises(SystemExit):
+            site_config.generic_words({"niche_generic_words": "plumber"})
+
+    def test_full_niche_set_merges_to_expected(self):
+        # A niche's declared words + the universal base must reproduce
+        # the set the engine historically used for that niche.
+        cfg = {"niche_generic_words": [
+            "wedding", "weddings", "venue", "venues", "photographer",
+            "photographers", "photography", "video", "videographer",
+            "videography", "planning", "planner"]}
+        self.assertEqual(site_config.generic_words(cfg), {
+            "wedding", "weddings", "venue", "venues", "photographer",
+            "photographers", "photography", "photo", "photos", "video",
+            "videographer", "videography", "planning", "planner",
+            "guide", "guides", "tips", "ideas"})
 
 
 if __name__ == "__main__":
@@ -1041,10 +1103,10 @@ if __name__ == "__main__":
 
 
 class PlaybookUpdatesTest(unittest.TestCase):
-    CFG = {"name": "acme", "site_url": "https://acme.com/", "geo_terms": ["Orlando"],
+    CFG = {"name": "acme", "site_url": "https://acme.com/", "geo_terms": ["Austin"],
            "local_seo": {"operating_model": "service_area", "hide_address": True,
-                         "nap": {"name": "acme", "phone": "(407) 555-0100"},
-                         "service_areas": ["Orlando", "Kissimmee"]}}
+                         "nap": {"name": "acme", "phone": "(512) 555-0100"},
+                         "service_areas": ["Austin", "Round Rock"]}}
 
     def test_internal_links_counted_from_body(self):
         body = "See [services](/services/) and [contact](/contact/) and [x](https://acme.com/faq)."
@@ -1082,29 +1144,29 @@ class PlaybookUpdatesTest(unittest.TestCase):
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         for slug in site_config.list_sites():
             site_config.load(slug)
-        for p in ("sites/example.yaml", "skill/references/site-config-template.yaml",
-                  "sites/febuslabs.yaml"):
-            if not os.path.isfile(os.path.join(root, p)):
-                continue  # febuslabs.yaml is gitignored (local only)
+        paths = [os.path.join("sites", f"{slug}.yaml")
+                 for slug in site_config.list_sites()]
+        paths.append("skill/references/site-config-template.yaml")
+        for p in paths:
             with open(os.path.join(root, p)) as f:
                 s = f.read()
             self.assertNotIn("\u2014", s, p)
             self.assertNotIn("\u2013", s, p)
 
     def test_doorway_guard(self):
-        self.assertTrue(brief.local_page_guard(self.CFG, "plumber websites kissimmee"))
+        self.assertTrue(brief.local_page_guard(self.CFG, "plumber websites round rock"))
         self.assertEqual(brief.local_page_guard(self.CFG, "plumber website cost"), [])
-        self.assertTrue(any("geo" in l for l in brief.local_page_guard(self.CFG, "orlando plumber")))
+        self.assertTrue(any("geo" in l for l in brief.local_page_guard(self.CFG, "austin plumber")))
 
     def test_local_schema_check(self):
         import local_schema_check as lsc
         html = ('<script type="application/ld+json">{"@type":"ProfessionalService","name":"acme",'
-                '"telephone":"+1-407-555-0100","address":{"streetAddress":"1 Main St"},'
+                '"telephone":"+1-512-555-0100","address":{"streetAddress":"1 Main St"},'
                 '"geo":{"latitude":1}}</script>')
         res = {c[0]: c[1] for c in lsc.check(lsc.extract_jsonld(html), self.CFG)}
         self.assertEqual(res["telephone"], "green")
         self.assertEqual(res["hidden address (SAB)"], "red")
-        html2 = '<script type="application/ld+json">{"@graph":[{"@type":"Organization","name":"acme","areaServed":"Orlando"}]}</script>'
+        html2 = '<script type="application/ld+json">{"@graph":[{"@type":"Organization","name":"acme","areaServed":"Austin"}]}</script>'
         res2 = {c[0]: c[1] for c in lsc.check(lsc.extract_jsonld(html2), self.CFG)}
         self.assertEqual(res2["telephone"], "red")
         self.assertEqual(res2["hidden address (SAB)"], "green")

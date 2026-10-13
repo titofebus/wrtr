@@ -3,7 +3,8 @@
 Mines Google Search Console query data and produces a markdown brief:
 1. Striking distance - positions 8-20, optimize the existing page
 2. High impressions + low CTR - rewrite title/meta
-3. Venue-intent queries with no dedicated hub page - new hub candidate
+3. Hub-intent queries (the site's configured intent words) with no
+   dedicated hub page - new hub candidate
 4. Declining queries - diagnose
 5. One recommended pick for the week, labeled by kind with the correct
    action (striking->refresh, venue->brief a new hub/entry,
@@ -30,9 +31,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gsc  # noqa: E402
 import site_config  # noqa: E402
 
-# Words too generic to identify a dedicated hub page.
-_HUB_GENERIC = {"the", "a", "an", "in", "of", "for", "and", "or", "to", "at",
-                "near"} | site_config.NICHE_GENERIC_WORDS
+# Filler words too generic to identify a dedicated hub page. The full
+# set is this base plus the site's own generic words
+# (site_config.generic_words) - never a hardcoded niche vocabulary.
+_HUB_BASE = {"the", "a", "an", "in", "of", "for", "and", "or", "to", "at",
+             "near"}
 
 
 def _stem(w):
@@ -46,20 +49,24 @@ def _has_venue_intent(query, venue_words):
     return any(_stem(w) in words for w in venue_words)
 
 
-def _looks_like_hub(query, page, content_route="/journal/"):
+def _looks_like_hub(query, page, content_route="", generic_words=None):
     """True if the page URL already looks like a dedicated hub for the query.
 
     Content entries (under content_route) are never hubs - the hub strategy
     wants dedicated pages distinct from entries, so an entry whose slug
     happens to match the query must NOT suppress the hub candidate.
+    generic_words defaults to the universal set; production callers pass
+    the site's full set (site_config.generic_words).
     """
     path = page.split("?")[0].rstrip("/")
-    route = content_route.rstrip("/")
-    if route + "/" in path + "/":
+    route = (content_route or "").rstrip("/")
+    if route and route + "/" in path + "/":
         return False
     slug = path.rsplit("/", 1)[-1].lower()
+    generic = _HUB_BASE | (generic_words if generic_words is not None
+                           else site_config.UNIVERSAL_GENERIC_WORDS)
     terms = [w.strip("-,.") for w in query.lower().split()
-             if w.strip("-,.") not in _HUB_GENERIC]
+             if w.strip("-,.") not in generic]
     if not terms:
         return True  # nothing distinctive - assume covered
     hits = sum(1 for w in terms if w in slug)
@@ -120,12 +127,12 @@ def classify_pick(kind_pick, page):
     return kind_pick, status, final_url, redirected
 
 
-def _looks_named_venue(query, geo_terms):
-    """Query names a specific venue rather than a generic topic."""
-    generic = {"wedding", "weddings", "venue", "venues", "photographer",
-               "photography", "photo", "photos", "the", "a", "an", "in",
-               "of", "for", "and", "or", "to", "at", "best", "top", "near",
-               "me", "my"}
+def _looks_named_venue(query, geo_terms, generic_words=None):
+    """Query names a specific place/entity rather than a generic topic."""
+    generic = {"the", "a", "an", "in", "of", "for", "and", "or", "to", "at",
+               "best", "top", "near", "me", "my"} | (
+        generic_words if generic_words is not None
+        else site_config.UNIVERSAL_GENERIC_WORDS)
     # Strip punctuation so "st. augustine" matches "st augustine".
     norm = lambda s: re.sub(r"[^a-z0-9 ]", "", s.lower())
     geo_words = {w for g in geo_terms for w in norm(g).split()}
@@ -145,7 +152,7 @@ def main(site_slug=None, save_pick=True):
     brand_terms = cfg.get("brand_terms", [])
     venue_words = cfg.get("venue_intent_words", [])
     geo_terms = cfg.get("geo_terms", [])
-    kind = cfg.get("content_kind", "Journal")
+    kind = cfg.get("content_kind", "Content")
 
     sites = {s["siteUrl"] for s in _gsc_call(gsc.list_sites)}
     if site not in sites:
@@ -191,7 +198,8 @@ def main(site_slug=None, save_pick=True):
         # URLs never count as hub coverage (verified via _hub_coverage).
         if imp >= v_imp and _has_venue_intent(q, venue_words) \
                 and not _hub_coverage(q, d["page"],
-                                      cfg.get("content_route", "/journal/")):
+                                      cfg.get("content_route", ""),
+                                      site_config.generic_words(cfg)):
             venue.append(d)
         if p and p["impressions"] >= d_imp and imp < p["impressions"] * d_ratio:
             declining.append((d, p))
@@ -258,10 +266,11 @@ def main(site_slug=None, save_pick=True):
     if not lowctr:
         L.append("- (none this week)")
     L.append("")
-    L.append("## 3. Venue-intent queries with no dedicated hub page - venue page candidates")
+    L.append("## 3. Hub-intent queries with no dedicated hub page - hub page candidates")
     for d in venue[:10]:
-        lock = (" - LOCK IN: named venue at page 1, a dedicated page secures it"
-                if d["position"] <= 10 and _looks_named_venue(d["query"], geo_terms)
+        lock = (" - LOCK IN: named entity at page 1, a dedicated page secures it"
+                if d["position"] <= 10 and _looks_named_venue(
+                        d["query"], geo_terms, site_config.generic_words(cfg))
                 else "")
         L.append(f"- `{_q(d['query'])}` - {d['impressions']:.0f} impr -> {d['page']}{_mark(d['query'])}{lock}")
     if not venue:
@@ -433,7 +442,7 @@ def _liveness(url, timeout=15):
     return res
 
 
-def _hub_coverage(query, page, content_route):
+def _hub_coverage(query, page, content_route, generic_words=None):
     """Does a real, live hub page cover this query?
 
     A dead, looping, or redirected-away URL is not coverage. When the page
@@ -441,7 +450,7 @@ def _hub_coverage(query, page, content_route):
     a real hub still counts as covered).
     """
     global _HUB_VERIFY_COUNT
-    if not _looks_like_hub(query, page, content_route):
+    if not _looks_like_hub(query, page, content_route, generic_words):
         return False
     if _HUB_VERIFY_COUNT >= _HUB_VERIFY_MAX:
         return True  # unverified: assume covered, avoid duplicate proposals
@@ -450,7 +459,7 @@ def _hub_coverage(query, page, content_route):
     if status in (404, 410, "LOOP"):
         return False
     if _norm_url(final) != _norm_url(page):
-        return _looks_like_hub(query, final, content_route)
+        return _looks_like_hub(query, final, content_route, generic_words)
     return True
 
 
@@ -463,7 +472,7 @@ def _validate_scan_config(cfg):
     """
     site_config.need_number_mapping(cfg, "scan_thresholds")
     site_config.need_str(cfg, "content_route", non_empty=True,
-                         default="/journal/")
+                         default="/")
     for key in ("brand_terms", "venue_intent_words"):
         v = cfg.get(key, [])
         if isinstance(v, str):

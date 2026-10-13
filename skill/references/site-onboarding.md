@@ -27,7 +27,7 @@ in this order - it mirrors how local visibility actually works
    in 2026). Quick wins after GBP.
 4. **Citation tiers, in order:** data sources (Data Axle, TransUnion
    Digital Business Profile, Foursquare) → major platforms (Yelp,
-   Facebook) → industry verticals (for weddings: The Knot, WeddingWire) →
+   Facebook) → industry verticals (your trade's directories) →
    local chambers/orgs the business genuinely participates in. Authority
    and accuracy beat volume; keep a master listing spreadsheet and audit
    for duplicates with `"Exact Name"` / phone / address searches.
@@ -69,8 +69,8 @@ name/address/phone/domain/licenses).
    `h2_scaffolds`, `brief_donts`, `image_library`, `venue_pick_brief_type`,
    `draft_score_min` (the hard pre-publish quality bar, 0-100, default 80 -
    drafts below it cannot ship).
-4. Wire the quality gate into the repo's validate chain (like Febus's
-   `pnpm gate:journal` → `tasks/journal-gate.mjs`): score changed entries
+4. Wire the quality gate into the repo's validate chain (e.g. a
+   `pnpm gate:content` script wrapping the scorer): score changed entries
    with `draft_score.py` using each draft's first `keywords:` front-matter
    entry as the target keyword, and fail the build when the gate fails.
    A documented gate nobody enforces is decoration.
@@ -110,11 +110,11 @@ name/address/phone/domain/licenses).
 
 ## 5. Recurring crons (agent)
 1. Weekly scan: `cron.add` id `<slug>-weekly-seo-scan`, weekly Monday ~9am
-   America/New_York (flexible_time: true). Clone the Febus
-   `febus-weekly-seo-scan` body and swap the site - it already handles all
+   America/New_York (flexible_time: true). Clone an existing site's
+   weekly-scan cron body and swap the site - it already handles all
    pick kinds (venue/striking/lowctr/declining), the do-not-brief rule,
    RESTORE-OR-REDIRECT, and the BigQuery landing check.
-   Swap checklist: every `--site febusfilms` → `--site <slug>`, the cron id
+   Swap checklist: every `--site <old-slug>` → `--site <slug>`, the cron id
    and title, the chat delivery target, and the workflow-doc path.
 2. Monthly layer: `cron.add` id `<slug>-monthly-seo-layer`, monthly on the
    1st ~9am America/New_York - competitor gap crawl, venue-hub proposal,

@@ -67,7 +67,7 @@ Open `sites/acme.yaml` and set at minimum:
 - `site_url` - `https://acme.example/`
 - `repo` - path to the website's git checkout
 - `content_dir` - where markdown entries live, relative to the repo
-- `geo_terms` - the markets you serve, e.g. `[orlando, "winter park"]`
+- `geo_terms` - the markets you serve, e.g. `[austin, "round rock"]`
 - `banned_terms` - words/phrases that must never appear
 - `voice_rules` - a few lines on how the brand sounds
 

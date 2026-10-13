@@ -8,7 +8,7 @@ description: "Run the reusable local-SEO content engine for any brand/site: week
 ## Purpose
 A brand-agnostic, data-driven content loop: mine real search data → pick one
 topic per week → generate a full drafting brief → write, score, validate,
-publish, submit, monitor. Febus Films is the reference implementation; any new
+publish, submit, monitor. `sites/example.yaml` is the reference config; any new
 brand onboards by copying a config file, no code changes.
 
 ## Multi-site model
@@ -34,8 +34,8 @@ brand onboards by copying a config file, no code changes.
    a URL that now redirects elsewhere is reclassified as a venue-hub
    candidate (nothing to refresh). Dead/redirected URLs never count as hub
    coverage.
-   Cron `febus-weekly-seo-scan` does this Mondays ~9:45am ET for Febus.
-2. **Brief** - `content_brief.py "<query>" --type=<one of the site's type_category_map keys - e.g. venue-guide for Febus> [--site]`
+   A per-site weekly cron runs this (e.g. Mondays ~9am local).
+2. **Brief** - `content_brief.py "<query>" --type=<one of the site's type_category_map keys> [--site]`
    → titles, slug, keywords, H2s from real autocomplete questions, live GSC
    data, overlap check vs existing entries, internal links, images, front
    matter, brand voice rules.

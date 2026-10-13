@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""draft_score.py - pre-publish quality gate for Journal drafts.
+"""draft_score.py - pre-publish quality gate for content drafts.
 
 Scores a markdown draft (front matter + body) on readability, on-page SEO,
 AEO (answer engine optimization, advisory only), and human-voice signals,

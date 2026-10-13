@@ -1,8 +1,8 @@
-<!-- Mirrored from the SEO & AEO Desk skill central-florida-local-seo-playbook (2026-10-09). Keep in sync. -->
-# Central Florida local SEO playbook
+<!-- Local SEO playbook, market-neutral. Applies to any local business in any region. -->
+# Local SEO playbook (any market)
 
 Order matters: real eligible business, then one canonical identity, then verified map platforms, then a technically sound site, then genuine reviews, then authoritative citations and links, then useful local content, then continuous measurement. Google ranks local results on relevance, distance, and prominence; nobody can pay for local rank, and service areas never cancel out distance.
-The first wave of assets, in order: GBP, then the website and domain, Search Console, GA4 with GTM, Bing Places, Apple Business, core citations and aggregators, the review system, Central Florida orgs, and then ongoing content and links. Retailers also set up Merchant Center with local inventory and free listings.
+The first wave of assets, in order: GBP, then the website and domain, Search Console, GA4 with GTM, Bing Places, Apple Business, core citations and aggregators, the review system, local orgs in your market, and then ongoing content and links. Retailers also set up Merchant Center with local inventory and free listings.
 Two failure modes to avoid: optimizing on top of the wrong business identity, and chasing low-value SEO signals instead of real prominence, relevance, and reputation.
 
 ## 1. Operating model
@@ -31,7 +31,7 @@ Keep a verification evidence folder: sign, street, and interior photos (storefro
 ## 5. Citations
 Authority, relevance, and accuracy over count. Tiers: core maps (GBP, Bing, Apple); consumer platforms (Yelp, Facebook and Instagram, BBB); data sources (Data Axle, TransUnion, Foursquare); optional distribution (Yext, Semrush Local, BrightLocal citation building) to speed up the long tail, while you own Google, Apple, Bing, and key vertical profiles directly; then industry sources.
 Industry layer: trades (BBB, Angi, Houzz, manufacturer and dealer directories, trade associations); B2B, marketing, and software (Clutch, local tech and business groups); hospitality (TripAdvisor, reservation platforms); healthcare (Healthgrades, insurer networks); legal (Avvo, Justia, FindLaw); weddings (The Knot, WeddingWire, preferred-vendor pages); real estate; automotive; retail (Merchant Center).
-Central Florida: join 2 or 3 orgs where the business really participates. Options: Seminole County Chamber, The Osceola Chamber, West Orange Chamber, Winter Park Chamber, Lake Nona Regional Chamber, Hispanic Chamber of Metro Orlando, African American Chamber of Commerce of Central Florida, an Orlando-area chamber, Visit Orlando or Experience Kissimmee (tourism-facing only), and UCF's chamber list for others.
+Your market: join 2 or 3 orgs where the business really participates. Options in most markets: the metro chamber of commerce, county or neighborhood chambers, cultural and industry chambers, the regional tourism bureau (tourism-facing businesses only), and local business alliances. An org only counts when the business genuinely participates; a paid listing with no involvement is a citation, not a relationship.
 Cleanup sheet columns: platform, URL, name, address, phone, website, category, hours, claimed, login owner, verification status, correct, duplicate, duplicate URL, submitted date, resolved date, notes. Search for the exact name, phone, address plus name, and old names, phones, and addresses. Resolve in this order: GBP (never make a second profile), then Apple and Bing, then Data Axle, TransUnion, and Foursquare, then Yelp and industry sites, then chambers and secondary directories. Mark closed old locations as closed or moved. Any change to the name, address, or phone means a full citation change project, not just Google.
 
 ## 6. Reviews

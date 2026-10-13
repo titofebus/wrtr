@@ -14,14 +14,14 @@ repo: ~/workspace/<repo-dir>
 #   email: "hello@example.com"
 #   address_hidden: true
 #   address: ""
-#   service_areas: ["Orlando", "Winter Park"]
+#   service_areas: ["Springfield", "Riverton"]
 
 # Where new content entries live (markdown-first workflow)
 content_dir: src/content/<collection>
 content_route: /<collection>/
 # What the content collection is called in public copy, MUST match the brand's
-# terminology rules (e.g. a photography brand might use Journal / journal
-# entries, never blog).
+# terminology rules (e.g. a brand might call its collection Journal and ban
+# the word blog in public copy).
 content_kind: Blog
 
 # Public-copy terminology guardrails (enforced by the repo's lint, if any)
@@ -62,13 +62,19 @@ image_alt_template: "{title}, {name}"
 
 # Queries containing these are brand queries (excluded from opportunity scans).
 # Matching is case-insensitive SUBSTRING: use distinctive terms only, a
-# generic term like "films" would nuke legitimate queries like
-# "wedding films orlando".
+# generic term like "tours" would nuke legitimate queries like
+# "bike tours springfield".
 brand_terms: ["brandname"]
 
-# Query words that signal hub-page intent (e.g. venue words for photographers,
-# neighborhood words for real estate, condition words for clinics)
+# Query words that signal hub-page intent (e.g. venue words for event
+# spaces, neighborhood words for real estate, condition words for clinics)
 venue_intent_words: ["venue", "location"]
+
+# This niche's too-generic-to-anchor words, merged over the universal
+# base (guide/tips/ideas/photo/photos) by site_config.generic_words.
+# Hub detection and brief anchor scoring ignore these: they appear in
+# nearly every query in the niche, so they can't identify a topic.
+niche_generic_words: ["tour", "tours", "rental", "rentals"]
 
 # Scan thresholds, tune to the site's traffic volume. Small sites need lower
 # impression minimums or every bucket comes back empty.
@@ -88,7 +94,7 @@ hub_strategy: >
   Describe the hub-and-spoke model here: which pages are hubs, which entries
   are spokes, and what to deprioritize.
 
-services_note: Any hard service boundary (e.g. "photography only, never imply video").
+services_note: Any hard service boundary (e.g. "guided tours only, never imply rentals").
 
 # Brand voice rules baked into every brief, copy from the brand's AGENTS.md
 # or brand doc. Never invent voice.
@@ -111,8 +117,8 @@ preferred_phrases:
 type_angles:
   guide: "<angle for guide briefs>"
 
-# Optional: venues/locations/products the brand has actually worked with
-# and may recommend by name (rendered in venue/guide briefs).
+# Optional: places/products the brand has actually worked with
+# and may recommend by name (rendered in hub briefs).
 shot_venues: []
 
 # Data sources wired for this site
@@ -141,6 +147,18 @@ geo_terms: ["<city>", "<region>", "<state>"]
 
 # Where hero images live (brief tells the writer to pick a real file from here)
 image_library: "public/images/"
+
+# Optional assign_images.py wiring for sites whose source references
+# images indirectly (defaults: off). image_scan_dirs: extra repo dirs
+# scanned for used-image references; image_number_map: repo-relative
+# JSON mapping numbers to filenames; image_number_pattern: regex with
+# one capture group (the number) matching a by-number reference in
+# source files; image_scan_skip_files: data files never treated as
+# references.
+# image_scan_dirs: ["src/data", "src/components"]
+# image_number_map: "src/data/photo-files.json"
+# image_number_pattern: "photo\\((\\d+)\\)"
+# image_scan_skip_files: []
 
 # Target lengths per brief type (keys must match type_category_map)
 length_targets:

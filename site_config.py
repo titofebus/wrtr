@@ -18,7 +18,7 @@ REQUIRED_KEYS = ["name", "site_url", "repo", "content_dir"]
 
 # Generic fallback mapping for brands that omit type_category_map.
 # Deliberately brand-neutral - a default must never silently impose one
-# brand's taxonomy (e.g. wedding types) on another.
+# brand's taxonomy (e.g. one trade's service types) on another.
 DEFAULT_TYPE_CATEGORY_MAP = {
     "guide": "guides",
     "story": "stories",
@@ -68,8 +68,8 @@ MAX_SERVICE_AREAS = 20  # Google Business Profile limit
 
 
 def validate_local_seo(ls):
-    """Validate the optional local_seo block (Central Florida local SEO
-    playbook, skill/references/local-seo-playbook.md). Returns error strings."""
+    """Validate the optional local_seo block (local SEO playbook,
+    skill/references/local-seo-playbook.md). Returns error strings."""
     if ls is None:
         return []
     if not isinstance(ls, dict):
@@ -111,14 +111,22 @@ def list_sites():
     return sorted(f[:-5] for f in os.listdir(SITES_DIR) if f.endswith(".yaml"))
 
 
-# Niche-generic words: too common within a service niche to identify a topic.
-# Shared by hub detection (weekly_scan._HUB_GENERIC) and brief anchor
-# scoring (content_brief.GENERIC_WORDS) so the two never drift apart.
-NICHE_GENERIC_WORDS = {"wedding", "weddings", "venue", "venues",
-                       "photographer", "photographers", "photography",
-                       "photo", "photos", "video", "videographer",
-                       "videography", "planning", "planner", "guide",
-                       "guides", "tips", "ideas"}
+# Universal generic words: too common in ANY niche to identify a topic
+# (content-format and media words only - never one trade's vocabulary).
+# A site's own niche words live in its YAML as `niche_generic_words`;
+# generic_words() merges the two. Shared by hub detection
+# (weekly_scan) and brief anchor scoring (content_brief) so the two
+# never drift apart.
+UNIVERSAL_GENERIC_WORDS = {"guide", "guides", "tips", "ideas",
+                           "photo", "photos"}
+
+
+def generic_words(cfg):
+    """The full too-generic-to-anchor word set for a site: the universal
+    base plus the site's own `niche_generic_words` from its YAML."""
+    words = set(UNIVERSAL_GENERIC_WORDS)
+    words |= {str(w).lower() for w in need_list(cfg, "niche_generic_words")}
+    return words
 
 
 def need_dict(cfg, key, default=None):
