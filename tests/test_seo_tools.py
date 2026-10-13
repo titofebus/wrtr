@@ -887,6 +887,25 @@ class TestAEO(unittest.TestCase):
         self.assertEqual(
             self._aeo({}, "x", [])["freshness"][0], "yellow")
 
+    def test_aeo_strict_upgrades_yellow_to_hard(self):
+        cfg = {"name": "Acme Bike Tours", "aeo_strict": True}
+        status, detail = self._aeo(
+            {}, "A guide led this ride.\n", [], cfg)["brand entity"]
+        self.assertEqual(status, "red")
+        self.assertTrue(detail.startswith("HARD"))
+
+    def test_aeo_strict_keeps_green_green(self):
+        cfg = {"name": "Acme Bike Tours", "aeo_strict": True}
+        body = "Acme Bike Tours led this ride. Acme Bike Tours again.\n"
+        self.assertEqual(
+            self._aeo({}, body, [], cfg)["brand entity"][0], "green")
+
+    def test_aeo_default_stays_advisory(self):
+        status, detail = self._aeo(
+            {}, "A guide led this ride.\n", [])["brand entity"]
+        self.assertEqual(status, "yellow")
+        self.assertFalse(detail.startswith("HARD"))
+
     def test_brief_has_aeo_section(self):
         import keyword_miner
         orig_mine, orig_gsc = keyword_miner.mine, brief.gsc_related

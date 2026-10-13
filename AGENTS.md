@@ -124,7 +124,9 @@ words, Flesch ease ≥ 60.
 - Answer-first H2s: the first sentence under each H2 should echo the H2's
   key terms (what snippets and AI Overviews lift).
 
-**AEO (all advisory, yellow at worst - citation is probabilistic):**
+**AEO (all advisory, yellow at worst - citation is probabilistic; a site
+with `aeo_strict: true` in its YAML opts out: every AEO yellow becomes a
+HARD failure and blocks):**
 - Question H2s: ≥50% of H2s phrased as questions.
 - Answer blocks: each H2 opens with a 40-80 word self-contained answer.
 - FAQ section present (pair with FAQPage schema, site side).
@@ -216,6 +218,8 @@ in a script; put them in the YAML. Copy `sites/example.yaml` to onboard.
   whose source references images indirectly (extra scanned trees, a
   number-to-filename map, the by-number reference regex). Off by default.
 - `draft_score_min` - publish bar (default 80).
+- `aeo_strict` - optional, default off: AEO gate yellows become HARD
+  failures for this site only (owner opt-in, e.g. Gloam 2026-10-13).
 - `repo_gate` - the site repo's mechanical gate command, named in briefs.
 - `venue_pick_brief_type` - which `--type` a `venue` scan pick gets.
 

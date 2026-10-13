@@ -511,6 +511,14 @@ def check_aeo(fm, body, heads, cfg):
         out.append(("freshness", "yellow",
                     "no parseable date/updated in front matter - add one; "
                     "AI favors recently updated pages"))
+
+    # Strict sites (aeo_strict: true in the site YAML) opt out of the
+    # advisory default: every AEO yellow becomes a HARD failure, so a post
+    # that is not citable cannot publish. Off by default; per-site only.
+    if cfg.get("aeo_strict"):
+        out = [(name, "red", f"HARD: {detail}") if status == "yellow"
+               else (name, status, detail)
+               for name, status, detail in out]
     return out
 
 
