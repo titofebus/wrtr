@@ -18,7 +18,7 @@ brand onboards by copying a config file, no code changes.
   take `--site <slug>` (or `SEO_SITE` env); default is `example`. Helpers
   `gsc.py` and `keyword_miner.py` take explicit arguments;
   `psi_check.py` reads comma-separated `PSI_URLS` from the environment
-  (falls back to the site config's URLs).
+  (falls back to a built-in example page list).
 - `site_config.py` loads the YAML. Never hardcode a brand's URLs, voice, or
   rules in a script - put them in the site's YAML.
 - Reference implementation: `sites/example.yaml` (filled-in example).
@@ -46,7 +46,7 @@ brand onboards by copying a config file, no code changes.
    `draft_score_min`, default 80; no hard failures). Iterate on the flagged
    items until it passes. The advisory `ai_check.py` never blocks.
 5. **Validate** - run the repo's validate (`pnpm validate`); fix causes, never
-   weaken gates. The repo's validate should include the journal gate so the
+   weaken gates. The repo's validate should include a draft-score gate so the
    80-point bar is mechanically enforced, not just documented.
 6. **Publish** - PR → merge → confirm live URL + OG image.
 7. **Submit** - `bing.py submit <url> [--site]`; request GSC indexing in the UI.
@@ -70,10 +70,12 @@ needs Google brand verification).
 | `gsc.py` | Raw Search Console REST client |
 | `keyword_miner.py` | Autocomplete fan-out keyword ideas |
 | `psi_check.py` | CrUX + PageSpeed lab vitals |
-| `draft_score.py` | **Pre-publish quality gate (HARD):** draft scores 0-100, must reach the site's `draft_score_min` (default 80). Covers readability, on-page SEO, AEO (advisory: question H2s, answer blocks, FAQ, brand entity, citable numbers, freshness), and voice |
+| `draft_score.py` | **Pre-publish quality gate (HARD):** draft scores 0-100, must reach the site's `draft_score_min` (default 80). Covers readability, on-page SEO, AEO (advisory by default: question H2s, answer blocks, FAQ, brand entity, citable numbers, freshness; a site with `aeo_strict: true` makes AEO failures HARD), and voice |
 | `ai_check.py` | Advisory AI-sounding check (local SlopTotal, see `docs/sloptotal-setup.md`); never blocks |
 | `aeo_map.py` | Answer engine question map: what buyers ask AI assistants vs what the site can cite - ranked gaps to brief |
 | `nap_audit.py` | NAP consistency audit: published business identity vs the canonical `local_seo:` block in the site YAML |
+| `assign_images.py` | Suggests unused, topic-relevant images from the site's image library for an entry |
+| `local_schema_check.py` | Checks a page's LocalBusiness JSON-LD against the site's `local_seo:` config (advisory) |
 
 ## Auth
 - GSC: a service account (key at `<wrtr>/.sa-key.json`, 0600). Each new
