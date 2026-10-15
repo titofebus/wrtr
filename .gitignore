@@ -20,3 +20,5 @@ __pycache__/
 .tmp/
 # SlopTotal is cloned by setup.sh (pinned commit), not vendored.
 /sloptotal/
+febuslabs-sc-key.json
+.febuslabs-sc/
