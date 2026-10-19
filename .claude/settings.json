@@ -1,5 +1,6 @@
 {
   "enabledPlugins": {
     "pyright-lsp@claude-plugins-official": true
-  }
+  },
+  "outputStyle": "Proactive"
 }
