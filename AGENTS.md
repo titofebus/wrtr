@@ -270,6 +270,14 @@ Conventions: one `Test*` class per area; stub network with monkeypatching
 (never hit real APIs); restore stubs in `finally`. Every new check or brief
 section gets green-path and failing-path tests.
 
+### Code navigation (LSP)
+
+The Pyright LSP plugin is on. Use the LSP tool (go-to-definition,
+find-references, hover) instead of grep to find a function's real definition
+or every caller before changing it; grep still fits strings and YAML. Fix the
+diagnostics it reports after each edit. It only sees open files, so the tests
+above still have to pass before a push.
+
 ## 11. Credentials (never commit these)
 
 All credential files are gitignored, 0600, and live in the repo root:
@@ -301,6 +309,7 @@ scripts in this repo, so the agent also needs a wrtr checkout (see §2).
 ## 13. Docs map
 
 - `AGENTS.md` (this file) - the operator manual.
+- `CLAUDE.md` - loads this file for Claude Code.
 - `docs/start-here.md` - 15-minute first-run walkthrough.
 - `docs/sloptotal-setup.md` - local SlopTotal setup for `ai_check.py`.
 - `README.md` - public-facing overview and tool table.
