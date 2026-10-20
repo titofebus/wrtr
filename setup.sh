@@ -54,6 +54,10 @@ else
   echo "sloptotal/ already present"
 fi
 
+echo "== git hooks"
+# pre-push runs the test suite (.githooks/pre-push).
+git config core.hooksPath .githooks && echo "pre-push hook on"
+
 echo "== tests"
 .venv/bin/python -m unittest discover -s tests 2>&1 | tail -2
 

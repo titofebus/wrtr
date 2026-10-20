@@ -37,7 +37,7 @@ Multi-site scripts take `--site <slug>` (or the `SEO_SITE` env var).
 Default site is `example`.
 
 ```bash
-.venv/bin/python -m unittest discover -s tests   # 149 tests, must all pass
+.venv/bin/python -m unittest discover -s tests   # full suite, must all pass
 ```
 
 ## 3. The weekly content loop (the job)
@@ -253,8 +253,10 @@ site's `niche_generic_words`).
   Push with `git push origin master:main`.
 - Commit messages: short imperative prefix (`seo:`, `aeo:`, `voice:`,
   `intent:`, `structural:`) + what changed.
-- Run the full suite before every push: `.venv/bin/python -m unittest
-  discover -s tests`.
+- The full suite runs before every push: `.githooks/pre-push` runs
+  `.venv/bin/python -m unittest discover -s tests` and blocks the push on a
+  failure. `setup.sh` and the cloud SessionStart hook turn it on
+  (`git config core.hooksPath .githooks`). Never push with `--no-verify`.
 
 ## 10. Tests
 

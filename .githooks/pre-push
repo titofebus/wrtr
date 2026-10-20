@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# pre-push: the full wrtr suite must pass before anything leaves the machine.
+# Offline, under a minute. Turned on by setup.sh (and by the cloud
+# SessionStart hook): git config core.hooksPath .githooks.
+set -u
+cd "$(git rev-parse --show-toplevel)"
+
+if [ ! -x .venv/bin/python ]; then
+  echo "pre-push: no .venv yet - run ./setup.sh first." >&2
+  exit 1
+fi
+
+if ! .venv/bin/python -m unittest discover -s tests -q; then
+  echo "pre-push: tests failed - fix them before pushing." >&2
+  exit 1
+fi
