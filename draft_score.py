@@ -634,6 +634,22 @@ def score(checks):
 DOT = {"green": "🟢", "yellow": "🟡", "red": "🔴"}
 
 
+def evaluate(fm, body, keyword, cfg):
+    """All gate checks for a parsed draft -> (checks, total, hard_failures).
+    Shared by main() and wrtr_ops.py gate."""
+    heads = headings(body)
+    text = plain_text(body)
+    checks = []
+    checks += check_readability(text)
+    checks += check_seo(fm, text, body, heads, keyword, cfg)
+    checks += check_aeo(fm, body, heads, cfg)
+    checks += check_voice(text)
+    checks += check_review_compliance(text)
+    total = score(checks)
+    hard = [c for c in checks if c[1] == "red" and "HARD" in c[2]]
+    return checks, total, hard
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("draft", help="markdown draft file")
@@ -664,18 +680,7 @@ def main():
         print(f"draft_score: {args.draft} is not valid UTF-8 - save it as UTF-8 and re-run.",
               file=sys.stderr)
         return 2
-    heads = headings(body)
-    text = plain_text(body)
-
-    checks = []
-    checks += check_readability(text)
-    checks += check_seo(fm, text, body, heads, args.keyword, cfg)
-    checks += check_aeo(fm, body, heads, cfg)
-    checks += check_voice(text)
-    checks += check_review_compliance(text)
-
-    total = score(checks)
-    hard = [c for c in checks if c[1] == "red" and "HARD" in c[2]]
+    checks, total, hard = evaluate(fm, body, args.keyword, cfg)
 
     print(f"# Draft score: {args.draft}")
     print(f"# Keyword: {args.keyword} | Site: {cfg.get('slug')}")
