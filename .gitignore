@@ -15,11 +15,13 @@ sites/*.yaml
 .miner-cache-*.json
 # Build / machine-local
 .venv/
+.venv
 __pycache__/
 *.log
 .tmp/
 # SlopTotal is cloned by setup.sh (pinned commit), not vendored.
 /sloptotal/
+sloptotal
 febuslabs-sc-key.json
 .febuslabs-sc/
 .ops-state/
