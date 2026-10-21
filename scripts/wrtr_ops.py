@@ -441,6 +441,21 @@ def diff_prices(old, new):
     return {"added": sorted(n - o), "removed": sorted(o - n)}
 
 
+# Hosts known to block scripted fetches. Reported once, then suppressed.
+# Extend per site with `competitor_price_blocked: [host-or-url, ...]`.
+DEFAULT_PRICE_BLOCKED = ("thryv.com",)
+
+
+def is_blocked(url, blocked):
+    import urllib.parse
+    host = urllib.parse.urlsplit(url).hostname or ""
+    for b in blocked:
+        b = b.lower().strip()
+        if url.lower().rstrip("/") == b.rstrip("/") or host == b or host.endswith("." + b):
+            return True
+    return False
+
+
 def cmd_prices(args, fetch=page_text):
     cfg = site_config.load(args.site)
     comps = cfg.get("competitor_price_pages") or []
@@ -449,9 +464,19 @@ def cmd_prices(args, fetch=page_text):
         return WAKE
     name = f"prices-{cfg.get('slug')}.json"
     snap = _state(name)
-    new_snap, items = {}, []
+    blocked = list(DEFAULT_PRICE_BLOCKED) + list(cfg.get("competitor_price_blocked") or [])
+    reported = set(snap.get("_blocked_reported", []))
+    new_snap, items, suppressed = {}, [], 0
     for c in comps:
         url = c["url"]
+        if is_blocked(url, blocked):
+            if url in reported:
+                suppressed += 1
+            else:
+                items.append({"competitor": c.get("name", url), "url": url,
+                              "reason": "known-blocked page: check by hand; suppressed from now on"})
+                reported.add(url)
+            continue
         try:
             prices = extract_prices(fetch(url))
         except Exception as e:
@@ -468,8 +493,10 @@ def cmd_prices(args, fetch=page_text):
         if d["added"] or d["removed"]:
             items.append({"competitor": c.get("name", url), "url": url,
                           "reason": "prices changed", **d})
+    new_snap["_blocked_reported"] = sorted(reported)
     _save_state(name, new_snap)
-    emit({"result": "wake" if items else "ok", "checked": len(comps), "items": items})
+    emit({"result": "wake" if items else "ok", "checked": len(comps),
+          "suppressed_blocked": suppressed, "items": items})
     return WAKE if items else OK
 
 

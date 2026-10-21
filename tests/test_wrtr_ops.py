@@ -86,6 +86,24 @@ class Prices(unittest.TestCase):
                          {"added": ["$99/mo"], "removed": ["$97/mo"]})
 
 
+class PricesBlocked(unittest.TestCase):
+    def test_blocked_reported_once(self):
+        import argparse
+        from unittest import mock
+        ops.STATE_DIR = tempfile.mkdtemp()
+        cfg = {"slug": "t", "competitor_price_blocked": ["blocked.example"],
+               "competitor_price_pages": [{"name": "Thryv", "url": "https://www.thryv.com/pricing/"},
+                                          {"name": "B", "url": "https://blocked.example/p"},
+                                          {"name": "Ok", "url": "https://ok.example/"}]}
+        args = argparse.Namespace(site="t")
+        with mock.patch.object(ops.site_config, "load", return_value=cfg), \
+                mock.patch("sys.stdout"):
+            self.assertEqual(ops.cmd_prices(args, fetch=lambda u: "$97/mo"), ops.WAKE)
+            self.assertEqual(ops.cmd_prices(args, fetch=lambda u: "$97/mo"), ops.OK)
+        self.assertTrue(ops.is_blocked("https://thryv.com/x", ops.DEFAULT_PRICE_BLOCKED))
+        self.assertFalse(ops.is_blocked("https://notthryv.com/x", ops.DEFAULT_PRICE_BLOCKED))
+
+
 def row(q, page, impr, pos, clicks=0):
     return {"query": q, "page": page, "impressions": impr, "position": pos,
             "clicks": clicks, "ctr": clicks / impr if impr else 0}
