@@ -179,3 +179,7 @@ venue_pick_brief_type: guide
 # Traps specific to this brand, rendered as "What NOT to write"
 brief_donts:
   - "Don't invent facts, prices, or claims."
+
+# wrtr_ops.py prices: competitor pages whose $ amounts are snapshotted and diffed.
+competitor_price_pages: []
+#  - {name: Competitor, url: "https://example.com/pricing"}

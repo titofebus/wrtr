@@ -85,3 +85,13 @@ Run: `.venv/bin/python -m unittest discover -s tests`
 - Docker-based tools - the reference VM can't run containers.
 - `sentence-transformers`/torch - too heavy; the TF-IDF clusterer covers the need.
 - Geotagging EXIF - zero measured ranking impact.
+
+## wrtr_ops.py (mechanical routines, one script)
+
+`.venv/bin/python scripts/wrtr_ops.py <cmd>`; exit 0 clean, 10 needs AI judgment (items printed), 1 fail, 2 usage/setup error. `--wake-root /workspace/febuslabs` also writes the febuslabs wake file on 10.
+
+- `health [--fix]` checks the wrtr and SlopTotal venvs plus SlopTotal `/health` on `$SLOPTOTAL_URL` (default :8001). `--fix` rebuilds venvs and starts SlopTotal.
+- `bundle KEYWORD --site S [--out F]` writes GSC rows, content_brief and aeo_map to one JSON file.
+- `gate EN_FILE [ES_FILE] --site S [--json] [--offline] [--no-ai]` is the publish gate: draft_score, ai_check (score >= 55 returns 10), frontmatter, internal routes and outbound links, hero image not reused (an EN/ES twin may share it), and pair consistency. Exit 0 pass, 1 fail (one reason per line), 10 judgment, 2 tool/setup error.
+- `prices --site S` diffs the $ amounts on `competitor_price_pages` against the last snapshot (`.ops-state/`).
+- `striking [--sites a,b]` is monthly. It takes GSC queries at positions 4-15 with at least 50 impressions over 28 days and groups them into page picks. It records baseline and after metrics per picked page, and covers active clients in agency.db that have a sites yaml.
