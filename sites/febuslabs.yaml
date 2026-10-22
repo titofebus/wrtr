@@ -1,0 +1,97 @@
+name: febuslabs
+site_url: https://febuslabs.com/
+repo: /workspace/febuslabs-site/apps/site
+content_dir: src/content/blog
+content_route: /blog/
+content_kind: Blog
+banned_terms: ["Febus Labs", "febus labs", "guaranteed rankings", "#1 on Google"]
+categories:
+  guides: Plain advice for local service business owners about websites
+  tips: Short how-tos for running a local business site
+type_category_map:
+  guide: guides
+  tip: tips
+title_templates:
+  - "{title}: A Plain Guide for Local Trades"
+  - "{title}: What Central Florida Owners Should Know"
+image_alt_template: "{title}, febuslabs"
+brand_terms: ["febuslabs", "febus"]
+venue_intent_words: ["orlando", "tampa", "near me"]
+scan_thresholds:
+  striking_min_impressions: 5
+  striking_min_position: 8
+  striking_max_position: 20
+  lowctr_min_impressions: 20
+  lowctr_max_position: 10
+  lowctr_max_ctr: 0.03
+  venue_min_impressions: 5
+  declining_min_impressions: 15
+  declining_ratio: 0.7
+hub_strategy: >
+  Trade pages (plumbers, HVAC, electricians, then landscapers, cleaners, auto
+  detailers) are hubs; blog guides are spokes that link back to the home page
+  and the free preview.
+services_note: Websites for local service businesses, $150 a month managed plan. Custom apps priced after a talk. Never promise rankings.
+voice_rules:
+  - Plain, direct, friendly. Write like a tradesperson talking to a tradesperson.
+  - US spelling.
+  - Brand name is always lowercase, one word, febuslabs.
+  - No invented stats, clients, testimonials, reviews or case studies.
+  - No em dashes or en dashes.
+  - End with a soft CTA to the free preview.
+  - "Owner rule: every post exists to grab the attention of potential clients (local trade business owners) and nothing else. No off-audience topics, no industry navel gazing; each section should move a prospect toward the free preview."
+proof_points:
+  - "$150 a month, no setup fee, no contract, cancel anytime"
+  - "Includes hosting, updates, unlimited edits (no monthly limit, anything ethical that doesn't need a database) and technical SEO"
+  - "Same-day edit target: by the end of the business day we get them (a target, not a guarantee)"
+  - "No self-editing; clients get a portal login to see results and request changes"
+  - "Free personalized preview before you decide"
+  - "Based in Central Florida, clients accepted anywhere; done in 3 days max, live within 1 week"
+preferred_phrases:
+  - "See it first"
+  - "Send a message, we update your site"
+type_angles:
+  guide: "What a local trade business actually needs from a website and what it should cost."
+shot_venues: []
+gsc_property: sc-domain:febuslabs.com
+proactive_seeds: ["plumber website", "hvac website design", "website for electricians", "contractor website cost"]
+draft_score_min: 80
+geo_terms: ["Central Florida", "Florida", "FL", "Orlando", "Orange County", "Seminole County", "Osceola County", "Lake County", "Volusia County", "Brevard County", "Polk County", "Hillsborough County", "Pinellas County", "Pasco County", "Tampa", "St. Petersburg", "Clearwater", "Lakeland", "Kissimmee", "Sanford", "Daytona Beach", "Melbourne", "Cocoa Beach", "Ocala", "Winter Park", "Deltona"]
+image_library: "public/images/"
+length_targets:
+  guide: "1,200 to 1,800 words"
+  tip: "800 to 1,200 words"
+h2_scaffolds:
+  guide:
+    - "What should a plumber website include"
+    - "How much does a plumber website cost"
+    - "How to choose a web designer"
+venue_pick_brief_type: guide
+brief_donts:
+  - "Don't invent facts, prices, stats, clients or reviews."
+  - "Don't promise rankings or call volume."
+
+# Local SEO (skill/references/local-seo-playbook.md). febuslabs has no office:
+# service-area business, address verified privately with Google, never shown.
+local_seo:
+  operating_model: service_area
+  hide_address: true
+  nap:
+    name: febuslabs
+    phone: ""          # OWNER: real business phone, identical on site, schema and GBP
+    website: https://febuslabs.com/
+    email: ""          # OWNER: pick one domain (audit item 10)
+  # Real areas served, max 20 (GBP limit), within ~2h drive. OWNER to confirm.
+  service_areas: ["Orlando", "Kissimmee", "Sanford", "Winter Park", "Lakeland", "Tampa", "St. Petersburg", "Clearwater", "Daytona Beach", "Melbourne", "Cocoa Beach", "Ocala", "Deltona"]
+  gbp_utm: "?utm_source=google&utm_medium=organic&utm_campaign=gbp"
+# wrtr_ops.py prices: competitor pages with public prices (docs/research/2026-10-competitors.md)
+competitor_price_pages:
+  - {name: Thryv, url: "https://www.thryv.com/pricing/"}
+  - {name: Jobber, url: "https://www.getjobber.com/pricing/"}
+  - {name: Durable, url: "https://durable.com/pricing"}
+  - {name: WebLynx, url: "https://weblynxsolution.com/web-design/orlando-fl"}
+  - {name: Ikaroa, url: "https://ikaroa.com/web-design/in/us/florida/orlando"}
+  - {name: Skylift, url: "https://skyliftweb.com/contractors/"}
+  - {name: Toolbox Marketing, url: "https://toolboxmarketingco.com/tampa-bay-contractor-websites"}
+  - {name: Webisla, url: "https://webisla.com/soluciones/sitios-web"}
+  - {name: Housecall Pro, url: "https://www.housecallpro.com/lp/websites/"}
