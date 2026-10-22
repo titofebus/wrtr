@@ -845,6 +845,13 @@ class TestAEO(unittest.TestCase):
         self.assertEqual(
             self._aeo({}, body, [(2, "FAQ")])["FAQ section"][0], "green")
 
+    def test_faq_spanish_headings(self):
+        for h in ("Preguntas frecuentes", "Preguntas comunes",
+                  "Dudas frecuentes", "Dudas comunes"):
+            body = f"## {h}\n\n**¿Cuánto?**\n\nMucho.\n"
+            self.assertEqual(
+                self._aeo({}, body, [(2, h)])["FAQ section"][0], "green", h)
+
     def test_faq_missing(self):
         body = "## Pricing\n\nWords here.\n"
         self.assertEqual(

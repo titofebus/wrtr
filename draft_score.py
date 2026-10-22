@@ -451,7 +451,9 @@ def check_aeo(fm, body, heads, cfg):
     # Either a FAQ heading in the body, or a `faq:` list in the front matter
     # for sites whose layout renders the FAQ (and its schema) from there.
     has_faq = bool(fm.get("faq")) or bool(re.search(
-        r"^#{2,4}\s+.*\b(faq|frequently asked questions)\b", body,
+        r"^#{2,4}\s+.*\b(faq|frequently asked questions|common questions"
+        r"|preguntas\s+(?:frecuentes|comunes)|dudas\s+(?:frecuentes|comunes))\b",
+        body,
         re.I | re.M))
     if has_faq:
         out.append(("FAQ section", "green",
