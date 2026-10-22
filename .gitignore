@@ -7,9 +7,10 @@
 .brave-key
 .serper-key
 .exa-key
-# Local-only site configs (real business data). Ship only sites/example.yaml.
+# Site configs: other clients stay local-only. Commit example (blank template) and febuslabs (SSOT).
 sites/*.yaml
 !sites/example.yaml
+!sites/febuslabs.yaml
 # Runtime state (regenerable)
 .weekly-pick-*.json
 .miner-cache-*.json
