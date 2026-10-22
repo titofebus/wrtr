@@ -10,6 +10,9 @@ AI only looks when this script says so. Subcommands:
                     internal/outbound links, hero image not reused (EN/ES twins
                     may share one image).
   prices            competitor price diff vs the last saved snapshot.
+                    Known-blocked hosts (Thryv, competitor_price_blocked) alert
+                    once via febuslabs scripts/lib/automation.py (state:
+                    data/state/automation/wrtr_prices.json).
   striking          monthly: GSC queries at positions 4-15 with high impressions
                     -> page picks, plus before/after metrics per picked page.
                     Loops every active client in agency.db that has sites/<slug>.yaml.
@@ -41,6 +44,10 @@ import site_config  # noqa: E402
 
 OK, FAIL, USAGE, WAKE = 0, 1, 2, 10
 STATE_DIR = os.path.join(HERE, ".ops-state")
+FEBUSLABS_ROOT = os.environ.get("FEBUSLABS_ROOT", "/workspace/febuslabs")
+# Shared alert-once root (data/state/automation/). Tests override AUTOMATION_ROOT.
+AUTOMATION_ROOT = os.environ.get("WRTR_AUTOMATION_ROOT", FEBUSLABS_ROOT)
+PRICES_ALERT_NAME = "wrtr_prices"
 AGENCY_DB = os.environ.get("WRTR_AGENCY_DB", "/workspace/febuslabs/data/agency.db")
 UA = "Mozilla/5.0 (wrtr_ops; +https://febuslabs.com)"
 
@@ -81,6 +88,16 @@ def _save_state(name, data):
     with open(tmp, "w") as f:
         json.dump(data, f, indent=1, ensure_ascii=False, default=str)
     os.replace(tmp, os.path.join(STATE_DIR, name))
+
+
+def _automation():
+    """febuslabs scripts/lib/automation.py (shared finding-id / alert-once).
+    Import always comes from FEBUSLABS_ROOT; state root is AUTOMATION_ROOT."""
+    lib = os.path.join(FEBUSLABS_ROOT, "scripts", "lib")
+    if lib not in sys.path:
+        sys.path.insert(0, lib)
+    import automation as A  # noqa: WPS433
+    return A
 
 
 # --------------------------------------------------------------------- health
@@ -441,7 +458,8 @@ def diff_prices(old, new):
     return {"added": sorted(n - o), "removed": sorted(o - n)}
 
 
-# Hosts known to block scripted fetches. Reported once, then suppressed.
+# Hosts known to block scripted fetches. Reported once via febuslabs shared
+# alert-once (data/state/automation/wrtr_prices.json), then suppressed.
 # Extend per site with `competitor_price_blocked: [host-or-url, ...]`.
 DEFAULT_PRICE_BLOCKED = ("thryv.com",)
 
@@ -457,6 +475,9 @@ def is_blocked(url, blocked):
 
 
 def cmd_prices(args, fetch=page_text):
+    A = _automation()
+    if A.handle_mark_reported(PRICES_ALERT_NAME, args, AUTOMATION_ROOT):
+        return OK
     cfg = site_config.load(args.site)
     comps = cfg.get("competitor_price_pages") or []
     if not comps:
@@ -464,18 +485,26 @@ def cmd_prices(args, fetch=page_text):
         return WAKE
     name = f"prices-{cfg.get('slug')}.json"
     snap = _state(name)
+    # One-shot: lift any pre-shared _blocked_reported into the shared helper.
+    old_blocked = snap.pop("_blocked_reported", None)
+    if old_blocked:
+        A.mark_reported(
+            PRICES_ALERT_NAME,
+            [A.finding_id("blocked", u) for u in old_blocked],
+            AUTOMATION_ROOT,
+        )
     blocked = list(DEFAULT_PRICE_BLOCKED) + list(cfg.get("competitor_price_blocked") or [])
-    reported = set(snap.get("_blocked_reported", []))
-    new_snap, items, suppressed = {}, [], 0
+    new_snap, items, pending_blocked = {}, [], []
     for c in comps:
         url = c["url"]
         if is_blocked(url, blocked):
-            if url in reported:
-                suppressed += 1
-            else:
-                items.append({"competitor": c.get("name", url), "url": url,
-                              "reason": "known-blocked page: check by hand; suppressed from now on"})
-                reported.add(url)
+            pending_blocked.append({
+                "id": A.finding_id("blocked", url),
+                "check": "blocked",
+                "competitor": c.get("name", url),
+                "url": url,
+                "reason": "known-blocked page: check by hand; suppressed from now on",
+            })
             continue
         try:
             prices = extract_prices(fetch(url))
@@ -493,10 +522,14 @@ def cmd_prices(args, fetch=page_text):
         if d["added"] or d["removed"]:
             items.append({"competitor": c.get("name", url), "url": url,
                           "reason": "prices changed", **d})
-    new_snap["_blocked_reported"] = sorted(reported)
+    new_blocked, state = A.unreported(PRICES_ALERT_NAME, pending_blocked, AUTOMATION_ROOT)
+    suppressed = len(pending_blocked) - len(new_blocked)
+    items = new_blocked + items
     _save_state(name, new_snap)
     emit({"result": "wake" if items else "ok", "checked": len(comps),
           "suppressed_blocked": suppressed, "items": items})
+    if new_blocked:
+        A.save_marker(PRICES_ALERT_NAME, state, AUTOMATION_ROOT)
     return WAKE if items else OK
 
 
@@ -602,6 +635,8 @@ def main(argv=None):
     g.add_argument("--offline", action="store_true", help="skip outbound link fetches")
     g.add_argument("--no-ai", action="store_true", help="skip SlopTotal")
     p = sub.add_parser("prices"); p.add_argument("--site", default="febuslabs")
+    p.add_argument("--mark-reported", nargs="+", metavar="ID",
+                   help="record finding ids as already alerted (shared wrtr_prices state), then exit")
     s = sub.add_parser("striking"); s.add_argument("--sites", default=None)
     s.add_argument("--min-impressions", type=int, default=50); s.add_argument("--n", type=int, default=3)
     args = ap.parse_args(argv)
