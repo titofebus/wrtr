@@ -93,5 +93,5 @@ Run: `.venv/bin/python -m unittest discover -s tests`
 - `health [--fix]` checks the wrtr and SlopTotal venvs plus SlopTotal `/health` on `$SLOPTOTAL_URL` (default :8001). `--fix` rebuilds venvs and starts SlopTotal.
 - `bundle KEYWORD --site S [--out F]` writes GSC rows, content_brief and aeo_map to one JSON file.
 - `gate EN_FILE [ES_FILE] --site S [--json] [--offline] [--no-ai]` is the publish gate: draft_score, ai_check (score >= 55 returns 10), frontmatter, internal routes and outbound links, hero image not reused (an EN/ES twin may share it), and pair consistency. Exit 0 pass, 1 fail (one reason per line), 10 judgment, 2 tool/setup error.
-- `prices --site S` diffs the $ amounts on `competitor_price_pages` against the last snapshot (`.ops-state/`).
+- `prices --site S` diffs the $ amounts on `competitor_price_pages` against the last snapshot (`.ops-state/`). Known-blocked hosts (Thryv / `competitor_price_blocked`) alert once via febuslabs `scripts/lib/automation.py` (`data/state/automation/wrtr_prices.json`); `--mark-reported ID...` records ids without waking.
 - `striking [--sites a,b]` is monthly. It takes GSC queries at positions 4-15 with at least 50 impressions over 28 days and groups them into page picks. It records baseline and after metrics per picked page, and covers active clients in agency.db that have a sites yaml.

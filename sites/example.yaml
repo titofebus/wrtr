@@ -183,5 +183,5 @@ brief_donts:
 # wrtr_ops.py prices: competitor pages whose $ amounts are snapshotted and diffed.
 competitor_price_pages: []
 #  - {name: Competitor, url: "https://example.com/pricing"}
-# Hosts/URLs that block scripts (thryv.com is built in): reported once, then skipped.
+# Hosts/URLs that block scripts (thryv.com is built in): reported once via febuslabs shared alert-once (wrtr_prices), then skipped.
 competitor_price_blocked: []

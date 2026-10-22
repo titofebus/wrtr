@@ -2,6 +2,7 @@
 import os
 import sys
 import tempfile
+from pathlib import Path
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -91,17 +92,37 @@ class PricesBlocked(unittest.TestCase):
         import argparse
         from unittest import mock
         ops.STATE_DIR = tempfile.mkdtemp()
+        ops.AUTOMATION_ROOT = tempfile.mkdtemp()
         cfg = {"slug": "t", "competitor_price_blocked": ["blocked.example"],
                "competitor_price_pages": [{"name": "Thryv", "url": "https://www.thryv.com/pricing/"},
                                           {"name": "B", "url": "https://blocked.example/p"},
                                           {"name": "Ok", "url": "https://ok.example/"}]}
-        args = argparse.Namespace(site="t")
+        args = argparse.Namespace(site="t", mark_reported=None)
         with mock.patch.object(ops.site_config, "load", return_value=cfg), \
                 mock.patch("sys.stdout"):
             self.assertEqual(ops.cmd_prices(args, fetch=lambda u: "$97/mo"), ops.WAKE)
             self.assertEqual(ops.cmd_prices(args, fetch=lambda u: "$97/mo"), ops.OK)
+        # Shared state (not .ops-state) holds the report-once ids.
+        state = Path(ops.AUTOMATION_ROOT) / "data" / "state" / "automation" / "wrtr_prices.json"
+        self.assertTrue(state.exists())
+        import json
+        reported = json.loads(state.read_text())["reported"]
+        self.assertIn("blocked:https://www.thryv.com/pricing/", reported)
+        self.assertIn("blocked:https://blocked.example/p", reported)
+        snap = Path(ops.STATE_DIR) / "prices-t.json"
+        self.assertNotIn("_blocked_reported", json.loads(snap.read_text()))
         self.assertTrue(ops.is_blocked("https://thryv.com/x", ops.DEFAULT_PRICE_BLOCKED))
         self.assertFalse(ops.is_blocked("https://notthryv.com/x", ops.DEFAULT_PRICE_BLOCKED))
+
+    def test_mark_reported_cli(self):
+        import argparse
+        ops.AUTOMATION_ROOT = tempfile.mkdtemp()
+        args = argparse.Namespace(site="t", mark_reported=["blocked:https://x.example/"])
+        self.assertEqual(ops.cmd_prices(args), ops.OK)
+        import json
+        from pathlib import Path
+        st = json.loads((Path(ops.AUTOMATION_ROOT) / "data/state/automation/wrtr_prices.json").read_text())
+        self.assertIn("blocked:https://x.example/", st["reported"])
 
 
 def row(q, page, impr, pos, clicks=0):
