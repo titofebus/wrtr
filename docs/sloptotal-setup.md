@@ -63,5 +63,6 @@ To stop: `pkill -f "sloptotal/.venv/bin/python"`.
 `ai_check.py` reads `SLOPTOTAL_URL` (default `http://localhost:8000`).
 `scripts/start.sh` reads `SLOPTOTAL_PORT` (default 8000). If 8000 is taken on
 the machine, start with `SLOPTOTAL_PORT=8001 ./scripts/start.sh` and export
-`SLOPTOTAL_URL=http://localhost:8001`. A 405 from ai_check means another app
+`SLOPTOTAL_URL=http://localhost:8001`. `scripts/wrtr_ops.py` defaults to
+`http://localhost:8001` unless `SLOPTOTAL_URL` is set. A 405 from ai_check means another app
 owns the port. The ops script derives the port from `SLOPTOTAL_URL`.

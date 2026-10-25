@@ -24,7 +24,7 @@ All commands run through the venv: `.venv/bin/python`.
 
 Tests are pure-function and offline: no network, no credentials, tmp files
 only. A new check or brief section gets a test in `tests/test_seo_tools.py`
-in the same change (see AGENTS.md section 10).
+(`tests/test_wrtr_ops.py` for `scripts/wrtr_ops.py`) in the same change (see AGENTS.md section 10).
 
 ## Changes to the quality gate (`draft_score.py`) or a site config
 

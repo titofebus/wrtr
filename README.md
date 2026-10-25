@@ -48,6 +48,7 @@ in `skill/references/site-onboarding.md`.
 | `serp_check.py` | Competitor SERP snapshots via free-tier APIs: Brave ($5/mo free), Serper (2,500 free Google queries), Exa ($10/mo free, returns page text for content-gap) | needs a 2-min signup key in `.brave-key` / `.serper-key` / `.exa-key` (0600) |
 | `bing.py` | Bing Webmaster API client: top queries (a second keyword source), instant URL submission after publishing (`submit <url>`); `pages()`/`crawl_stats()` exist as Python functions only | `.venv/bin/python bing.py`; key in `.bing-key` (0600) |
 | `nap_audit.py` | NAP consistency audit: checks the site's published business identity (homepage + contact page, JSON-LD business nodes) against the canonical `local_seo:` block in the site YAML - phone, email, address visibility, LocalBusiness schema | `.venv/bin/python nap_audit.py --site <slug>` |
+| `local_schema_check.py` | Advisory: checks a page's LocalBusiness JSON-LD against the site's `local_seo:` block (operating model, canonical NAP) | `.venv/bin/python local_schema_check.py <url-or-html-file> --site <slug>`. Exit 0 = clean, 1 = red items, 2 = usage error |
 | `ads_volumes.py` | REAL keyword volumes via Google Ads API Keyword Planner (GenerateKeywordIdeas), geo-targeted | `.venv/bin/python ads_volumes.py "seed"`. Config `.google-ads.yaml` (0600). Needs a Google Ads API token with Basic/Standard access |
 | `ads_oauth.py` | One-time OAuth dance (localhost listener) that mints the Ads refresh token | credentials in `.google-ads-oauth` (0600) |
 | `pytrends-modern` | Google Trends wrapper (pytrends is archived - use this) | ad-hoc trend checks only; don't schedule (429-prone) |
@@ -75,7 +76,7 @@ All credential files are gitignored. Never commit them.
 
 ## Tests
 
-`tests/test_seo_tools.py` - 122 unittest cases covering the pure functions. No network, no credentials.
+`tests/test_seo_tools.py` and `tests/test_wrtr_ops.py` - offline unittest cases covering the pure functions. No network, no credentials.
 
 Run: `.venv/bin/python -m unittest discover -s tests`
 

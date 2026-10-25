@@ -21,7 +21,8 @@ you ranked; AEO gets you quoted. wrtr does both.
 
 Public repo: `https://github.com/titofebus/wrtr`
 Reference config: `sites/example.yaml`. Production sites are just more
-YAML files in `sites/`. Any new brand onboards by copying a YAML file.
+YAML files in `sites/` (gitignored, except `example.yaml` and
+`febuslabs.yaml`, which is committed as its source of truth). Any new brand onboards by copying a YAML file.
 No code changes.
 
 ## 2. Setup (first 15 minutes)
@@ -93,14 +94,17 @@ Default site is `example`.
 | `assign_images.py` | Picks the most relevant never-used image from the site's library | `.venv/bin/python assign_images.py --site <slug> --topic "<keyword>"` |
 | `bing.py` | Bing Webmaster: top queries, instant URL submit | `.venv/bin/python bing.py submit <url> --site <slug>` |
 | `nap_audit.py` | NAP consistency audit: published business identity (homepage + contact page, JSON-LD) vs the canonical `local_seo:` block - phone, email, address visibility, LocalBusiness schema | `.venv/bin/python nap_audit.py --site <slug>` |
+| `local_schema_check.py` | Advisory: a page's LocalBusiness JSON-LD vs the site's `local_seo:` block | `.venv/bin/python local_schema_check.py <url-or-html-file> --site <slug>` |
 | `gsc.py` | Search Console API client (sites, searchAnalytics) | `.venv/bin/python gsc.py` |
 | `serp_check.py` | Competitor SERP snapshots (needs free Brave/Serper/Exa key) | see `--help` |
 | `psi_check.py` | Core Web Vitals: CrUX field + PSI lab scores | `.venv/bin/python psi_check.py` (env `PSI_URLS`, key in `.psi-key`) |
 | `ads_volumes.py` | Real keyword volumes via Google Ads API (parked: needs API token) | `.venv/bin/python ads_volumes.py "seed"` |
+| `ads_oauth.py` | One-time OAuth that mints the Ads refresh token | `.venv/bin/python ads_oauth.py` |
+| `scripts/wrtr_ops.py` | Mechanical routines in one script: `health`, `bundle`, `gate` (combined publish gate), `prices`, `striking` (README has each) | `.venv/bin/python scripts/wrtr_ops.py <cmd> --site <slug>` |
 | `open-seo-crawler/` | Self-hosted crawler (Screaming Frog replacement): titles, metas, H1s, canonicals, redirects, broken links, duplicates, schema detection, XLSX export | `.venv/bin/python open-seo-crawler/app.py`, POST to `http://localhost:5002/crawl` |
 
 Exit codes for `draft_score.py`: 0 = PASS, 1 = blocked (fix and re-run),
-2 = usage/config error.
+2 = usage/config error. `scripts/wrtr_ops.py` adds 10 = needs AI judgment.
 
 ## 5. The quality gate (`draft_score.py`) in detail
 
@@ -211,6 +215,12 @@ in a script; put them in the YAML. Copy `sites/example.yaml` to onboard.
 - `proactive_seeds` - 2-3 broad seeds for net-new topic mining and aeo_map.
 - `geo_terms` - the brand's markets; filters out-of-market keyword leaks.
 - `image_library` - where real brand photos live for briefs.
+- `shot_venues` - named places the brand covered first-hand; briefs list
+  them as safe to recommend by name.
+- `competitor_price_pages` - `{name, url}` competitor pricing pages that
+  `wrtr_ops.py prices` diffs against its last snapshot.
+- `competitor_price_blocked` - optional extra hosts that block scripted
+  fetches; reported once, then skipped.
 - `niche_generic_words` - the niche's too-generic-to-anchor words,
   merged over the universal base by `site_config.generic_words`.
 - `image_scan_dirs`, `image_number_map`, `image_number_pattern`,
@@ -260,8 +270,8 @@ site's `niche_generic_words`).
 
 ## 10. Tests
 
-`tests/test_seo_tools.py` - pure-function unit tests. No network, no
-credentials, no real files (tmp files only). Fixtures use example.com URLs
+`tests/test_seo_tools.py` and `tests/test_wrtr_ops.py` - pure-function unit
+tests. No network, no credentials, no real files (tmp files only). Fixtures use example.com URLs
 and queries.
 
 ```bash
