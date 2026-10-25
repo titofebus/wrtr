@@ -7,7 +7,6 @@ rather than markup: a 301 and a 404.
 Binds 127.0.0.1 only. Used by tests/test_fixture_site.py, which starts and
 stops it, but it runs standalone too if you want to click around it.
 """
-import functools
 import os
 import sys
 import threading

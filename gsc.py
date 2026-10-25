@@ -45,7 +45,7 @@ def _token():
     return _creds.token
 
 
-def _with_retry(fn, what):
+def _with_retry(fn):
     """Two retries (exponential backoff) on 429/5xx, mirroring bing.py."""
     import time
     last = None
@@ -67,7 +67,7 @@ def _get(path, **params):
                          headers={"Authorization": "Bearer " + _token()}, timeout=60)
         r.raise_for_status()
         return r.json()
-    return _with_retry(do, "GET " + path)
+    return _with_retry(do)
 
 
 def _post(path, body):
@@ -76,7 +76,7 @@ def _post(path, body):
                           headers={"Authorization": "Bearer " + _token()}, timeout=120)
         r.raise_for_status()
         return r.json()
-    return _with_retry(do, "POST " + path)
+    return _with_retry(do)
 
 
 def list_sites():

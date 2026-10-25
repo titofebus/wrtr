@@ -87,7 +87,60 @@ class Prices(unittest.TestCase):
                          {"added": ["$99/mo"], "removed": ["$97/mo"]})
 
 
+class FakeAutomation:
+    """Stand-in for febuslabs scripts/lib/automation.py so the suite runs
+    without a febuslabs checkout. Same state file and id shape."""
+
+    @staticmethod
+    def _path(name, root):
+        return Path(root) / "data" / "state" / "automation" / f"{name}.json"
+
+    @classmethod
+    def _load(cls, name, root):
+        import json
+        p = cls._path(name, root)
+        return json.loads(p.read_text()) if p.exists() else {"reported": []}
+
+    @classmethod
+    def save_marker(cls, name, state, root):
+        import json
+        p = cls._path(name, root)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(json.dumps(state))
+
+    @staticmethod
+    def finding_id(kind, value):
+        return f"{kind}:{value}"
+
+    @classmethod
+    def mark_reported(cls, name, ids, root):
+        state = cls._load(name, root)
+        state["reported"] = sorted(set(state["reported"]) | set(ids))
+        cls.save_marker(name, state, root)
+
+    @classmethod
+    def handle_mark_reported(cls, name, args, root):
+        ids = getattr(args, "mark_reported", None)
+        if not ids:
+            return False
+        cls.mark_reported(name, ids, root)
+        return True
+
+    @classmethod
+    def unreported(cls, name, items, root):
+        state = cls._load(name, root)
+        new = [i for i in items if i["id"] not in state["reported"]]
+        state["reported"] = sorted(set(state["reported"]) | {i["id"] for i in new})
+        return new, state
+
+
 class PricesBlocked(unittest.TestCase):
+    def setUp(self):
+        from unittest import mock
+        patcher = mock.patch.object(ops, "_automation", return_value=FakeAutomation)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def test_blocked_reported_once(self):
         import argparse
         from unittest import mock

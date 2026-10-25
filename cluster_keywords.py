@@ -10,7 +10,6 @@ Usage:
 import re
 import sys
 
-import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.feature_extraction.text import TfidfVectorizer
 
