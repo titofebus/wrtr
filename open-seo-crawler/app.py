@@ -3032,7 +3032,6 @@ def fetch_robots_txt():
         return jsonify({'error': str(e)[:200]}), 200
 
 
-@app.route('/sitemap-analyse', methods=['POST'])
 def _bare_host(url):
     """Normalise a URL/domain to a bare host for matching: strip scheme,
     www., path and trailing slash."""
@@ -3077,6 +3076,7 @@ def _foreign_host_warning(foreign_hosts, domain):
             f"so they are not orphans of this crawl.")
 
 
+@app.route('/sitemap-analyse', methods=['POST'])
 def sitemap_analyse():
     """Discover the site's sitemap(s) and diff against a crawl.
 
