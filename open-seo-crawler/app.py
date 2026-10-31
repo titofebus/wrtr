@@ -794,8 +794,9 @@ def restart_self():
         f"cd {repo} && nohup python3 app.py >/dev/null 2>&1 &"
     )
     try:
-        _sp.Popen(['bash', '-c', cmd], start_new_session=True,
-                  stdout=open(log_path, 'a'), stderr=_sp.STDOUT)
+        with open(log_path, 'a') as log:
+            _sp.Popen(['bash', '-c', cmd], start_new_session=True,
+                      stdout=log, stderr=_sp.STDOUT)
     except Exception as e:
         return jsonify({'ok': False, 'error': str(e)[:300]}), 500
     return jsonify({'ok': True, 'message': 'Restarting in ~2s'})

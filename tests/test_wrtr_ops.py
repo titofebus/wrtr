@@ -24,7 +24,8 @@ class Site(unittest.TestCase):
     def setUp(self):
         self.d = tempfile.mkdtemp()
         os.makedirs(os.path.join(self.d, "src", "pages", "blog"))
-        open(os.path.join(self.d, "src", "pages", "faq.astro"), "w").close()
+        with open(os.path.join(self.d, "src", "pages", "faq.astro"), "w"):
+            pass
 
     def test_twin_may_share_hero(self):
         en = post(self.d, "a.md", "x.jpg")
@@ -225,7 +226,8 @@ class Wake(unittest.TestCase):
         p = ops._wake_file(d, "wrtr_x", [{"reason": "r"}])
         ops._wake_file(d, "wrtr_x", [{"reason": "s"}])
         import json
-        self.assertEqual(len(json.load(open(p))), 2)
+        with open(p, encoding="utf-8") as fh:
+            self.assertEqual(len(json.load(fh)), 2)
 
 
 if __name__ == "__main__":

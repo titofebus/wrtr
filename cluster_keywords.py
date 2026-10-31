@@ -32,7 +32,9 @@ def main():
         elif a.startswith("--n="):
             n = int(a.split("=", 1)[1])
     kws = []
-    for l in open(path):
+    with open(path, encoding="utf-8") as fh:
+        lines = fh.read().splitlines()
+    for l in lines:
         l = l.strip()
         if not l or l.startswith("#"):
             continue  # tolerate miner markdown: skip headers/blanks

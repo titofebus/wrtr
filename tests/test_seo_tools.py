@@ -1249,7 +1249,8 @@ class TestExistingEntries(unittest.TestCase):
         d = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, d)
         for name in ("README.md", "a-post.md"):
-            open(os.path.join(d, name), "w").close()
+            with open(os.path.join(d, name), "w"):
+                pass
         cfg = {"repo": d, "content_dir": "."}
         self.assertEqual(brief.existing_entries(cfg), ["a-post"])
 
@@ -1266,3 +1267,38 @@ class TestFrontMatterFaq(unittest.TestCase):
             fm, body, draft_score.headings(body), {"name": "T"}))
         self.assertEqual(checks["FAQ section"], "green")
 
+
+
+class TestNoLeakedFileHandles(unittest.TestCase):
+    """Every builtin open() in tracked code sits in a `with` block.
+
+    A bare open() leaks the handle until garbage collection (ResourceWarning
+    under -W error, and on some runtimes a real fd leak in long scans).
+    """
+
+    @staticmethod
+    def bare_opens(source):
+        import ast
+        tree = ast.parse(source)
+        managed = {id(item.context_expr) for node in ast.walk(tree)
+                   if isinstance(node, (ast.With, ast.AsyncWith))
+                   for item in node.items}
+        return [node.lineno for node in ast.walk(tree)
+                if isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Name) and node.func.id == "open"
+                and id(node) not in managed]
+
+    def test_tracked_python_files_use_with_open(self):
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        files = subprocess.run(["git", "ls-files", "*.py"], cwd=root,
+                               capture_output=True, text=True, check=True).stdout.split()
+        self.assertTrue(files, "git ls-files found no Python files")
+        leaks = []
+        for rel in files:
+            with open(os.path.join(root, rel), encoding="utf-8") as fh:
+                leaks += [f"{rel}:{n}" for n in self.bare_opens(fh.read())]
+        self.assertEqual(leaks, [], "bare open() outside a with block")
+
+    def test_probe_flags_bare_open_and_passes_with_open(self):
+        self.assertEqual(self.bare_opens("x = open('a').read()\n"), [1])
+        self.assertEqual(self.bare_opens("with open('a') as f:\n    f.read()\n"), [])

@@ -20,7 +20,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 def _key(name):
     p = os.path.join(HERE, name)
-    return open(p).read().strip() if os.path.exists(p) else None
+    if not os.path.exists(p):
+        return None
+    with open(p, encoding="utf-8") as fh:
+        return fh.read().strip()
 
 
 def via_brave(query, key):

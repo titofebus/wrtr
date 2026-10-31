@@ -105,7 +105,8 @@ def main():
     a = ap.parse_args()
     cfg = site_config.load(a.site)
     if os.path.isfile(a.source):
-        html = open(a.source, encoding="utf-8", errors="replace").read()
+        with open(a.source, encoding="utf-8", errors="replace") as fh:
+            html = fh.read()
     else:
         req = urllib.request.Request(a.source, headers={"User-Agent": "wrtr-local-schema-check"})
         html = urllib.request.urlopen(req, timeout=20).read().decode("utf-8", "replace")

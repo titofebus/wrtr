@@ -96,7 +96,8 @@ def used_images(repo, content_dirs, cfg=None):
                 if f in skip_files:
                     continue
                 try:
-                    text = open(os.path.join(root, f), encoding="utf-8").read()
+                    with open(os.path.join(root, f), encoding="utf-8") as fh:
+                        text = fh.read()
                 except (OSError, UnicodeDecodeError):
                     continue
                 for m in img_ref.finditer(text):

@@ -31,9 +31,10 @@ LOGIN_CUSTOMER_ID = "7121367015"
 
 def _oauth():
     vals = {}
-    for line in open(os.path.join(HERE, ".google-ads-oauth")):
-        k, v = line.strip().split("=", 1)
-        vals[k] = v
+    with open(os.path.join(HERE, ".google-ads-oauth"), encoding="utf-8") as fh:
+        for line in fh:
+            k, v = line.strip().split("=", 1)
+            vals[k] = v
     return vals["client_id"], vals["client_secret"]
 
 

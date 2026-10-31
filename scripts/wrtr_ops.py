@@ -64,7 +64,8 @@ def _wake_file(root, name, items):
     prev = []
     if os.path.exists(p):
         try:
-            prev = json.load(open(p))
+            with open(p, encoding="utf-8") as fh:
+                prev = json.load(fh)
         except ValueError:
             prev = []
     prev.append({"at": now.isoformat(timespec="seconds"), "name": name, "items": items})
@@ -145,11 +146,12 @@ def cmd_health(args):
             fixed.append("venvs")
         if res["sloptotal_api"] == "down" and check_venv(*VENVS["sloptotal"]) == "ok":
             port = os.environ["SLOPTOTAL_URL"].rsplit(":", 1)[-1].strip("/")
-            log = open(os.path.join(HERE, "sloptotal", "uvicorn.log"), "a")
-            subprocess.Popen([".venv/bin/python", "-m", "uvicorn", "app.main:app",
-                              "--host", "127.0.0.1", "--port", port],
-                             cwd=os.path.join(HERE, "sloptotal"), stdout=log,
-                             stderr=log, start_new_session=True)
+            with open(os.path.join(HERE, "sloptotal", "uvicorn.log"), "a") as log:
+                # The child keeps its own copy of the log handle.
+                subprocess.Popen([".venv/bin/python", "-m", "uvicorn", "app.main:app",
+                                  "--host", "127.0.0.1", "--port", port],
+                                 cwd=os.path.join(HERE, "sloptotal"), stdout=log,
+                                 stderr=log, start_new_session=True)
             import time
             for _ in range(60):  # engines take a while to load
                 if sloptotal_up():
