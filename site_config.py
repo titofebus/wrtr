@@ -53,6 +53,7 @@ def load(slug=None):
         raise SystemExit(
             f"Site config '{slug}' is missing required keys: {', '.join(missing)}")
     cfg["slug"] = slug
+    cfg["repo"] = expand_path(cfg["repo"], f"Site config '{slug}' repo")
     # gsc_property defaults to site_url so scan and brief can never diverge
     # onto different properties by accident.
     cfg.setdefault("gsc_property", cfg["site_url"])
@@ -61,6 +62,22 @@ def load(slug=None):
     if errs:
         raise SystemExit(f"Site config '{slug}' local_seo: " + "; ".join(errs))
     return cfg
+
+
+_VAR_DEFAULT = __import__("re").compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*):-([^}]*)\}")
+
+
+def expand_path(value, label="path"):
+    """Expand ~, $VAR and ${VAR:-default} in a config path.
+    Exits with a clear message if a variable is unset and has no default."""
+    import re
+    s = _VAR_DEFAULT.sub(lambda m: os.environ.get(m.group(1)) or m.group(2), str(value))
+    s = os.path.expanduser(os.path.expandvars(s))
+    left = re.findall(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)", s)
+    if left:
+        raise SystemExit(f"{label}: environment variable {', '.join(left)} is not set "
+                         f"(value '{value}'). Export it or use ${{VAR:-default}}.")
+    return s
 
 
 OPERATING_MODELS = ("storefront", "service_area", "hybrid")
