@@ -1,6 +1,6 @@
 name: febuslabs
 site_url: https://febuslabs.com/
-repo: /workspace/febuslabs-site/apps/site
+repo: ${SITE_CHECKOUT:-/workspace/febuslabs-site}/apps/site  # SITE_CHECKOUT = monorepo root (febuslabs config/env.sh)
 content_dir: src/content/blog
 content_route: /blog/
 content_kind: Blog
