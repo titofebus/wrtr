@@ -6,7 +6,7 @@ google-auth-oauthlib==1.5.0
 google-ads==33.0.0
 PyYAML==6.0.3
 textstat==0.7.13
-nltk==3.10.3
+nltk==3.10.4
 pyphen==0.18.1
 scikit-learn==1.9.1
 beautifulsoup4==4.15.0
