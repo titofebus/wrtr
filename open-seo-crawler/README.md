@@ -25,9 +25,9 @@ Built by [Puneet Singh](https://au.linkedin.com/in/puneet-singh0), a working SEO
 | CMS-aware presets | ✅ 10 CMSs | ❌ | partial | partial | partial |
 | Headless JS render | ✅ optional | ✅ paid | ✅ | ✅ | ✅ |
 
-## What's new (recent additions)
+## Highlights
 
-- **Malformed link href detection** - a scheme-less `href` containing a raw space (a street address or Google Maps Plus Code pasted straight into a link, e.g. `<a href="7FG4+8Q Springfield">Directions</a>`) used to resolve relative to every page carrying it and flood the crawl with phantom 404s - one broken footer link on a 300-page site meant ~300 fake 404 rows. Now it's skipped as a link and reported once per page as a **Malformed link href** issue naming the offending text.
+- **Malformed link href detection** - a scheme-less `href` containing a raw space (a street address or Google Maps Plus Code pasted straight into a link, e.g. `<a href="7FG4+8Q Springfield">Directions</a>`) is skipped as a link, so it can't flood the crawl with phantom 404s (one broken footer link on a 300-page site would mean ~300 fake 404 rows). It's reported once per page as a **Malformed link href** issue naming the offending text.
 - **JS vs no-JS compare mode** - with Render JS on, tick *Compare with non-JS HTML* to crawl every page in BOTH modes (Playwright-rendered and raw HTML). The per-page diff shows exactly which content is invisible to AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended), which mostly don't execute JavaScript.
 - **Shared-instance support** - point the saved-crawls list at extra folders (`SITE_CRAWLER_EXTRA_CRAWL_DIRS`) so one office instance shows crawls from multiple tools, and label who ran each crawl by IP (`SITE_CRAWLER_USER_MAP`).
 - **Crawl Budget page** - scans the homepage + section pages, buckets every discovered URL by query parameter, classifies crawl-budget traps (Elementor `?e-page-` AJAX pagination, faceted filters, sort / tracking / session params) and generates ready-to-paste robots.txt `Disallow` rules. Shows the sitemap's real page count next to the phantom parameter URLs so the wasted crawl budget is obvious.
@@ -40,7 +40,7 @@ Built by [Puneet Singh](https://au.linkedin.com/in/puneet-singh0), a working SEO
 - **One-click auto-update** - version badge in the topbar checks GitHub for newer commits and offers a one-click `git pull + restart + page reload` so you're always on the latest code.
 - **Dark mode toggle** - explicit per-user choice (persists in localStorage), overrides system `prefers-color-scheme` cleanly.
 - **Saved crawls list** - every crawl is auto-saved; reopen any historical crawl from the Load Saved modal. Names of who ran each crawl resolve across multiple tools on the same LAN.
-- **Smart noindex / canonicalised handling** - these pages no longer inflate the Error count or get flagged as duplicates by Bulk Reports.
+- **Smart noindex / canonicalised handling** - these pages don't count toward the Error count and aren't flagged as duplicates by Bulk Reports.
 
 ## Features
 

@@ -146,7 +146,7 @@ HARD failure and blocks):**
   (first person, specific numbers, named people/places).
 - **Em/en dashes are HARD failures.** Any em dash or en dash anywhere in the draft
   blocks publishing. Rewrite with commas, colons, periods, or hyphens.
-  This is an owner rule (2026-10-07), not a suggestion.
+  This is an owner rule, not a suggestion.
 
 `--min-score 0` is the owner-only escape hatch. Lowering a site's
 `draft_score_min` in YAML needs the owner's explicit go.
@@ -186,7 +186,7 @@ in a script; put them in the YAML. Copy `sites/example.yaml` to onboard.
   the GBP website link). Validated by `site_config.validate_local_seo`;
   `nap_audit.py` and `local_schema_check.py` verify the site publishes
   exactly this.
-- `site_url`, `repo` (local path), `content_dir`, `content_route`,
+- `site_url`, `repo` (local path; expands `~`, `$VAR`, `${VAR:-default}`), `content_dir`, `content_route`,
   `content_kind` - main collection (its public kind name and route).
 - `resources_dir`, `resources_route`, `resources_kind` - optional second
   collection for SEO-generated content (a second collection kept out of
@@ -229,7 +229,7 @@ in a script; put them in the YAML. Copy `sites/example.yaml` to onboard.
   number-to-filename map, the by-number reference regex). Off by default.
 - `draft_score_min` - publish bar (default 80).
 - `aeo_strict` - optional, default off: AEO gate yellows become HARD
-  failures for this site only (owner opt-in, e.g. Gloam 2026-10-13).
+  failures for this site only (owner opt-in, e.g. Gloam).
 - `repo_gate` - the site repo's mechanical gate command, named in briefs.
 - `venue_pick_brief_type` - which `--type` a `venue` scan pick gets.
 
@@ -270,9 +270,9 @@ site's `niche_generic_words`).
 
 ## 10. Tests
 
-`tests/test_seo_tools.py` and `tests/test_wrtr_ops.py` - pure-function unit
-tests. No network, no credentials, no real files (tmp files only). Fixtures use example.com URLs
-and queries.
+`tests/test_seo_tools.py`, `test_wrtr_ops.py`, `test_site_config_paths.py`, `test_crawler_routes.py`:
+offline unit tests. No network, no credentials, tmp files only.
+Fixtures use example.com URLs and queries.
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -v

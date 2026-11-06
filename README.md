@@ -4,7 +4,7 @@ Open-source, Google-native SEO stack. No subscriptions, no hosted APIs for
 the core loop: weekly opportunity scans from your own Search Console data,
 content briefs, a hard pre-publish quality gate, and monitoring.
 
-Built 2026-10-07. Extracted from a production site's
+Extracted from a production site's
 SEO program.
 
 > **New here?** Start with [`docs/start-here.md`](docs/start-here.md) -
@@ -76,7 +76,7 @@ All credential files are gitignored. Never commit them.
 
 ## Tests
 
-`tests/test_seo_tools.py` and `tests/test_wrtr_ops.py` - offline unittest cases covering the pure functions. No network, no credentials.
+`tests/test_seo_tools.py`, `tests/test_wrtr_ops.py`, `tests/test_site_config_paths.py` and `tests/test_crawler_routes.py` - offline unittest cases. No network, no credentials.
 
 Run: `.venv/bin/python -m unittest discover -s tests`
 

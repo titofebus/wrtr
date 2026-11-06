@@ -3,7 +3,7 @@
 
 name: Brand Name
 site_url: https://www.example.com/
-repo: ~/workspace/<repo-dir>
+repo: ~/workspace/<repo-dir>  # ~, $VAR and ${VAR:-default} expand
 
 # Canonical business identity (the NAP source of truth). nap_audit.py
 # verifies the site publishes exactly this. Omit fields you don't publish.
