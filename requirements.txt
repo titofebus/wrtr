@@ -1,9 +1,9 @@
-# wrtr runtime dependencies (pinned 2026-10-07, Python 3.10+).
+# wrtr runtime dependencies (pinned 2026-11-10, Python 3.10+).
 # google-ads pulls grpcio (~80MB); skip it if you don't need Ads API volumes.
 requests==2.34.2
-google-auth==2.60.0
+google-auth==2.62.1
 google-auth-oauthlib==1.5.0
-google-ads==33.0.0
+google-ads==35.0.0
 PyYAML==6.0.3
 textstat==0.7.13
 nltk==3.10.4

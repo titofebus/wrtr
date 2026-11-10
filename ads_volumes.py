@@ -35,7 +35,7 @@ def ideas(client, customer_id, seeds, geo=US_GEO):
         m = r.keyword_idea_metrics
         vol = None
         if m.avg_monthly_searches:
-            # v33: avg_monthly_searches is int64; buckets come as ranges on non-spenders
+            # avg_monthly_searches is int64; buckets come as ranges on non-spenders
             vol = m.avg_monthly_searches
         out.append({
             "keyword": r.text,
