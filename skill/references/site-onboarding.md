@@ -23,8 +23,7 @@ in this order - it mirrors how local visibility actually works
    Add `?utm_source=google&utm_medium=organic&utm_campaign=gbp` to the
    website link for GA4 attribution. Service areas describe the territory;
    they do not manufacture proximity - distance still counts.
-3. **Bing Places + Apple Business** (renamed from Apple Business Connect
-   in 2026). Quick wins after GBP.
+3. **Bing Places + Apple Business**. Quick wins after GBP.
 4. **Citation tiers, in order:** data sources (Data Axle, TransUnion
    Digital Business Profile, Foursquare) → major platforms (Yelp,
    Facebook) → industry verticals (your trade's directories) →

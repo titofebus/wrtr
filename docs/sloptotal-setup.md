@@ -21,7 +21,6 @@ To stop: `pkill -f "sloptotal/.venv/bin/python"`.
 ## Details
 
 - **Pinned commit:** `8b69796d7060278d8ecda8770e71888cf59a23fa`
-  (latest upstream as of 2026-10-07)
 - **Repo:** https://github.com/pablocaeg/sloptotal (cloned, not a submodule)
 - **Venv:** `./.venv` (dedicated; Python 3.12) - `pip install -r requirements.txt`
 - **Models:** ~3.1 GB in `~/.cache/huggingface/hub` (classifiers for
