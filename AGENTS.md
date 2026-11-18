@@ -270,7 +270,8 @@ site's `niche_generic_words`).
 
 ## 10. Tests
 
-`tests/test_seo_tools.py`, `test_wrtr_ops.py`, `test_site_config_paths.py`, `test_crawler_routes.py`:
+`tests/test_seo_tools.py`, `test_wrtr_ops.py`, `test_site_config_paths.py`, `test_crawler_routes.py`,
+`test_skill_evergreen.py` (skills hold rules, never ids, dates or open-item lists):
 offline unit tests. No network, no credentials, tmp files only.
 Fixtures use example.com URLs and queries.
 
