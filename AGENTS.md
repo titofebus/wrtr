@@ -256,6 +256,11 @@ site's `niche_generic_words`).
    gate passes for real.
 7. **wrtr stays brand-agnostic.** Brand specifics live in `sites/*.yaml`,
    never in scripts.
+8. **Skills and docs are evergreen.** They describe how things work now
+   and hold rules plus the lookups that find current state at run time:
+   never tracker issue ids, PR numbers, dates, commit hashes, bug lists or
+   "open items" lists (those live in the tracker, dated reports or
+   `git log`). `tests/test_skill_evergreen.py` enforces it for `skill/`.
 
 ## 9. Git workflow
 
